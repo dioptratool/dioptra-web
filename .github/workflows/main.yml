@@ -1,0 +1,141 @@
+---
+name: build
+
+on: push
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+jobs:
+
+  verify: 
+    # if: ${{ false }} # uncomment to disable this job
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.13]
+    steps:
+      - name: Save default env
+        run: |
+          echo "DATABASE_PASSWORD=$(openssl rand -base64 18)" >> "$GITHUB_ENV"
+          echo "DJANGO_SECRET_KEY=$(openssl rand -base64 18)" >> "$GITHUB_ENV"
+
+      - name: Checkout files
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup Python Pip cache
+        uses: actions/cache@v4
+        id: cache-pip
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements/*.txt', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Application Dependencies
+        run: |
+          pip install --upgrade pip
+          make install
+
+      - name: Lint checks
+        run: make audit
+
+      - name: Start services
+        run: make up-github
+
+      - name: Wait...
+        run: sleep 20
+
+      - name: Run Tests
+        env:
+          TEST_VERBOSITY: 2
+        run: make test
+
+      - name: Run Security tests
+        run: make security/bandit-baseline
+
+      - name: Run Django deploy check
+        run: |
+          pip install sentry-sdk
+          make check-deploy-status
+
+      - name: Ensure build works
+        run: make bootstrap-db
+
+      - name: Verify all Steps of the Demo data
+        run: make validate-analysis-endpoints
+
+  # Build Docker images, conditional on GITHUB_REF version being a build
+  # candidate. See the `get_version` step.
+  build:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      # This step determines whether a release is a candidate for build
+      # Releases that are candidates for build are tags that match:
+      # - the SemVer format prefixed with v, such as v0.0.1
+      # - the word latest
+      - name: Set the release version
+        id: get_version
+        run: |
+          release_version=$(echo $GITHUB_REF | cut -d / -f 3)
+          echo "GITHUB_REF: ${GITHUB_REF}"
+          echo "RELEASE_VERSION: ${release_version}"
+          # For the SemVer matching regex, see https://regex101.com/r/Ly7O1x/3/
+          is_build_candidate=$(if [[ $release_version == latest ]] || [[ $release_version =~ ^v[0-9]*\.[0-9]*\.[0-9]*(-(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$ ]]; then echo "true"; fi)
+          echo "Build canidates are SemVer tags with the v prefix (i.e. 1.0.0, 1.0.0-dev1) and the tag latest"
+          if [[ $is_build_candidate ]]; then echo "'${release_version}' is a build candidate."; else echo "'${release_version}' is not a build candidate. Stopping."; fi
+          echo "is_build_candidate=$is_build_candidate" >> $GITHUB_ENV
+          echo "release_version=$release_version" >> $GITHUB_ENV
+
+      - name: Checkout files
+        uses: actions/checkout@v4
+        if: ${{ env.is_build_candidate }}
+
+      - name: Login to Amazon with Access Key
+        uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ env.is_build_candidate }}
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Login to Amazon ECR
+        if: ${{ env.is_build_candidate }}
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build the image
+        id: buildImage
+        if: ${{ env.is_build_candidate }}
+        env:
+          IMAGE_TAG: ${{ env.release_version }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: dioptra/web-application/django
+          BUILD_SHA: ${{ github.sha }}
+        run: |
+          docker build \
+            --build-arg=BUILD_SHA=${BUILD_SHA} \
+            --file docker/Dockerfile.web.remote \
+            --tag "$ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}" .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image_tag=$IMAGE_TAG" >> GITHUB_ENV
+
+      - name: Notify in Slack
+        id: slack
+        if: ${{ env.is_build_candidate }}
+        uses: slackapi/slack-github-action@v2
+        with:
+          errors: true
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+             image_tag: ${{ env.release_version }}
+
