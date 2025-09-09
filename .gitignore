@@ -1,6 +1,7 @@
 *.pyc
 logs/*
 media/*
+media/.gitkeep
 temp/*
 node_modules
 npm-debug.log
