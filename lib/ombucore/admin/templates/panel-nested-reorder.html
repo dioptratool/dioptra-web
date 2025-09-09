@@ -1,0 +1,44 @@
+{% extends 'html-panel.html' %}
+{% load mptt_tags panels_extras panels_form_extras static %}
+
+{% block extrahead %}
+  <link href="{% static "panels/lib/jquery-ui/jquery-ui.sortable.min.css" %}" rel="stylesheet" type="text/css" />
+{% endblock extrahead %}
+
+{% block panel-body %}
+  <div class="nested-reorder">
+    <p>Drag items to sort. They will be saved automatically when dropped.</p>
+    <ol data-href="{{ request.path }}" data-csrf-token="{{ csrf_token }}">
+      {% recursetree nodes %}
+        <li class="" data-pk="{{ node.pk }}">
+          <div>
+            {% with info=node|related_info %}
+              <span class="handle">☰</span>
+              <span class="title" title="{{ info.title }}">{{ info.title }}</span>
+              <span class="operations">
+                {% if obj_actions|get_field:node.pk %}
+                  {% for action_link in obj_actions|get_field:node.pk %}
+                    {{ action_link.render }}
+                  {% endfor %}
+                {% endif %}
+              </span>
+            {% endwith %}
+          </div>
+          {% if not node.is_leaf_node %}
+            <ol>
+              {{ children }}
+            </ol>
+          {% endif %}
+        </li>
+      {% endrecursetree %}
+    </ol>
+  </div>
+{% endblock panel-body %}
+
+{% block panel-foot-wrapper %}{% endblock %}
+
+{% block extrascript %}
+  <script type="text/javascript" src="{% static 'panels/lib/jquery-ui/jquery-ui.sortable.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'panels/lib/jquery.mjs.nestedSortable.js' %}"></script>
+  <script type="text/javascript" src="{% static 'panels/js/panels-nested-reorder.js' %}"></script>
+{% endblock extrascript %}

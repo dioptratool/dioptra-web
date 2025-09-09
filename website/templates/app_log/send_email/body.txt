@@ -1,0 +1,11 @@
+{% load website_tags %}
+{{log_entry.timestamp}}
+
+Actor: {{log_entry.actor_name}}
+Action: {{log_entry.action}}
+Object: {{log_entry.obj}}
+Message: {{log_entry.message|safe}}
+{% if log_entry.link %}Link: {% get_base_url %}{{ log_entry.link }}{% endif %}
+
+
+

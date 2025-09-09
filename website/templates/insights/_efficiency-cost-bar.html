@@ -1,0 +1,16 @@
+{% load analysis humanize i18n panels_extras website_tags %}
+{% spaceless %}
+  <div class="efficiency-bar-identifier progress" data-bar-chart-data="{{ metric.efficiency_bar_chart_data|jsonattr }}" data-output-metric="{{ metric.output_metric_slug }}">
+    <div class="progress-bar hide-caret progress-bar-percent-direct" data-metric-type="direct">
+      <span class="progress-bar-value progress-bar-value-direct">{{ metric.efficiency_bar_chart_data.direct.value }}</span>
+    </div>
+    <div class="progress-bar progress-bar-percent-total" data-metric-type="total">
+      <span class="progress-bar-value progress-bar-value-total">{{ metric.efficiency_bar_chart_data.total.value }}</span>
+    </div>
+    {% if analysis.in_kind_contributions %}
+      <div class="progress-bar hide-caret progress-bar-percent-in_kind" data-metric-type="in_kind">
+        <span class="progress-bar-value progress-bar-value-in_kind">{{ metric.efficiency_bar_chart_data.in_kind.value }}</span>
+      </div>
+    {% endif %}
+  </div>
+{% endspaceless %}

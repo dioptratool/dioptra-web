@@ -1,0 +1,15 @@
+{% load panels_form_extras %}
+
+{% if label == True %}
+    <div class="form-group{% if field.errors %} has-error{% endif %} {% if field.field.disabled %}disabled{% endif %} {% if field.field.required %}{{ form.required_css_class }}{% endif %} {% if field|has_changed %}changed{% endif %}">    
+        <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}">{{ field.label }}</label>
+    </div>
+{% else %}      
+    <div class="form-group{% if field.errors %} has-error{% endif %} {% if field.field.disabled %}disabled{% endif %} {% if field.field.required %}{{ form.required_css_class }}{% endif %} {% if field|has_changed %}changed{% endif %}">    
+      <div class="{{ classes.value }}">
+        {{ field }}
+        {% include 'bootstrap/_help.html' %}
+        {% include 'bootstrap/_errors.html' %}
+      </div>
+    </div>
+{% endif %}

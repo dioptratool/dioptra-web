@@ -1,0 +1,45 @@
+.analysis-table__bulk-assign-btn,
+.analysis-fix-data__submit {
+  @include button-submit();
+  padding-top: 1.1rem;
+  padding-bottom: 1.1rem;
+
+  span {
+    display: inline-block;
+    vertical-align: middle;
+  }  
+
+  svg {
+    display: none;
+  }
+
+  &[disabled] {
+    background-color: $color-smoke;
+    color: $color-mineshaft;
+    pointer-events: none;
+
+    svg {
+      display: inline-block;
+      height: 18px;
+      margin-right: 0.8rem;
+      vertical-align: middle;
+    }
+  }
+}
+
+.analysis-fix-data__select-no-value {
+  background-color: $color-table-accent-blue;
+  border: 1px solid $color-lapis;
+  border-color: $color-lapis;
+  color: $color-lapis;
+}
+
+.analysis-fix-data__footer {
+  background-color: $color-lapis;
+  border-radius: 0 0 4px 4px;
+  color: $color-white;
+  display: flex;
+  justify-content: space-between;
+  min-height: 6.2rem;
+  padding: 1rem 1.1rem 1rem 2.4rem;
+}

@@ -1,0 +1,107 @@
+{% extends "theme_base.html" %}
+{% load analysis help humanize i18n panels_extras panels_form_extras rules static website_tags %}
+
+{% block content %}
+    <div class="insights">
+        <div class="container">
+            <div class="insights__header">
+                <div class="insight__header-primary">
+                    <h1 class="insights__title">{{ analysis.title }}</h1>
+                    <p class="insights__description">{{ analysis.description }}</p>
+                </div>
+                <div class="insights__header-secondary">
+                    <dl class="insights__data-list">
+                        <dd class="insights__data-label">{% translate 'Date Range' %}</dd>
+                        <dl class="insights__data-value">{{ analysis.start_date }} - {{ analysis.end_date }}</dl>
+                        <dd class="insights__data-label">{% translate 'Country' %}</dd>
+                        <dl class="insights__data-value">{{ analysis.country.name }}</dl>
+                        <dd class="insights__data-label">{{ 'Grants'|label_override:'ci_grant_code' }}</dd>
+                        <dl class="insights__data-value">{{ analysis.grants_list|join:", " }}</dl>
+                        {% if analysis.output_count_source %}
+                            <dd class="insights__data-label">{% translate 'Output count data source' %}</dd>
+                            <dl class="insights__data-value">{{ analysis.output_count_source }}</dl>
+                        {% endif %}
+                        <dd class="insights__data-label">{% translate 'Currency' %}</dd>
+                        <dl class="insights__data-value">{% if analysis.get_currency_code_display %}
+                            {{ analysis.get_currency_code_display }} {% else %}
+                            {{ currency_config.name }}{% endif %}</dl>
+
+                    </dl>
+                    <div class="insights__created">
+                        Created by {{ analysis.owner.name }} on {{ analysis.created|date }}
+                    </div>
+                </div>
+            </div>
+            {% for intervention_instance in analysis.interventioninstance_set.all %}
+                <div class="page-break"></div>
+                {% with output_metrics=output_metrics_by_intervention|dict_get:intervention_instance.id %}
+                    <div class="insights__group">
+                        <h2 class="insights__intervention-title">{{ intervention_instance.display_name }}</h2>
+                        <p class="insights__intervention-subtitle">{{ intervention_instance.intervention.name }}</p>
+                        {% with parameters=parameters_lookup|dict_get:intervention_instance.id %}
+                            {% for label, value in parameters.items %}
+                                <p class="insights__intervention-metric"><b>{{ label }}:</b> {{ value }}</p>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+
+                    <div class="insights__group">
+                        <h2 class="insights__heading">{% translate 'Cost Efficiency' %}</h2>
+
+                        {% for metric in output_metrics %}
+                            <div class="insights__efficiency">
+                                <div class="insights__efficiency-items">
+                                    {% if forloop.counter == output_metrics|length %}
+                                        {% include 'insights/_efficiency-items-insights-print.html' with icon=intervention_instance.intervention.icon show_client=True %}
+                                    {% else %}
+                                        {% include 'insights/_efficiency-items-insights-print.html' with icon=intervention_instance.intervention.icon %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if subcomponent_analysis_breakdown.chart_data %}
+                                <div class="insights__subcomponent">
+                                    <h3 class="insights__subtitle">Cost of Each Sub-component,
+                                        per {{ metric.output_metric }}</h3>
+                                    {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_all %}
+                                </div>
+                            {% endif %}
+
+                            {% if forloop.counter == 1 %}
+                                {% include 'insights/_lessons.html' with object=object lesson_field='efficiency_lesson' %}
+                            {% endif %}
+                            {% if metric.insights_chart_data %}
+                                <h3 class="insights__subheading">
+                                    {% translate 'Comparison to Similar Programs' %}{% help 'insights__comparison_to_similar_programs' %}</h3>
+                                {% include 'insights/_efficiency-comparison.html' with metric=metric %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    {% if cost_efficiency_strategies_by_intervention.intervention.id|length > 0 %}
+                        <div class="insights__group">
+                            <h2 class="insights__heading">
+                                {% translate 'Strategies' %}{% help 'insights__strategies' %}</h2>
+                            {% include 'insights/_strategies.html' with strategies=cost_efficiency_strategies_by_intervention.intervention.id %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="insights__group">
+                    <h2 class="insights__heading">{% translate 'Cost Breakdown' %}</h2>
+                    {% include 'insights/_cost-breakdown.html' with cost_breakdown=cost_breakdown|dict_get:intervention_instance.id %}
+
+                    {% include 'insights/_lessons.html' with object=object lesson_field='breakdown_lesson' %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extrascript %}
+    {% get_base_url as base_url %}
+    <script type="text/javascript" src="{{ base_url }}{% static "panels/lib/jquery-3.7.1.min.js" %}"></script>
+    <script type="text/javascript" src="{{ base_url }}{% static "website/scripts.js" %}"></script>
+    <script type="text/javascript" src="{{ base_url }}{% static "website/js/chart.umd.min.js" %}"></script>
+    <script type="text/javascript" src="{{ base_url }}{% static "website/js/insights-charts.js" %}"></script>
+{% endblock extrascript %}

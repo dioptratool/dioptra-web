@@ -1,0 +1,22 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+
+{% block content %}
+  <h1 class="styleguide__title"><a href="{% url 'styleguidetoc' %}">Styleguide</a> / Colors</h1>
+  {% if description %}<p class="styleguide__colors-description">{{ description }}</p>{% endif %}
+  {% for group in colors %}
+    <div class="styleguide__colors-group">
+      {% for color in group %}
+        <div class="styleguide__color-wrapper">
+          <div class="styleguide__colors-heading"><strong>{{ color.name }}</strong></div>
+          <div class="styleguide__colors-label">{{ color.value }}</div>
+          <div class="styleguide__color" style="background-color: {{ color.machineValue }}"></div>
+          <small><ul class="styleguide__colors-usage-list">
+            {% for usage in color.usage %}
+              <li class="styleguide__color-usage">{{ usage }}</li>
+            {% endfor %}
+          </ul></small>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+{% endblock content %}

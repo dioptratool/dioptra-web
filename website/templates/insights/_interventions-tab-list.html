@@ -1,0 +1,23 @@
+{% load analysis help i18n panels_form_extras website_tags %}
+
+{% if analysis.interventioninstance_set.all|length > 1 %}
+    {% for intervention_instance in analysis.interventioninstance_set.all %}
+        {% with metrics=output_metrics_by_intervention|dict_get:intervention_instance.id %}
+            <button
+                    class="insights__intervention-tab"
+                    role="tab"
+                    aria-selected="{% if forloop.counter == 1 %}true{% else %}false{% endif %}"
+                    aria-controls="intervention-panel-{{ intervention_instance.id }}"
+                    id="intervention-tab-{{ intervention_instance.id }}"
+                    tabindex="{% if forloop.counter == 1 %}0{% else %}-1{% endif %}">
+                <p class="intervention-name">{{ intervention_instance.display_name }}</p>
+                <p class="cost-badge">
+                    <strong>
+                        {{ metrics.0.output_cost_all|format_currency:analysis.currency_code }}
+                    </strong>
+                    {{ metrics.0.output_metric.metric_name }}
+                </p>
+            </button>
+        {% endwith %}
+    {% endfor %}
+{% endif %}

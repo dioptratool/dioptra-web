@@ -1,0 +1,13 @@
+{% load panels_extras %}
+
+<div class="panels-relation-widget {{ classes }}">
+    {{ base_widget|safe }}
+    <ul class="panels-relation-widget--results">
+        {% for obj_info in objects_info %}
+            <li class='panels-relation-widget--result level-{{ obj_info.level|default:'0' }}' data-obj-info='{{ obj_info|jsonattr }}'>{{ obj_info.title }}</li>
+        {% endfor %}
+    </ul>
+    <div class="panels-relation-widget--control">
+        {{ control|safe }}
+    </div>
+</div>

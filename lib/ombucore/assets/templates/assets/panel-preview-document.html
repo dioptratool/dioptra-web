@@ -1,0 +1,43 @@
+{% extends 'panel-preview.html' %}
+{% load imagekit static %}
+
+{% block panel-body %}
+    <div class="asset-preview-info">
+        <table class="table">
+            <tr>
+                <td class="active">Type</td>
+                <td>{{ object.file_type|upper }}</td>
+            </tr>
+            {% with url=object.document.url %}
+            <tr>
+                <td class="active">URL</td>
+                <td><a href="{{ url }}" target="_blank">{{ url }}</a></td>
+            </tr>
+            {% endwith %}
+            <tr>
+                <td class="active">Created</td>
+                <td>{{ object.created }}</td>
+            </tr>
+            <tr>
+              <td class="active">Tags</td>
+              <td>
+                {% if object.tags.all %}
+                  {% for tag in object.tags.all %}
+                    {% if tag == object.tags.all.last %}
+                      {{ tag }}
+                    {% else %}
+                      {{ tag }},
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  ----
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+                <td class="active">Folder</td>
+                <td>{% if object.folder %}{{ object.folder }}{% else %}----{% endif %}</td>
+            </tr>
+        </table>
+    </div>
+{% endblock panel-body %}

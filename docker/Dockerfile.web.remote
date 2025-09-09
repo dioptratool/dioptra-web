@@ -1,0 +1,37 @@
+FROM python:3.13-alpine3.22
+
+LABEL maintainer="OMBU"
+
+ARG BUILD_SHA=""
+
+WORKDIR /var/www
+
+RUN mkdir -p /run/nginx
+
+COPY requirements requirements
+
+# postgresql-client is used by the wait-for-postgres.sh script
+# setuptools is an unpinned declared requirement of django-polymorphic that we can't pin in the requirements.txt
+# nginx is used as part of the stack with gunicorn
+
+RUN apk add --no-cache \
+      postgresql-client \
+      nginx \
+      chromium \
+    && apk upgrade \
+    && apk upgrade sqlite cargo \
+    && pip install --no-cache-dir -r requirements/remote.txt \
+    && pip install --no-cache-dir setuptools \
+    && echo $BUILD_SHA > /var/www/GIT_SHA
+
+COPY . .
+
+ENV DJANGO_SETTINGS_MODULE=website.settings.remote
+
+RUN ISO_CURRENCY_CODE=none DJANGO_SECRET_KEY=none python manage.py collectstatic --noinput
+
+EXPOSE 5000
+
+COPY ./docker/nginx.conf /etc/nginx/nginx.conf
+
+CMD ["sh", "docker/start-remote.sh"]

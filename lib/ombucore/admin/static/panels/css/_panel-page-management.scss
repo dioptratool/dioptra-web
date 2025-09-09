@@ -1,0 +1,122 @@
+.panel-page-management {
+  padding-top: $panel-padding;
+}
+
+html.is-in-panel .panel-page-management--heading {
+  font-size: 18px;
+  font-weight: $font-weight-regular;
+  line-height: 1.111111111;
+  margin-bottom: 20px;
+}
+
+html.is-in-panel table.panel-page-management--localizations {
+  margin-bottom: 20px;
+  width: 100%;
+
+  a {
+    color: $panel-blue-new-2;
+  }
+
+  th {
+    color: $panel-gray-dark;
+    font-size: 12px;
+    line-height: 1.666666667;
+    padding: 0 20px 0 0;
+    text-transform: uppercase;
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+    span {
+      border-bottom: 1px solid $panel-gray-sidebar-bg;
+      display: block;
+      font-weight: $font-weight-medium;
+      margin-bottom: 15px;
+    }
+  }
+
+  td {
+    font-size: 14px;
+    line-height: 1.428571429;
+    padding: 5px 20px 5px 0;
+    vertical-align: top;
+
+    svg {
+      margin-right: 8px;
+      margin-top: -2px;
+    }
+
+    svg,span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    &:first-child a {
+      font-weight: $font-weight-medium;
+    }
+
+    form.inline {
+      display: inline;
+    }
+    button.link {
+      color: $panel-blue-new-2;
+      background-color: transparent;
+      border: 0;
+      margin: 0;
+      padding: 0;
+
+      &[disabled] {
+        color: $panel-gray-dark;
+      }
+    }
+
+  }
+}
+
+.panel-page-management--action-groups {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+.panel-page-management--action-group {
+  min-width: 220px;
+}
+
+html.is-in-panel .panel-page-management--action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    font-size: 12px;
+    line-height: 1.666666667;    
+    margin-bottom: 10px;
+  }
+
+  a {
+    color: $panel-blue-new-2;
+  }
+}
+
+.panel-page-management--info {
+  dt {
+    color: rgb(136, 136, 136);
+    clear: left;
+    float: left;
+    font-size: 12px;
+    font-weight: $font-weight-regular;
+    line-height: 1.666666667;    
+    margin-bottom: 10px;
+    margin-right: 12px;
+    min-width: 62px;
+    text-align: right;
+  }
+
+  dd {
+    float: left;
+    font-size: 14px;
+    line-height: 1.428571429;
+  }
+}

@@ -1,0 +1,9 @@
+{% if field.help_text %}
+    {% if not hide_help %}
+        <div class="help-block">
+            <p>
+                {{ field.help_text|safe }}
+            </p>
+        </div>
+    {% endif %}
+{% endif %}

@@ -1,0 +1,208 @@
+$header-link-padding: 2.1rem;
+$header-link-border-height: 0.6rem;
+.header {
+  background-color: $color-light-black;
+}
+
+.header__inner {
+  align-items: flex-end;
+  display: flex;
+  min-height: 13rem;
+  justify-content: space-between;
+}
+
+// Fix for IE11 flexbox min-height bug
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .header__inner {
+    height: 13rem;
+  }
+}
+@media all and (max-width: $breakpoint-desktop - 1px) and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .header__inner {
+    height: 15.4rem;
+  }
+}
+
+.header__primary {
+  align-items: flex-end;
+  display: flex;
+  justify-content: flex-start;
+
+  @media (max-width: $breakpoint-desktop - 1px) {
+    flex-wrap: wrap;
+  }
+}
+
+.header__secondary {
+  align-items: flex-end;
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: $breakpoint-desktop - 1px) {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+.header__logo-link {
+  display: block;
+
+  svg {
+    height: 100px;
+    margin-bottom: 1.5rem;
+    vertical-align: top;
+    width: auto;
+  }
+
+  @media (max-width: $breakpoint-desktop - 1px) {
+    margin-top: 1rem;
+
+    svg {
+      height: 70px;
+      margin-bottom: 3rem;
+    }
+  }
+}
+
+.header__navigation {
+  margin-top: 0;
+  margin-bottom: 0;
+
+  @media (max-width: $breakpoint-desktop - 1px) {
+    padding-left: 1.6rem;
+    width: 100%;
+  }
+}
+
+.header__navigation-item {
+  display: inline-block;
+  margin: 0 2.9rem 0 0;
+  padding: 0;
+
+  @media (max-width: $breakpoint-notebook - 1px) {
+    margin-right: 0.8rem;
+  }
+}
+
+.header__navigation-item--user {
+  padding-right: 1.2rem;
+  margin-right: 1.2rem;
+  position: relative;
+
+  &:after {
+    border-left: 1px solid $color-smoke;
+    content: "";
+    height: 1.6rem;
+    right: 0;
+    position: absolute;
+    top: 0;
+  }  
+
+  @media (max-width: $breakpoint-desktop - 1px) {
+    padding-right: 0.6rem;
+    margin-right: 0.6rem;
+  }
+}
+
+.header__navigation-link {
+  background: transparent;
+  border: none;
+  border-bottom: $header-link-border-height solid transparent;
+  display: block;
+  color: $color-smoke;
+  font-weight: $font-weight-bold;
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+  padding-bottom: $header-link-padding;
+  padding-top: 0;
+  text-decoration: none;
+  @include font-size(14, 1.1429);
+
+  &:focus {
+    color: $color-smoke;
+    @include default-focus-dark();
+  }
+
+  &:hover {
+    color: $color-white;
+    text-decoration: none;
+  }
+
+  &.header__navigation-link--active {
+    border-color: $color-blue;
+    color: $color-white;
+    text-decoration: none;
+    
+    svg * {
+      stroke: $color-white;
+    }
+  }
+
+  svg {
+    margin-left: 1rem;
+    * {
+      stroke: $color-smoke;
+    }
+  }
+}
+
+.dropdown.header__navigation-item {
+  position: static;
+}
+
+.header__insights-dropdown {
+  background-color: $color-modal;
+  border: none;
+  border-radius: 0;
+  box-shadow: 0px 0px 15px rgba(17, 17, 17, 0.5);
+  left: 50%;
+  margin-top: 0;
+  max-width: 100vw;
+  padding-top: 1.3rem;
+  padding-bottom: 3rem;
+  top: auto;
+  transform: translateX(-50%);
+  width: $breakpoint-tablet;
+
+  @media (min-width: $breakpoint-notebook) {
+    columns: 4;
+    width: 105rem;
+  }
+}
+
+.header__insights-group {
+  padding-left: 2rem;
+  padding-right: 2rem;
+  -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+                 break-inside: avoid;
+}
+
+.header__insights-group-title {
+  border-bottom: 1px solid $color-smoke;
+  font-weight: $font-weight-bold;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: 0.2rem;
+  @include font-size(16, 1.3125);
+}
+
+.header__insights-list {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+}
+
+.header__insights-list-item {
+  margin-bottom: 0;
+  padding: 0;
+  @include font-size(14, 1.2858);
+}
+
+.header__insights-link {
+  font-weight: $font-weight-bold;
+  display: inline-block;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  text-decoration: none;
+}

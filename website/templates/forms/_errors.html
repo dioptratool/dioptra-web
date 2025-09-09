@@ -1,0 +1,20 @@
+{% load analysis humanize i18n %}
+{% if errors|length %}
+    <div class="form__errors">
+        {% include 'icons/error.svg' %}
+        <ul class="form__errors-list">
+          {% if errors|length > 10 %}
+            {% for error in errors|slice:":10" %}
+                <li class="form__errors-list-item"><em><strong>{{ error }}</strong></em></li>
+            {% endfor %}
+            {% with more_errors_count=errors|length|subtract:10|intcomma %}
+              <li class="form__errors-list-item"><em><strong>{% blocktranslate %}And {{ more_errors_count }} more errors.{% endblocktranslate %}</strong></em></li>
+            {% endwith %}
+          {% else %}
+            {% for error in errors %}
+                <li class="form__errors-list-item"><em><strong>{{ error }}</strong></em></li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+    </div>
+{% endif %}

@@ -1,0 +1,90 @@
+.analysis__main .tag-editor {
+  min-height: $input-height;
+  padding: 0.4rem;
+  @include font-size(13, 1.4);
+
+  input[type="text"] {
+    height: 18.2px;
+    min-height: 0;
+
+    &:focus,&.focus {
+      outline: 0;
+    }
+  }
+
+  &:focus-within {
+    @include default-focus();
+  }
+
+  &.disabled {
+    pointer-events: none;
+  }
+
+  .placeholder {
+    padding: 0;
+  }
+
+  li {
+    color: $color-mineshaft; 
+    height: 3rem;
+    margin: 0;
+    padding: 0;
+    @include font-size(13, 1.4);
+
+    &:nth-child(2) {
+      .tag-editor-spacer {
+        display: none;
+      }
+    }
+  }
+
+  .tag-editor-tag,
+  .tag-editor-delete {
+    background-color: $color-moonstone;
+    border: 1px solid $color-smoke;
+    color: $color-mineshaft; 
+    height: 3rem;
+    padding-top: 5px;
+    padding-bottom: 4px;
+    @include font-size(13, 1.4);
+  }
+
+  &.disabled {
+    .tag-editor-tag,
+    .tag-editor-delete {    
+      background-color: $color-gray;
+    }
+  }  
+
+  .tag-editor-tag.active {
+    border: none;
+  }
+
+  .tag-editor-tag {
+    border-right: none;
+  }
+
+  &.disabled .tag-editor-tag {
+    border-right: 1px solid $color-smoke;
+    border-radius: 2px;
+  }
+
+  .tag-editor-delete {
+    border-left: none;
+    padding-left: 1rem;
+
+    i:before {
+      color: $color-smoke;
+      font-size: 14px;
+      line-height: 14px;
+    }
+
+    i:hover:before {
+      color: $color-lichen;
+    }
+  }
+
+  &.disabled .tag-editor-delete {
+    display: none;
+  }
+}

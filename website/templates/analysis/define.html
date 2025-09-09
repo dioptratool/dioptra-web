@@ -1,0 +1,89 @@
+{% extends "analysis/base.html" %}
+{% load analysis help i18n panels_form_extras %}
+
+{% block extrastyle %}
+    {{ form.media.css }}
+{% endblock extrastyle %}
+
+{% block extrascript %}
+    {{ form.media.js }}
+{% endblock extrascript %}
+
+{% block analysis_header %}
+    <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+        <h1 class="analysis__title">{{ title }}</h1>
+        {% help 'step_guidance__define_analysis' %}
+    </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+    <form action="{{ request.path }}" method="POST" class="warn-unsaved-changes" novalidate data-show-loading-on-submit>
+      {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="help-block errors">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                      <li><em>{{ error }}</em></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row">
+
+            <div class="col-md-6">
+                {% include 'forms/_field.html' with field=form.title|add_input_classes help_identifier='define_analysis__title' %}
+                {% include 'forms/_field.html' with field=form.description|add_input_classes %}
+                {% include 'forms/_field.html' with field=form.intervention_data|add_input_classes help_identifier='define_analysis__intervention_to_be_analyzed' %}      
+            </div>
+
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6">
+                      {% include 'forms/_field.html' with field=form.start_date|add_input_classes help_identifier='define_analysis__start_date' %}
+                    </div>
+                    <div class="col-md-6">
+                      {% include 'forms/_field.html' with field=form.end_date|add_input_classes %}
+                    </div>
+                </div>
+
+              {% include 'forms/_field.html' with field=form.country|add_input_classes help_identifier='define_analysis__country' %}
+              {% include 'forms/_field.html' with field=form.grants|add_input_classes help_identifier='define_analysis__grants' %}
+
+              {% if form.data_loaded %}
+                <p class="analysis__define-loaded-message"><em>{% translate 'If you need to load transactions with a different date range into the analysis, go to the Dashboard and Duplicate this analysis with a different date range.' %} {% translate 'To change other locked parameters, you need to clear all data on the' %} <a class="analysis__define-reset" href="{% url 'analysis-load-data' analysis.pk %}"><strong>{% translate 'Load Data step' %}</strong></a>{% translate ', which will clear all your work in all subsequent steps of the analysis.' %}</em></p>
+              {% endif %}
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <details class="analysis-toggle">
+              <summary>Additional Options</summary>
+              {% include 'forms/_field.html' with field=form.analysis_type|add_input_classes help_identifier='define_analysis__analysis_type' %}
+              {% include 'forms/_field.html' with field=form.output_count_source|add_input_classes help_identifier='define_analysis__output_count_data_source' %}
+                
+              <div class="analysis__additional_costs">
+                {% include 'forms/_label.html' with id_for_label='analysis__additional_costs__label' label='Would you like to include the value of additional cost items in this analysis?' optional=True %}
+                {% include 'forms/_field.html' with field=form.client_time formgroup_class='form__inline_checkbox__container margin-y-0' classes=form.CSS_CLASSES.inline_checkbox %}
+                {% include 'forms/_field.html' with field=form.in_kind_contributions formgroup_class='form__inline_checkbox__container margin-y-0' classes=form.CSS_CLASSES.inline_checkbox %}
+                {% include 'forms/_field.html' with field=form.other_hq_costs formgroup_class='form__inline_checkbox__container margin-y-0' classes=form.CSS_CLASSES.inline_checkbox %}
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="analysis__actions">
+          <button type="submit" class="analysis__submit">Save</button>
+          {% if analysis.pk %}
+          {% with next=step.get_next %}
+              {% if next and next.dependencies_met %}
+                <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next" href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</a>
+              {% else %}
+                <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+              {% endif %}
+          {% endwith %}
+          {% endif %}
+        </div>
+    </form>
+{% endblock analysis_content %}

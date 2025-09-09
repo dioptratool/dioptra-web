@@ -1,0 +1,615 @@
+/**
+ * Form Tabs with `error` and `changed` styles.
+ */
+
+.help-block {
+  margin: 0 0 2.0em 0;
+  font-weight: $font-weight-light;
+  font-style: italic;
+
+  &, .has-error & {
+    color: lighten($panel-charcoal, 30);
+  }
+
+  p, ul, li {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  &.intro {
+    font-size: 18px;
+  }
+
+  &.error {
+    color: $state-danger-text;
+  }
+
+  .form-group & {
+    margin-top: 0.5em;
+  }
+
+  sup {
+    font-style: normal;
+    color: $color-ombu-orange;
+  }
+
+  &.footnote {
+    margin-top: 4.0em;
+  }
+
+  + .help-block {
+    margin-top: -1.5em;
+  }
+}
+
+.checkbox + .help-block {
+  margin-top: -0.5em;
+  padding-left: 20px;
+}
+
+html.is-in-panel {
+  .text-danger {
+    color: $color-ombu-red;
+    font-weight: $font-weight-medium;
+  }
+
+  .help-block.errors li {
+    font-weight: $font-weight-medium;
+    margin: 0.5em 0;
+
+    em {
+      display: inline-block;
+      background-color: $color-ombu-red;
+      padding: 0.25em 0.5em;
+      color: $panel-white;
+      border-radius: 3px;
+    }
+  }
+}
+
+.form-no-tabs {
+    padding-top: $panel-padding * 0.5;
+    padding-bottom: $panel-padding * 0.5;
+}
+
+.form-tabs {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .form-tabs-tabs {
+    flex: 0 0 auto;
+    padding-top: $panel-padding * 0.75;
+    padding-bottom: $panel-padding * 0.75;
+    border-bottom: 1px solid $panel-gray-dark;
+
+    [data-tab] {
+      color: rgba($text-color, 0.5);
+      display: block;
+      float: left;
+      font-family: $font-family-sans-serif;
+      font-weight: $font-weight-light;
+      cursor: pointer;
+      position: relative;
+      padding: calc($panel-padding / 2);
+
+      &:hover,
+      &.active {
+        color: $panel-blue;
+      }
+
+      &:before {
+        content: '';
+        height: 100%;
+        width: 2px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+      }
+      &.error:before {
+        display: block;
+        background-color: $state-danger-text;
+      }
+      &.changed:before {
+        display: block;
+        background-color: $brand-primary;
+      }
+
+    }
+  }
+
+  .form-tabs-contents {
+    flex: 1 1 auto;
+    position: relative;
+    margin: 0 (-$panel-padding);
+    padding: 0 $panel-padding;
+
+    .form-tabs-contents-scroller {
+      overflow: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    [data-tab] {
+      display: none;
+      padding: $panel-padding;
+
+      &.active {
+        display: block;
+      }
+    }
+
+    &:before {
+      @include scrolling-shadow-top();
+      left: 0;
+      right: $panel-padding;
+    }
+    &.contents-at-top {
+      &:before {
+        opacity: 0;
+        top: -$panel-shadow-height;
+      }
+    }
+
+    &:after {
+      @include scrolling-shadow-bottom();
+      left: 0;
+      right: $panel-padding;
+    }
+    &.contents-at-bottom {
+      &:after {
+        opacity: 0;
+        bottom: -$panel-shadow-height;
+      }
+    }
+
+  }
+
+}
+
+@include desktop {
+
+  .form-tabs {
+    display: flex;
+    flex-direction: row;
+    margin-right: -$panel-padding;
+
+    .form-tabs-tabs {
+      flex: 0 0 auto;
+      width: 30%;
+      padding-top: $panel-padding * 0.75;
+      padding-bottom: $panel-padding * 0.75;
+      border-bottom: 0;
+
+      [data-tab] {
+        float: none;
+        padding: calc($panel-padding/4);
+        padding-left: 0;
+        font-size: 18px;
+
+        &:before {
+          @include dot();
+          left: calc($panel-padding/-2);
+          margin-left: calc($panel-form-dot-size/-2);
+          display: none;
+        }
+      }
+    }
+
+    .form-tabs-contents {
+      flex: 1 1 auto;
+      border-left: 1px solid $panel-gray-medium;
+      margin: 0;
+
+      [data-tab] {
+        padding: $panel-padding;
+      }
+    }
+  }
+}
+
+
+
+
+/**
+ * Panel Form styles.
+ */
+.panel-form {
+
+  .form-group {
+    position: relative;
+
+    &:after {
+      @include dot();
+      left: -$panel-padding;
+      margin-left: calc($panel-form-dot-size/2);
+      top: 9px - calc($panel-form-dot-size/2);
+      transform: none;
+      display: none;
+    }
+
+    &.has-error:after {
+      display: block;
+      background-color: $state-danger-text;
+    }
+    &.changed:after {
+      display: block;
+      background-color: $brand-primary;
+    }
+
+    .control-label {
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: $font-weight-regular;
+      color: #888;
+      display: block;
+
+      em {
+        font-style: normal;
+        text-transform: none;
+        color: #999;
+
+        sup {
+          border-bottom: 0;
+          font-size: 11px;
+          line-height: 1;
+          cursor: help;
+          color: $color-ombu-orange;
+        }
+
+        abbr {
+          border-bottom: 0;
+        }
+      }
+    }
+    .form-control {
+      @include box-shadow(none);
+      border-radius: $border-radius-small;
+
+      &[type="number"] {
+        max-width: 10.0em;
+      }
+
+      &:focus {
+        border-color: darken($input-border, 10%);
+        @include default-focus();
+      }
+
+      &.html-output-widget {
+        border: none;
+        padding: 0;
+        background-color: transparent;
+        border-radius: 0;
+      }
+    }
+
+
+    select.form-control {
+      width: auto;
+    }
+
+    &.has-error {
+      .control-label {
+        color: $text-color;
+      }
+      .form-control {
+        border-color: $input-border;
+        &:focus {
+          border-color: darken($input-border, 10%);
+          @include default-focus();
+
+        }
+      }
+    }
+
+  }
+
+  .form-group.disabled {
+    .nested-polymorphic-reorder--control a {
+      display: none;
+    }
+    
+    .ui-sortable {
+      .handle,
+      .operations {
+        display: none;
+      }
+    }
+  }
+
+  .error-msg {
+    display: inline-block;
+    margin-left: $input-height-base;
+  }
+
+}
+
+@include desktop {
+  .panel-form {
+    .form-group {
+
+      &:after {
+        @include dot();
+        left: calc($panel-padding/-2);
+        margin-left: calc($panel-form-dot-size/-2);
+        top: 9px - calc($panel-form-dot-size/2);
+        transform: none;
+        display: none;
+      }
+
+      &.changed:after {
+        display: block;
+        background-color: $brand-primary;
+      }
+      &.has-error:after {
+        display: block;
+        background-color: $state-danger-text;
+      }
+
+      .control-label {
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+      .form-control {
+        @include box-shadow(none);
+        &:focus {
+          border-color: darken($input-border, 10%);
+          @include default-focus();
+        }
+      }
+
+      &.has-error {
+        .control-label {
+          color: $text-color;
+        }
+        .form-control {
+          border-color: $input-border;
+          &:focus {
+            border-color: darken($input-border, 10%);
+            @include default-focus();
+
+          }
+        }
+      }
+
+    }
+
+    .error-msg {
+      display: inline-block;
+      margin-left: $input-height-base;
+    }
+
+  }
+}
+
+html.is-in-panel {
+  a.btn {
+    border-radius: $border-radius-small;
+    min-width: 6.0em;
+
+    &.btn-cancel {
+      background: $btn-cancel-bg;
+      border-color: $btn-cancel-border;
+      color: $btn-cancel-color;
+
+      &:hover, &:focus {
+        background: darken($btn-cancel-bg, 10%);
+        color: $btn-cancel-color;
+      }
+
+      &:focus {
+        @include default-focus();
+      }
+    }
+
+    &.btn-basic {
+      background-color: $panel-gray-medium;
+      color: $panel-white;
+      
+      &:hover, &:focus {
+        background-color: darken($panel-gray-dark, 10);
+      }    
+
+      &:focus {
+        @include default-focus();
+      }  
+    }
+  }
+
+  a.btn {
+    color: $btn-default-color;
+
+    &.btn-success,
+    &.btn-info,
+    &.btn-warning,
+    &.btn-secondary {
+      color: #FFF;
+    }
+
+    &.btn-default {
+
+      &:hover,
+      &:focus {
+        background-color: darken($btn-default-bg, 10%);
+        color: $btn-default-color;
+      }
+    }
+
+    &.btn-primary {
+      color: $btn-primary-color;
+    }
+
+    &.btn-danger {
+      color: $btn-danger-color;
+    }
+
+    &.btn-secondary {
+      background-color: rgb(128, 128, 128);
+      font-weight: $font-weight-regular;
+
+      &:hover,
+      &:focus {
+        background-color: darken(rgb(128, 128, 128), 10%);
+      }
+    }
+  }
+
+  // button groups
+  .btn-group .btn.btn-cancel {
+    border: 1px solid $panel-gray-sidebar;
+    color: $panel-gray-sidebar;
+  }    
+
+  .btn-group .dropdown-menu {
+    padding: 0.25rem 0.5rem;
+    bottom: calc(100% + 10px);
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.3);
+
+    .btn {
+      margin: 0.25rem 0;
+      width: 100%;
+    }
+
+    &:before {
+      position: absolute;
+      bottom: -7px;
+      right: 16px;
+      display: inline-block;
+      border-right: 7px solid transparent;
+      border-top: 7px solid #CCC;
+      border-left: 7px solid transparent;
+      border-bottom-color: rgba(0, 0, 0, 0.2);
+      content: '';
+    }
+
+    &:after {
+      position: absolute;
+      bottom: -6px;
+      right: 17px;
+      display: inline-block;
+      border-right: 6px solid transparent;
+      border-top: 6px solid white;
+      border-left: 6px solid transparent;
+      content: '';
+    }    
+  }
+
+  .panel-foot-left {
+    .btn.btn-cancel {
+      margin-right: 0;
+      min-width: 0;
+    }
+  }
+
+  .panel-foot-right > .btn-group:last-child,
+  .panel-foot-right > .btn:last-child {
+    margin-right: 0;
+  }
+
+  .delete-confirmation {
+    margin-top: $panel-padding;
+    margin-bottom: $panel-padding;
+  }
+
+  .previewable-file-widget input[type="file"] {
+    color: transparent;
+    opacity: 1;
+    text-indent: -9999px;
+
+    &:focus,
+    &:active {
+      @include default-focus();
+
+    }
+  }
+}
+
+@include desktop {
+  html.is-in-panel {
+    .btn {
+      min-width: 8.0em;
+    }
+  }
+}
+
+ul.any_urlfield-url_type.inline {
+  list-style: none;
+  margin: 0 0 0.5em 0;
+  padding: 0;
+
+  li {
+    list-style: none;
+    margin: 0 1em 0 0;
+    padding: 0;
+    display: inline;
+  }
+}
+
+.form-control.flatpickr-input[readonly] {
+  background-color: #FFFFFF;
+}
+
+// Overrides for buttons and errors in panel footer
+.panel-foot {
+  .btn,
+  .btn-group {
+    align-self: center;
+    flex: 0 0 auto;
+    margin-right: 20px;
+
+    &.btn-cancel {
+      text-align: left;
+    }
+  }
+
+  .btn-group .btn:last-of-type {
+    margin-right: 0;
+  }
+
+  .error-msg {
+    align-self: center;
+    flex: 1 1 auto;
+    margin-left: 0;
+  }
+}
+
+.panel-foot--help-text {
+  float: left;
+  padding-right: 30px;
+  width: 50%;
+}
+
+// Overrides button layout for Operations tab
+// @TODO Generalize layout based on class `panel--form-group--btn-inline`
+[data-tab="operations"] {
+  .form-group > div {
+    display: flex;
+
+    input {
+      align-self: flex-start;
+      flex: 0 0 auto;
+      width: 140px;
+
+      + div {
+        flex: 1 1 auto;
+        margin-top: 0;
+        padding-left: 30px;
+      }
+    }
+  }
+}
+
+// Override for ckeditor focus state
+.cke_focus {
+  @include default-focus();
+}

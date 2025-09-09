@@ -1,0 +1,130 @@
+{% extends "subcomponent-cost-analysis/subcomponent_base.html" %}
+{% load analysis help i18n panels_form_extras %}
+
+{% block analysis_navigation %}
+    <div class="analysis-navigation">
+        <div class="container">
+            <div class="analysis-navigation__inner">
+                <div class="analysis-navigation__summary">
+                    {# Nav text (e.g. "Choose data source") #}
+                    {% if analysis.pk %}
+                        <strong>{{ analysis.title }}</strong>
+                        <span class="analysis__navigation-intervention-name">{{ analysis.intervention_name }}</span>
+                        <span class="analysis__navigation-intervention-name">Sub-component Cost Analysis</span>
+                    {% endif %}
+                </div>
+
+                {% if subcomponent_cost_analysis.pk %}
+                    <div class="analysis-navigation__prev-next-wrapper">
+                        {% with prev=step.get_prev %}
+                            {% if prev %}
+                                {% if prev.dependencies_met %}
+                                    <a class="analysis-navigation__prev-next analysis-navigation__prev-next--prev"
+                                       href="{{ prev.get_href }}">{% include 'icons/caret-left-thin.svg' %}<strong>Back</strong></a>
+                                {% else %}
+                                    <span class="analysis-navigation__prev-next analysis-navigation__prev-next--prev disabled"
+                                          disabled>{% include 'icons/caret-left-thin.svg' %}<strong>Back</strong></span>
+                                {% endif %}
+                            {% endif %}
+                        {% endwith %}
+
+                        {% with next=step.get_next %}
+                            {% if next %}
+                                {% if next.dependencies_met %}
+                                    <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next"
+                                       href="{{ next.get_href }}"><strong>Next</strong>{% include 'icons/caret-right-thin.svg' %}
+                                    </a>
+                                {% else %}
+                                    <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled"
+                                          disabled><strong>Next</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+                                {% endif %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+{% endblock analysis_navigation %}
+
+{% block analysis_header %}
+    <h1 class="analysis__subcomponent__title">{{ step.page_title }}</h1>
+    <div class="analysis__subcomponent__help_text">
+        <em>{{ step.get_help_text }}</em>
+    </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+    {% with confirmed=analysis.subcomponent_cost_analysis.subcomponent_labels_confirmed %}
+    {% with subcomponent_labels=subcomponent_cost_analysis.subcomponent_labels %}
+        <h2 class="analysis__subcomponent__subtitle">Sub-component Labels
+            {% if confirmed %}
+                <span class="confirmed-labels__badge">
+                    {{ subcomponent_labels|length }} Labels Confirmed
+                </span>
+            {% endif %}
+        </h2>
+        <ul class="analysis__subcomponent__labels">
+            {% for subcomponent_label in subcomponent_labels %}
+                <li class="analysis__subcomponent__label{% if confirmed %} analysis__subcomponent__label--confirmed{% endif %}">{{ subcomponent_label }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="analysis-table__actions">
+            {% if not confirmed %}
+                <form class="analysis-table__actions__label-form" action="{{ request.path }}" method="POST" novalidate>
+                    {% csrf_token %}
+                    {% include 'forms/_field.html' with field=form.subcomponent_labels_confirmed %}
+                    <button type="submit" class="analysis__submit">Confirm Labels</button>
+                    <button class="analysis__button"
+                        href="{% url 'subcomponent-cost-analysis-label-edit' pk=analysis.pk subcomponent_pk=subcomponent_cost_analysis.pk %}"
+                        data-panels-trigger data-panels-reload-on="submitted">
+                        <span>Edit Labels</span>
+                    </button>
+                    <p class="help_text"><em>Once confirmed, only the text of the labels may be edited. The number of labels cannot be changed without resetting the analysis.</em></p>
+                </form>
+            {% else %}
+                <div class="analysis-table__confirmed-labels">
+                    <button class="analysis__button"
+                        href="{% url 'subcomponent-cost-analysis-label-edit-only' pk=analysis.pk subcomponent_pk=subcomponent_cost_analysis.pk %}"
+                        data-panels-trigger data-panels-reload-on="submitted">
+                        <span>Edit Labels</span>
+                    </button>
+                    <p class="help_text">
+                        <a class="confirmed-labels__edit-button" href="{% url 'subcomponent-cost-analysis-delete' analysis.pk analysis.subcomponent_cost_analysis.pk %}"
+                            data-panels-trigger="" data-panels-reload-on="deleted">{% spaceless %}
+                            Reset Sub-component Analysis
+                        {% endspaceless %}</a>  
+                        <em>Resetting the sub-component analysis will clear all work and return sub-component labels to defaults.</em>
+                    </p>
+                </div>
+            {% endif %}
+            <div class="analysis__actions">
+                {% with next=step.get_next %}
+                    {% if next and next.dependencies_met %}
+                        <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next"
+                        href="{{ next.get_href }}"><strong>{% translate "Next" %}</strong>{% include 'icons/caret-right-thin.svg' %}
+                        </a>
+                    {% else %}
+                        <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>{% translate "Next" %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    {% endwith %}
+    {% endwith %}
+{% endblock analysis_content %}
+
+{% block extrascript %}
+<script type="text/javascript">
+    document.querySelectorAll('button[data-confirm-dialog]').forEach(button => {
+        button.addEventListener("click", e => {
+            if (!confirm(button.getAttribute('data-confirm-dialog'))) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        })
+    })
+</script>
+{% endblock extrascript %}

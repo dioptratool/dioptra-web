@@ -1,0 +1,42 @@
+{% extends "theme_base.html" %}
+
+{% block title %}{{ intervention.name }}{% endblock %}
+
+{% block header %}{% include 'layout/_header.html' %}{% endblock %}
+{% load analysis help i18n panels_form_extras static %}
+
+{% block content_top %}{% endblock %}
+
+{% block content %}
+    <div class="insights">
+        <div class="container">
+            <div class="insights__header">
+                <div class="insight__header-primary">
+                    <h1 class="insights__title">{{ intervention.name }}</h1>
+                    <p class="insights__description">{{ intervention.description }}</p>
+                </div>
+            </div>
+            {% if show_cost_efficiency_comparison %}
+                <div class="insights__group">
+                    <h2 class="insights__heading">{% translate 'Cost Efficiency Comparison' %}{% help 'program_design_lessons__cost_efficiency_comparison' %}</h2>
+                    {% for metric in output_metrics %}
+                        {% if metric.insights_chart_data %}
+                            {% include 'insights/_efficiency-comparison.html' with metric=metric %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if cost_efficiency_strategies|length > 0 %}
+                <div class="insights__group">
+                    <h2 class="insights__heading">{% translate 'Strategies' %}{% help 'program_design_lessons__strategies' %}</h2>
+                    {% include 'insights/_strategies.html' with strategies=cost_efficiency_strategies %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extrascript %}
+    <script type="text/javascript" src="{% static 'website/js/chart.umd.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'website/js/insights-charts.js' %}"></script>
+{% endblock extrascript %}

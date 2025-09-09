@@ -1,0 +1,21 @@
+<div class="card">
+  <a href="#" class="card__link">
+    <div class="card__link-inner">
+      <div class="card__header">
+        <div class="card__subtitle">
+          <div class="card__study">Ex Post Evaluation 2016</div>
+          <div class="card__role">Lead</div>
+        </div>
+        <div class="card__title">1 - Ex Ante</div>
+      </div>
+    </div>
+  </a>
+  <!-- if card warnings -->
+    <div class="card__warning">{% spaceless %}
+      {% include 'svg/warning.svg.html' %}
+      <span class="card__warning-label">QC Failure</span>
+      <a href="#" class="card__warning-link">More Info</a>{% endspaceless %}
+    </div>
+  <!-- end if card warnings -->
+  <a href="#" class="card__folder-link btn-secondary btn-icon" data-clipboard-text="">{% include 'svg/path.svg.html' %}<span>Copy Folder Path</span></a>
+</div>

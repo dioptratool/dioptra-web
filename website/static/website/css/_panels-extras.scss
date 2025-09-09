@@ -1,0 +1,228 @@
+.filter-list table.list {
+  border-spacing: 1px;
+  border-collapse: separate;
+
+  thead th {
+    font-weight: bold;
+    text-transform: none;
+  }
+}
+
+html.is-in-panel .panel-head-auxiliary {
+  a {
+    background-color: $color-topaz;
+    border-radius: 2px;
+    color: $color-white;
+    display: inline-block;
+    font-weight: bold;
+    padding: 16px 32px;
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 1.125;    
+
+    &:hover {
+      background-color: darken($color-topaz, 10%);
+      color: $color-white;
+    }
+  }
+}
+
+.btn-primary[disabled] {
+  &,&:hover {
+    background-color: $color-smoke;
+    border-color: $color-smoke;
+  }
+}
+
+.clearable-file__label,
+input[type="file"].clearable-file__upload {
+  display: inline;
+}
+
+.filter-list table.list .mark-trigger .operations a.operations-primary {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.field-label-overrides__fieldset {
+  align-items: center;
+  display: flex;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.field-label-overrides__label {
+  flex: 1 1 auto;
+  padding-right: 10px;
+
+  > .form-group {
+    margin-bottom: 0;
+  }
+
+  label.control-label {
+    margin-bottom: 0;
+  }
+}
+
+.field-label-overrides__checkbox {
+  flex: 0 0 auto;
+
+  > .form-group {
+    margin-bottom: 0;
+  }  
+}
+
+.field-label-overrides__text-input {
+  flex: 0 0 200px;
+  margin-left: 36px;
+
+  > .form-group {
+    margin-bottom: 0;
+  }
+}
+
+.filter-list-column-nowrap {
+  white-space: nowrap;
+}
+
+.panel-wrapper .panel-head .panel-head-title {
+  min-width: 0;
+}
+
+.currency-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 6px 6px;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+  background-color: #e9ecef;
+}
+
+.input-group-text__before {
+  border-bottom: 1px solid #ced4da;
+  border-top: 1px solid #ced4da;
+  border-left: 1px solid #ced4da;
+  border-bottom-left-radius: 3px;
+  border-top-left-radius: 3px;
+}
+
+.input-group-text__after {
+  border-bottom: 1px solid #ced4da;
+  border-top: 1px solid #ced4da;
+  border-right: 1px solid #ced4da;
+  border-bottom-right-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.border-radius-left {
+  border-radius: 3px 0 0 3px !important;
+}
+
+.border-radius-right {
+  border-radius: 0 3px 3px 0 !important;
+}
+
+.panel-analysis-intervention {
+  .panel-wrapper .panel-head .panel-head-auxiliary a {
+    background: none;
+    font-size: 20px;
+    font-weight: 400;
+    color: #66ADFF;
+    padding: 0;
+  }
+  .panel-body .panels-relation-widget--result {
+    color: #555;
+    background-color: #F1F7FD;
+    border-radius: 3px;
+    padding: 15px;
+    font-size: 13px;
+    line-height: 16px;
+    box-shadow: 0 1px 0 0 #C0C0C0;
+    border-bottom: none;
+    margin-bottom: 5px;
+    align-items: center;
+
+    h4, p, .title, .subtitle {
+      color: #333;
+      font-size: 13px;
+      margin: 0;
+    }
+    h4 {
+      margin-bottom: 5px;
+    }
+    .handle {
+      font-size: 16px;
+      font-size: $font-weight-bold;
+    }
+    .title {
+      font-weight: $font-weight-bold;
+      flex-grow: 0;
+      flex-shrink: 0;
+    }
+    .subtitle {
+      padding-left: 10px;
+      margin-right: auto;
+      color: #555;
+      text-wrap: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .operations a {
+      font-size: 13px;
+    }
+  }
+  .btn.btn-primary {
+    background-color: $color-green;
+    border: none;
+    border-radius: 2px;
+    color: $color-white;
+    font-weight: $font-weight-bold;
+    padding: 15px 30px;
+    min-width: 112px;
+    transition: all $transition-duration-default;
+    font-size: 16px;
+    &:hover {
+      background-color: darken($color-green, 10%);
+    }
+  }
+  html.is-in-panel & a.btn.btn-cancel {
+    background-color: #F1F4F8;
+    border: none;
+    border-radius: 2px;
+    color: $color-black;
+    font-weight: $font-weight-bold;
+    padding: 15px 30px;
+    min-width: 112px;
+    transition: all $transition-duration-default;
+    font-size: 16px;
+    &:hover {
+      background-color: darken(#F1F4F8, 10%);
+    }
+  }
+}
+
+.panel-form-add-intervention {
+  .panel-body-contents {
+    display: flex;
+    flex-direction: column;
+
+    > * {
+      order: 5;
+    }
+    .form-group:first-child,
+    .form-group:nth-child(2) {
+      order: 0;
+    }
+    .form-group:has([required]) {
+      order: 4;
+    }
+  }
+}

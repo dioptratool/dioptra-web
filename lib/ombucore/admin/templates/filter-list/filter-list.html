@@ -1,0 +1,25 @@
+{% extends 'html-panel.html' %}
+
+{% block extrahead %}
+  {{ filter_form.media.js }}
+{% endblock extrahead %}
+
+{% block extrastyle %}
+  {{ filter_form.media.css }}
+{% endblock extrastyle %}
+
+{% block panel-body %}
+    <div class="filter-list">
+        {% include view.form_template_name with form=filter_form only %}
+        {% include view.list_template_name with list_display=list_display results=results object_list=object_list list_display_mobile=list_display_mobile only %}
+        {% include '_pagination.html' %}
+    </div>
+{% endblock panel-body %}
+
+{% block panel-foot-wrapper %}
+    {% block panel-foot %}
+    {% endblock panel-foot %}
+{% endblock panel-foot-wrapper %}
+
+{% block extrascript %}
+{% endblock extrascript %}

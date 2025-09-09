@@ -1,0 +1,60 @@
+{% load panels_form_extras %}
+
+<div class="form-group{% if field.errors %} has-error{% endif %} {% if field.field.disabled %}disabled{% endif %} {% if field.field.required %}{{ form.required_css_class }}{% endif %} {% if field|has_changed %}changed{% endif %}">
+    {% if field|is_checkbox %}
+        <div class="{{ classes.single_value }}">
+            <div class="checkbox">
+                {% if field.auto_id %}
+                    <label>
+                        {{ field }}
+                        <span>{{ field.label }}</span>
+                    </label>
+                {% endif %}
+                {% include 'bootstrap/_help.html' %}
+                {% include 'bootstrap/_errors.html' %}
+            </div>
+        </div>
+    {% elif field|is_radio %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}">{{ field.label }}</label>
+        {% endif %}
+        <div class="{{ classes.value }}">
+            {% for choice in field %}
+                <div class="radio">
+                    <label>
+                        {{ choice.tag }}
+                        <span>{{ choice.choice_label }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+            {% include 'bootstrap/_help.html' %}
+            {% include 'bootstrap/_errors.html' %}
+        </div>
+    {% elif field|is_multiple_checkbox %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}">{{ field.label }}</label>
+        {% endif %}
+        <div class="{{ classes.value }} multiple-checkbox">
+            {% for choice in field %}
+                <div class="checkbox">
+                    <label>
+                        {{ choice.tag }}
+                        <span>{{ choice.choice_label }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+            {% include 'bootstrap/_help.html' %}
+            {% include 'bootstrap/_errors.html' %}
+        </div>
+    {% else %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}"><span>{{ field.label }}</span>{% if field.field.required %}<em><sup title="This is a required field">*</sup></em>{% endif %}</label>
+        {% endif %}
+
+        <div class="{{ classes.value }}">
+            {{ field }}
+            {% include 'bootstrap/_help.html' %}
+            {% include 'bootstrap/_errors.html' %}
+        </div>
+    {% endif %}
+</div>

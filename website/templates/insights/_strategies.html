@@ -1,0 +1,21 @@
+{% load help i18n %}
+<div class="strategies">
+    <div class="strategies__items">
+        {% for strategy in strategies %}
+            <div class="strategies__item">
+                <h3 class="strategies__label">{{ strategy.title }}</h3>
+                <div class="strategies__item-inner">
+                    <div class="strategies__item-primary">
+                        <div class="strategies__item-label">{% translate 'Efficiency Driver' %}</div>
+                        <div class="strategies__item-text">{{ strategy.efficiency_driver_description|safe }}</div>
+                        {% include 'icons/strategies-arrow.svg' %}
+                    </div>
+                    <div class="strategies__item-secondary">
+                        <div class="strategies__item-label">{% translate 'Strategy to Improve Cost-Efficiency' %}</div>
+                        <div class="strategies__item-text">{{ strategy.strategy_to_improve_description|safe }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

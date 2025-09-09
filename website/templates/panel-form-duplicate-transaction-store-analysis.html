@@ -1,0 +1,15 @@
+{% extends 'panel-form.html' %}
+{% load static %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">Are you sure you want to duplicate "{{ title }}"?</p>
+    <p>There are two options to duplicate your analysis: with the same date range or with new dates.</p>
+    {{ block.super }}
+
+    <p class="change_analysis_date_range-help-text" {% if not form.is_bound %}style="display: none;"{% endif %}>Please note that changing the analysis dates may cause new transactions to be imported; transactions that were previously imported but no longer match the new dates will be deleted. Some analysis steps may become incomplete and need to be completed.</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+  <button type="submit" class="panels-delete-btn btn btn-danger">Yes, duplicate</button>
+  <a href="" data-panels-action="reject-close" class="btn btn-cancel">No, cancel</a>
+{% endblock panel-foot %}

@@ -1,0 +1,182 @@
+.panels-relation-widget--results {
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+  list-style: none;
+}
+
+.panels-relation-widget--result {
+  position: relative;
+  margin: 0 0 1px 0;
+  padding: 0;
+  list-style: none;
+  background: #ddd;
+  border-bottom: 1px solid #bbb;
+  display: flex;
+  border-radius: 3px;
+  line-height: 28px;
+  overflow: hidden;
+}
+.panels-relation-widget--result .image {
+  display: block;
+  flex-shrink: 0;
+  background-color: #999;
+  background-size: cover;
+  background-position: center center;
+  width: 100px;
+  height: 100px;
+  margin-right: 1em;
+}
+.panels-relation-widget--result .handle {
+  display: none;
+}
+.panels-relation-widget--result .verbose-name {
+  text-transform: uppercase;
+  font-size: 11px;
+  min-width: 8em;
+  width: 8em;
+  padding-left: 1em;
+  padding-right: 0.5em;
+  color: #888;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panels-relation-widget--result .title {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 0.5em;
+}
+.panels-relation-widget--result .operations {
+  font-size: 12px;
+  float: right;
+}
+.panels-relation-widget--result .operations a {
+  padding: 0 0.5em;
+}
+.panels-relation-widget--result .operations a:last-child {
+  padding-right: 1em;
+}
+.panels-relation-widget--result.has-image .verbose-name {
+  position: absolute;
+  top: 50%;
+  left: 114px;
+  padding-left: 0;
+  margin-top: -35px;
+}
+.panels-relation-widget--result.has-image .title, .panels-relation-widget--result.has-image .operations {
+  padding-top: 36px;
+}
+.panels-relation-widget--result.sortable-ghost {
+  background: rgba(184, 233, 134, 0.2);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid white;
+}
+.panels-relation-widget--result.sortable-ghost > span {
+  visibility: hidden;
+}
+
+.generic-many-to-many-widget .panels-relation-widget--result,
+.panels-relation-widget--multiple .panels-relation-widget--result,
+.panels-relation-widget--polymorphic .panels-relation-widget--result,
+.small-results .panels-relation-widget--result {
+  display: flex;
+}
+.generic-many-to-many-widget .panels-relation-widget--result .image,
+.panels-relation-widget--multiple .panels-relation-widget--result .image,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .image,
+.small-results .panels-relation-widget--result .image {
+  width: 28px;
+  height: 28px;
+  margin-right: 0.5em;
+}
+.generic-many-to-many-widget .panels-relation-widget--result .verbose-name,
+.panels-relation-widget--multiple .panels-relation-widget--result .verbose-name,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .verbose-name,
+.small-results .panels-relation-widget--result .verbose-name {
+  position: static;
+  top: auto;
+  left: auto;
+  margin-top: 0;
+  display: none;
+  padding-left: 0;
+}
+.generic-many-to-many-widget .panels-relation-widget--result .title,
+.panels-relation-widget--multiple .panels-relation-widget--result .title,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .title,
+.small-results .panels-relation-widget--result .title {
+  flex-grow: 1;
+}
+.generic-many-to-many-widget .panels-relation-widget--result .verbose-name, .generic-many-to-many-widget .panels-relation-widget--result .title, .generic-many-to-many-widget .panels-relation-widget--result .operations,
+.panels-relation-widget--multiple .panels-relation-widget--result .verbose-name,
+.panels-relation-widget--multiple .panels-relation-widget--result .title,
+.panels-relation-widget--multiple .panels-relation-widget--result .operations,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .verbose-name,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .title,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .operations,
+.small-results .panels-relation-widget--result .verbose-name,
+.small-results .panels-relation-widget--result .title,
+.small-results .panels-relation-widget--result .operations {
+  padding-top: 0em;
+}
+.generic-many-to-many-widget .panels-relation-widget--result.mptt-level-1,
+.panels-relation-widget--multiple .panels-relation-widget--result.mptt-level-1,
+.panels-relation-widget--polymorphic .panels-relation-widget--result.mptt-level-1,
+.small-results .panels-relation-widget--result.mptt-level-1 {
+  margin-left: 30px;
+}
+.generic-many-to-many-widget .panels-relation-widget--result.mptt-level-2,
+.panels-relation-widget--multiple .panels-relation-widget--result.mptt-level-2,
+.panels-relation-widget--polymorphic .panels-relation-widget--result.mptt-level-2,
+.small-results .panels-relation-widget--result.mptt-level-2 {
+  margin-left: 60px;
+}
+.generic-many-to-many-widget .panels-relation-widget--result.mptt-level-3,
+.panels-relation-widget--multiple .panels-relation-widget--result.mptt-level-3,
+.panels-relation-widget--polymorphic .panels-relation-widget--result.mptt-level-3,
+.small-results .panels-relation-widget--result.mptt-level-3 {
+  margin-left: 90px;
+}
+.generic-many-to-many-widget .panels-relation-widget--result.mptt-level-4,
+.panels-relation-widget--multiple .panels-relation-widget--result.mptt-level-4,
+.panels-relation-widget--polymorphic .panels-relation-widget--result.mptt-level-4,
+.small-results .panels-relation-widget--result.mptt-level-4 {
+  margin-left: 120px;
+}
+.generic-many-to-many-widget .panels-relation-widget--result.mptt-level-5,
+.panels-relation-widget--multiple .panels-relation-widget--result.mptt-level-5,
+.panels-relation-widget--polymorphic .panels-relation-widget--result.mptt-level-5,
+.small-results .panels-relation-widget--result.mptt-level-5 {
+  margin-left: 150px;
+}
+
+.generic-many-to-many-widget .panels-relation-widget--result .handle,
+.panels-relation-widget--multiple .panels-relation-widget--result .handle,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .handle,
+.orderable .panels-relation-widget--result .handle {
+  display: block;
+  width: 28px;
+  text-align: center;
+  cursor: move;
+  cursor: -webkit-grab;
+  font-size: 12px;
+  color: #aaa;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.generic-many-to-many-widget .panels-relation-widget--result .verbose-name,
+.panels-relation-widget--polymorphic .panels-relation-widget--result .verbose-name {
+  display: block;
+}
+
+.small-results:not(.orderable) .panels-relation-widget--result .title {
+  padding-left: 1em;
+}
+.small-results:not(.orderable) .panels-relation-widget--result .title .determinant-count {
+  margin-left: -1em;
+}

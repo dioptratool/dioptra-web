@@ -1,0 +1,70 @@
+// Videos
+
+.ombuassets-video,
+.ombuassets-image {
+  margin-top: 4rem;
+  margin-bottom: 4.3rem;
+}
+
+.aspect-ratio-box {
+  display: block;
+  width: 100%;
+  position: relative;
+
+  .aspect-prop {
+    display: block;
+    position: relative;
+
+    & + * {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  iframe {
+    width: 100%;
+  }
+}
+
+.caption {
+  display: block;
+  font-style: italic;
+  margin-top: 2rem;
+  @include font-size(14, 1.42857);  
+}
+
+.pull-left,
+.pull-right {
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  width: 40%;
+}
+
+.pull-left {
+  float: left;
+  margin-right: 3rem;
+
+  @media (min-width: $breakpoint-notebook) {
+    margin-left: -15%;
+  }
+}
+
+.pull-right {
+  float: right;
+  margin-left: 3rem;
+
+  @media (min-width: $breakpoint-notebook) {
+    margin-right: -15%;
+  }
+}
+
+.pull-center {
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  text-align: center;
+}

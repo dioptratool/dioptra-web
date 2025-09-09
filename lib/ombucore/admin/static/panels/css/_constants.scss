@@ -1,0 +1,85 @@
+
+$panel-veil-color: rgba(0, 0, 0, 0.5);
+$panel-white: #FFFFFF;
+$panel-gray: #EEEEEE;
+$panel-charcoal-dark: rgb(30, 30, 30);
+$panel-charcoal: rgb(50, 50, 50);
+$panel-gray-sidebar: rgb(102, 102, 102);
+$panel-gray-dark: rgb(160, 160, 160);
+$panel-gray-medium: rgb(180, 180, 180);
+$panel-gray-sidebar-bg: rgb(217, 217, 217);
+
+$panel-blue: rgb(0, 95, 172);
+$panel-blue-light: rgb(78, 167, 248);
+$panel-blue-dark: rgb(3, 114, 255);
+$panel-blue-icon: rgb(102, 173, 255);
+$panel-blue-new: rgb(34, 117, 211);
+$panel-blue-new-2: rgb(74, 144, 226);
+$gradient-ombu-brand: linear-gradient(to top, rgb(241, 91, 87) 5%, rgb(242,106,91) 20%, rgb(245,135,98) 37%, rgb(120,189,180) 59%, rgb(89,148,183) 85%, rgb(77,93,170) 100%);
+$color-ombu-red: rgb(241, 91, 87);
+$color-ombu-orange: rgb(245,135,98);
+$state-danger-text: $color-ombu-red;
+$color-ombu-blue: rgb(109, 197, 212);
+$color-ombu-pink: rgb(243, 167, 173);
+
+$panel-width: 66%;
+$mobile-panel-offset: 40px;
+$font-size-root: 16px;  // This value defines 1rem.
+$panel-padding: 1rem;
+$brand-primary: $panel-blue-dark;
+
+$panel-shadow-height: 5px;
+$panel-shadow-color: rgba(0, 0, 0, 0.4);
+
+$border-radius-small: 3px;
+
+$panel-form-dot-size: 10px;
+
+$panel-link-height: 44px;
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+$z-index-panels: 20000;
+$z-index-alerts: $z-index-panels + 100;
+
+
+// Custom fonts
+
+$font-vesperlibre-regular: 		'vesper_libreregular', Georgia, serif;
+$font-vesperlibre-medium: 		'vesper_libremedium', Georgia, serif;
+$font-vesperlibre-bold: 		'vesper_librebold', Georgia, serif;
+$font-vesperlibre-heavy: 		'vesper_libreheavy', Georgia, serif;
+
+$font-roboto-regular: 			'robotoregular', Helvetica, Arial, sans-serif;
+$font-roboto-italic: 			'robotoitalic', Helvetica, Arial, sans-serif;
+$font-roboto-bold: 				'robotobold', Helvetica, Arial, sans-serif;
+$font-roboto-bold-italic:		'robotobold_italic', Helvetica, Arial, sans-serif;
+$font-roboto-light: 			'robotolight', Helvetica, Arial, sans-serif;
+$font-roboto-light-italic: 		'robotolight_italic', Helvetica, Arial, sans-serif;
+
+
+$color-white: rgb(255, 255, 255);
+$color-black: rgb(0, 0, 0);
+$color-malibu: rgb(78, 194, 248);
+$color-picton-blue: rgb(69, 173, 221);
+$color-cornflower-blue: rgb(237, 249, 254);
+
+// Transition effects
+$transition-duration-default: 0.2s;
+
+// Gutters and breakpoints
+$gutter-side-mobile: 15px;
+$gutter-side-notebook: 40px;
+$gutter-side-desktop: 100px;
+
+$max-site-width: 1480px;
+
+$panel-version-icon-width: 40px;

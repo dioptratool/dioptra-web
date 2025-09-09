@@ -1,0 +1,14 @@
+{% extends 'html-panel.html' %}
+{% load static %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">Send pending notification subscriptions?</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+  <form method="post">
+  {% csrf_token %}
+    <button type="submit">Send</button>
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">Cancel</a>
+  </form>
+{% endblock panel-foot %}

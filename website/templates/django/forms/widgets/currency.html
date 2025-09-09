@@ -1,0 +1,4 @@
+<div class="currency-wrapper">
+  {% if widget.attrs.currency_symbol %}<span class="input-group-text input-group-text__before">{{ widget.attrs.currency_symbol }}</span>{% endif %}
+  <input class="form-control border-radius-right {{ widget.attrs.class }}" type="number" name="{{ widget.name }}" step="0.01"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}>
+</div>

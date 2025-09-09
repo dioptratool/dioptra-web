@@ -1,0 +1,32 @@
+$panel-background: $color-white;
+$font-family-sans-serif: $font-sans-serif;
+$text-color: $color-mineshaft;
+$label-text-color: $color-boulder;
+$accent-color: $color-smoke;
+$link-color: $color-topaz;
+
+// buttons
+$btn-primary-color: $color-white;
+$btn-primary-bg: $color-topaz;
+$btn-primary-border: $color-topaz;
+$btn-cancel-color: $color-boulder;
+$btn-cancel-bg: transparent;
+$btn-cancel-border: transparent;
+$btn-danger-color: $color-white;
+$btn-danger-bg: $color-lichen;
+$btn-danger-border: $color-lichen;
+$btn-default-color: $color-mineshaft;
+$btn-default-bg: #f1f4f8;
+$btn-default-border: $color-moonstone;
+
+// filter list
+$filter-list-header-color: $color-white;
+$filter-list-header-bg: $color-lapis;
+$filter-list-stripe-bg: $color-moonstone;
+$filter-list-operations-bg: $color-lapis;
+$filter-list-operations-color: $color-white;
+$filter-list-filter-bg: $color-lapis;
+$filter-list-filter-label: rgba($color-white, 0.7);
+$filter-list-filter-value: $color-white;
+$filter-list-clear-color: $color-boulder;
+$filter-list-clear-hover-color: $color-lichen;

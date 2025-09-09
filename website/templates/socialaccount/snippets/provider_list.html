@@ -1,0 +1,11 @@
+{% load i18n socialaccount static %}
+
+{% get_providers as socialaccount_providers %}
+
+{% for provider in socialaccount_providers %}
+    <li>
+        <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"
+           href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">{% translate 'Sign in with ' %}{{ provider.name }}</a>
+        <p class="socialaccount__message">{% translate 'Secure login provided by ' %} {% if provider.logo_filename %}<img src="{% static provider.logo_filename %}" class="socialaccount__img socialaccount__img--{{ provider.id }}" alt="{{ provider.name }}">{% else %}{{ provider.name }}{% endif %}</p>
+    </li>
+{% endfor %}

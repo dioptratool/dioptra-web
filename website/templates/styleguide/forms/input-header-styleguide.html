@@ -1,0 +1,8 @@
+<div class="input__header{% if field.help_text %} input__header--with-help-text{% endif %}">
+  <label class="input__label" for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %}<span class="input__optional">Optional</span>{% endif %}</label>
+  {% if field.help_text %}
+    <a href="#" class="input__help-toggle">Help</a>
+    <a href="#" class="input__help-close"><span>Close Help</span>{% include 'website/icons/close.svg' %}</a>
+    <div class="input__help">{{ field.help_text|safe }}</div>
+  {% endif %}  
+</div>

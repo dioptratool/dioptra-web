@@ -1,0 +1,12 @@
+{% load panels_extras %}
+<div class="panel-foot-left">
+    {% for button in buttons %}{% if button.align == 'left' %}{{ button.render }}{% endif %}{% endfor %}
+</div>
+
+{% if form.errors|length > 0 %}
+    <span class="panel-foot-center error-msg text-danger">There {% if form.errors|length == 1 %}is{% else %}are{% endif %} {{ form.errors|length }} error{{ form.errors|length|pluralize }} that need your attention.</span>
+{% endif %}
+
+<div class="panel-foot-right">
+    {% for button in buttons %}{% if button.align == 'right' %}{{ button.render }}{% endif %}{% endfor %}
+</div>

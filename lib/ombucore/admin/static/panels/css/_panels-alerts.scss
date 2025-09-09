@@ -1,0 +1,42 @@
+#root-alerts-container,
+#panels-alerts-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  overflow: visible;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+  z-index: $z-index-alerts;
+  padding-bottom: calc($panel-padding/2);
+
+  &.open {
+    opacity: 1;
+  }
+
+  .alert {
+    margin-top: calc($panel-padding/2);
+    margin-right: calc($panel-padding/2);
+    margin-left: calc($panel-padding/2);
+    margin-bottom: 0;
+
+    .alert-level {
+      margin-bottom: calc($panel-padding/4);
+      font-weight: lighter;
+      font-size: 1.3em;
+    }
+  }
+}
+
+@include desktop {
+  #root-alerts-container,
+  #panels-alerts-container {
+    position: fixed;
+    bottom: auto;
+    top: 0;
+    right: $panel-width;
+    width: 100% - $panel-width;
+    display: block;
+    padding-bottom: 0;
+  }
+}

@@ -1,0 +1,69 @@
+{% extends "analysis/base.html" %}
+
+{% block analysis_sidebar %}
+    <div class="analysis-sidebar">
+        <div class="analysis-sidebar__exit">
+            <a class="analysis-sidebar__navigation-link analysis-sidebar__navigation-link--exit"
+               href="{% url 'analysis-insights' workflow.analysis.pk %}">
+                {% include 'icons/exit.svg' %}Return to Insights
+            </a>
+        </div>
+        <div class="analysis-sidebar__logo">
+            <a class="analysis-sidebar__logo-link" href="/">
+                {% include 'icons/logo-s.svg' %}
+            </a>
+        </div>
+        <ul class="analysis-sidebar__navigation analysis-sidebar__navigation--primary">
+            {% for step in workflow.subcomponent_analysis_steps %}
+                {% if step.is_enabled %}
+                    <li class="analysis-sidebar__navigation-item">
+                        {% if step.dependencies_met %}
+                            {% if not step.steps %}
+                                <a class="analysis-sidebar__navigation-link{% if step == view.parent_step %} analysis-sidebar__navigation-link--active{% endif %}{% if step.is_complete %} analysis-sidebar__navigation-link--complete{% endif %}{% if step.steps and step == view.parent_step %} analysis-sidebar__navigation-link--with-substeps{% endif %}"
+                                href="{{ step.get_href }}">
+                                    {% if step == view.parent_step %}
+                                        {% include 'icons/caret-right.svg' %}
+                                    {% elif step.is_complete %}
+                                        {% include 'icons/checkmark.svg' %}
+                                    {% endif %}
+                                    {{ step.get_nav_title }}
+                                </a>
+                            {% else %}
+                                <ul class="analysis-sidebar__navigation analysis-sidebar__navigation--subnav analysis-sidebar__navigation--subcomponent">
+                                    {% for substep in step.steps %}
+                                        <li class="analysis-sidebar__navigation-item analysis-sidebar__navigation-item--subnav analysis-sidebar__navigation-item--subcomponent">
+                                            {% if substep.dependencies_met %}
+                                                <a class="analysis-sidebar__navigation-subnav-link{% if substep.get_href == request.path %} analysis-sidebar__navigation-subnav-link--active{% endif %}{% if substep.is_complete %} analysis-sidebar__navigation-subnav-link--complete{% endif %}"
+                                                   href="{{ substep.get_href }}">
+                                                    {% if substep.is_complete %}
+                                                        {% include 'icons/checkmark.svg' %}
+                                                    {% endif %}
+                                                    {{ substep.get_nav_title }}
+                                                </a>
+                                            {% else %}
+                                                <span class="analysis-sidebar__navigation-subnav-link analysis-sidebar__navigation-subnav-link--locked">
+                                                    {{ substep.get_nav_title }}
+                                                </span>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                    <li>
+                                    {% if step.is_complete %}
+                                        <a href="/analysis/{{ analysis.id }}/insights" class="analysis-sidebar__navigation-link">View Insights</a>
+                                    {% else %}
+                                        <a href="#" class="analysis-sidebar__navigation-link  analysis-sidebar__navigation-link--locked">View Insights</a>
+                                    {% endif %}
+                                    </li>
+                                </ul>
+                            {% endif %}
+                        {% else %}
+                            <span class="analysis-sidebar__navigation-link analysis-sidebar__navigation-link--locked">
+                                {{ step.get_nav_title }}
+                            </span>
+                        {% endif %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock analysis_sidebar %}

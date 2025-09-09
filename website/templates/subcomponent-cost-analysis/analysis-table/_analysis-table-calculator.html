@@ -1,0 +1,28 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="analysis-table__shared-cost-estimate-sub">
+    <div class="analysis-table__shared-cost-estimate-title-calc">
+        <span>Suggested allocation for unallocated <br>cost items in this category</span>
+        {% if cost_type_category_grant.cost_type_category.category.help_text %}
+            <span class="analysis-table__more-help-link"><a href="{% url 'grant-category-help' pk=cost_type_category_grant.pk %}" data-panels-trigger>More help</a></span>
+        {% endif %}
+    </div>
+    {% if cost_type_category_grant.all_errors %}
+        <div class="analysis-table__shared-cost-estimate-direct-cost-category-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-category-value">{{ item_costs|format_currency:analysis.currency_code }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-category-label">Identified costs in all categories, weighted by the allocations provided</span></div>
+        <div class="analysis-table__shared-cost-estimate-direct-cost-total-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-total-value">{{ item_totals|format_currency:analysis.currency_code }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-total-label">Identified costs in all categories, unweighted</span></div>
+        <div class="analysis-table__shared-allocation-suggestion-calc">
+            {% include 'icons/allocate-arrow.svg' %}<span class="analysis-table__shared-allocation-suggestion-value-action">{{ all_errors_suggest|default:"Unable to calculate" }}</span><br />
+            {% if all_errors_suggest %}
+                <a class="accept_allocation_button" href="#" data-allocation="{{ all_errors_suggest }}">Accept suggestion</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="analysis-table__shared-cost-estimate-direct-cost-category-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-category-value">{{ cost_type_category_grant.assigned_items_cost|format_currency:analysis.currency_code }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-category-label">Identified costs in this category, weighted by the allocations provided</span></div>
+        <div class="analysis-table__shared-cost-estimate-direct-cost-total-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-total-value">{{ cost_type_category_grant.assigned_items_total|format_currency:analysis.currency_code }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-total-label">Identified costs in this category, unweighted</span></div>
+        <div class="analysis-table__shared-allocation-suggestion-calc">
+            {% include 'icons/allocate-arrow.svg' %}<span class="analysis-table__shared-allocation-suggestion-value-action">{{ cost_type_category_grant.suggested_allocation|default:"Unable to calculate" }}</span><br />
+            {% if cost_type_category_grant.suggested_allocation %}
+                <a class="accept_allocation_button" href="#" data-allocation="{{ cost_type_category_grant.suggested_allocation }}">Accept suggestion</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>

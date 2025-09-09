@@ -1,0 +1,11 @@
+name: 'app_log'
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: app_log
+      POSTGRES_USER: app_log
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:54321:5432'

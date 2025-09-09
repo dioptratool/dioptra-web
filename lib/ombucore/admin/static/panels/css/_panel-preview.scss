@@ -1,0 +1,39 @@
+
+.asset-preview {
+    margin: $panel-padding 0 0;
+
+    .ombuassets-video {
+        iframe {
+            display: block;
+            margin: 0 auto;
+        }
+    }
+}
+
+.asset-preview-info {
+    margin: $panel-padding 0;
+    table.table {
+        margin-bottom: 0;
+    }
+}
+
+.aspect-ratio-box {
+  display: block;
+  width: 100%;
+  position: relative;
+
+  .aspect-prop {
+    display: block;
+    position: relative;
+
+    & + * {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+}

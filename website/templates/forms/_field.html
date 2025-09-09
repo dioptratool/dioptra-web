@@ -1,0 +1,131 @@
+{% load analysis help panels_form_extras %}
+
+<div class="form-group {{ formgroup_class }} {% if field.errors %} has-error{% endif %} {% if field.field.disabled %}disabled{% endif %} {% if field.field.required %}{{ form.required_css_class }}{% endif %} {% if field|has_changed %}changed{% endif %}">
+    {% if field|is_checkbox %}
+        <div class="{{ classes.single_value }}">
+            <div class="checkbox {{ classes.value }}">
+                {% if field.auto_id %}
+                    <label class="{{ classes.label }}">
+                        {{ field }}
+                        <span>{{ field.label }}</span>
+                    </label>
+                {% endif %}
+                {% include 'forms/_errors.html' with errors=field.errors %}
+            </div>
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% elif field|is_radio %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}">{{ field.label }}</label>
+        {% endif %}
+        <div class="{{ classes.value }}">
+            {% for choice in field %}
+                <div class="radio">
+                    <label>
+                        {{ choice.tag }}
+                        <span>{{ choice.choice_label }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+            {% include 'forms/_errors.html' with errors=field.errors %}
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% elif field|is_multiple_checkbox %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}">{{ field.label }}</label>
+        {% endif %}
+        <div class="{{ classes.value }} multiple-checkbox">
+            {% for choice in field %}
+                <div class="checkbox">
+                    <label>
+                        {{ choice.tag }}
+                        <span>{{ choice.choice_label }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+            {% include 'forms/_errors.html' with errors=field.errors %}
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% elif field|is_flatpickr %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}"><span>{{ field.label }}</span>{% help help_identifier %}</label>
+        {% endif %}
+        {% include 'forms/_errors.html' with errors=field.errors %}
+        <div class="{{ classes.value }}">
+            <div class="form__date">
+                {{ field }}
+                <div class="form__date-icon">
+                    {% include 'icons/calendar.svg' %}
+                </div>
+            </div>
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% elif field|is_number_input %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}"><span>{{ field.label }}</span>{% if not field.field.required and not field.field.disabled %}<span class="form__label-optional">Optional</span>{% endif %}{% help help_identifier %}</label>
+        {% endif %}
+        {% include 'forms/_errors.html' with errors=field.errors %}
+        <div class="{{ classes.value }}">
+            <div class="form__number">
+                {{ field }}
+                <div class="form__number-toggles">
+                    <button class="form__number-toggle form__number-toggle--decrease">{% include 'icons/minus.svg' %}
+                    <button class="form__number-toggle form__number-toggle--increase">{% include 'icons/plus.svg' %}                        
+                </div>
+            </div>
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}        
+    {% elif field|is_file_input %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}"><span>{{ field.label }}</span>{% if not field.field.required %}<span class="form__label-optional">Optional</span>{% endif %}{% help help_identifier %}</label>
+        {% endif %}
+        {% include 'forms/_errors.html' with errors=field.errors %}
+        <div class="{{ classes.value }}">
+            <div class="form__file">
+                {{ field }}
+                <button type="submit" name="action" value="upload" class="form__file-button">Choose File</button>
+                <div class="form__file-names"></div>
+            </div>
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% elif field|is_hidden_input %}
+        {{ field }}
+    {% else %}
+        {% if field.auto_id %}
+            <label class="control-label {{ classes.label }}" for="{{ field.auto_id }}"><span>{{ field.label }}</span>{% if not field.field.required and not field.field.disabled %}<span class="form__label-optional">Optional</span>{% endif %}{% help help_identifier %}</label>
+        {% endif %}
+        {% include 'forms/_errors.html' with errors=field.errors %}
+        <div class="{{ classes.value }}">
+            {{ field }}
+        </div>
+        {% if field.help_text %}
+            <div class="form__help-text {{ classes.help_text }}">
+                {{ field.help_text }}
+            </div>
+        {% endif %}             
+    {% endif %}
+</div>

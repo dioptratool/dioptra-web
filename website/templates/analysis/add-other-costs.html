@@ -1,0 +1,99 @@
+{% extends "analysis/base.html" %}
+{% load analysis help humanize i18n panels_form_extras website_tags %}
+
+{% block analysis_header %}
+  <h1 class="analysis__other_costs__title">{{ step.page_title }}</h1>
+  <div class="analysis__other_costs__help_text">
+    <em>{{ step.get_help_text }}</em>
+  </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+  <h2 class="analysis__other_costs__subtitle">{{ step.subtitle }}s</h2>
+
+  <div class="analysis-table__wrapper">
+    <table class="analysis-table__table analysis-table__table--fix-data">
+      <thead>
+      <tr>
+      {% if show_cost_type_column %}
+      <th>Cost Type</th>
+      {% endif %}
+        <th>{{ cost_line_item_count }} {{ step.subtitle }}{{ cost_line_item_count|pluralize }}</th>
+        {% for _, header in additional_fields.items %}
+          <th>{{ header }}</th>
+        {% endfor %}
+        <th>{{ total_cost|format_currency:analysis.currency_code }}</th>
+        {% if show_allocation %}
+            {% for intervention_link in intervention_links_in_order %}
+              <th class="analysis-table__intervention-header">{{ intervention_link.display_name }}</th>
+            {% endfor %}
+        {% endif %}
+        <th>Actions</th>
+      </tr>
+      </thead>
+      {% if cost_line_item_count == 0 %}
+        <tbody>
+        <tr>
+          <td>
+            <div class="analysis__message_no_items analysis__message--info analysis__message--table">
+              Add {{ step.subtitle.lower }}s to view them here
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      {% else %}
+        {% for cost_line_item in cost_line_items %}
+          <tbody class="analysis-table__tbody">
+          <tr>
+            {% if show_cost_type_column %}
+            <td>{{ cost_line_item.config.cost_type.name }}</td>
+            {% endif %}
+            <td>{{ cost_line_item.budget_line_description }}</td>
+            {% for field_name, _ in additional_fields.items %}
+              <td>{{ cost_line_item|object_getattr:field_name|floatformat:2 }}</td>
+            {% endfor %}
+            <td> {{ cost_line_item.total_cost|format_currency:analysis.currency_code|floatformat:2 }}</td>
+            {% if show_allocation %}
+                {% for intervention_link in intervention_links_in_order %}
+                    {% with allocation=cost_line_item|get_allocation_by_intervention_id:intervention_link.id %}
+                    <td>{{ allocation.allocation|floatformat:2 }}%</td>
+                    {% endwith %}
+                {% endfor %}
+            {% endif %}
+            <td class="analysis-table__other-costs-action">
+              <a class="analysis-table__other-costs-row-action" href="{% url 'cost-line-item-update' pk=analysis.pk cost_pk=cost_line_item.pk cost_type=cost_type %}"
+                 data-panels-trigger data-panels-reload-on="saved">
+                Edit
+              </a>
+              <a class="analysis-table__other-costs-row-action" href="{% url 'ombucore.admin:website_costlineitem_delete' cost_line_item.id %}"
+                 data-panels-trigger data-panels-reload-on="deleted">
+                Delete
+              </a>
+            </td>
+          </tr>
+          </tbody>
+        {% endfor %}
+      {% endif %}
+    </table>
+  </div>
+  <div class="analysis-table__category-footer">
+    <a class="analysis-table__other-costs-footer-action" href="{% url 'cost-line-item-create' pk=analysis.pk cost_type=cost_type %}"
+       data-panels-trigger data-panels-reload-on="saved">
+      Add {{ step.subtitle }}
+    </a>
+  </div>
+  <div class="analysis__actions">
+    {% with next=step.get_next %}
+      {% if next and next.dependencies_met %}
+        <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next" href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</a>
+      {% else %}
+        <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endblock analysis_content %}
+
+{% block extrascript %}
+  <script type="text/javascript">
+  </script>
+{% endblock extrascript %}

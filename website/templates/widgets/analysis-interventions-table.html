@@ -1,0 +1,21 @@
+{% load panels_extras %}
+
+<p class="help_text">Select “Create” to add an intervention, up to a maximum of five.</p>
+<div class="panels-relation-widget panels-relation-widget--multiple">
+    <ul class="panels-relation-widget--results">
+        {% for obj_info in objects_info %}
+            <li class='panels-relation-widget--result level-{{ obj_info.level|default:'0' }}'
+                data-obj-info='{{ obj_info|jsonattr }}'>
+                {{ obj_info.title }}
+            </li>
+        {% endfor %}
+    </ul>
+    <div style="display:none">
+        <textarea name="interventions" cols="30" rows="10" class="form-control" id="{{ widget.attrs.id }}">
+            {{ objects_info|jsonattr }}
+        </textarea>
+    </div>
+    <div class="panels-relation-widget--control">
+        {{ control|safe }}
+    </div>
+</div>

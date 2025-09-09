@@ -1,0 +1,9 @@
+{% load website_tags %}
+
+<p>{{ log_entry.timestamp }}</p>
+
+<p><strong>Actor:</strong> {{ log_entry.actor_name }}</p>
+<p><strong>Action:</strong> {{ log_entry.action }}</p>
+<p><strong>Object:</strong> {{ log_entry.content_type_name }}</p>
+<p><strong>Message:</strong> {{ log_entry.message|safe }}</p>
+{% if log_entry.link %}<p><strong>Link:</strong> <a href="{% get_base_url %}{{ log_entry.link }}">{% get_base_url %}{{ log_entry.link }}</a></p>{% endif %}

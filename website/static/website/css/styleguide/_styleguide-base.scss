@@ -1,0 +1,40 @@
+html {
+  font-size: 10px;
+}
+
+.styleguide__page {
+  color: $styleguide-color-charcoal;
+}
+
+.styleguide__container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $styleguide-gutter-side-tile;
+  padding-right: $styleguide-gutter-side-tile;
+  max-width: 1200px;
+
+  @media (min-width: $styleguide-breakpoint-notebook) {
+    padding-left: 80px;
+    padding-right: 80px;    
+  }
+}
+
+.styleguide__layout-table {
+  display: table;
+  margin-bottom: 7rem;
+  width: 100%;
+}
+
+.styleguide__layout-table-row {
+  display: table-row;
+}
+
+.styleguide__layout-table-cell {
+  display: table-cell;
+  padding: calc($styleguide-gutter-side-tile * 2) calc($styleguide-gutter-side-tile / 2);
+
+  .styleguide__layout-table-row--header & {
+    padding-bottom: 0;
+    padding-top: $styleguide-gutter-side-tile;
+  }
+}

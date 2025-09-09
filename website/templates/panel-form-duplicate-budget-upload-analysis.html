@@ -1,0 +1,13 @@
+{% extends 'panel-form.html' %}
+{% load static %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">Are you sure you want to duplicate "{{ title }}"?</p>
+    <p>Please remember to make any necessary changes that you wish on the following steps: Define Analysis, Allocate Costs.</p>
+    {{ block.super }}
+{% endblock panel-body %}
+
+{% block panel-foot %}
+  <button type="submit" class="panels-delete-btn btn btn-danger">Yes, duplicate</button>
+  <a href="" data-panels-action="reject-close" class="btn btn-cancel">No, cancel</a>
+{% endblock panel-foot %}

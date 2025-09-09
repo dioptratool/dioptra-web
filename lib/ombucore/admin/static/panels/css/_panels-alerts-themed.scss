@@ -1,0 +1,101 @@
+// Site messages
+
+.alert {
+  font-size: 14px;
+  padding: $panel-padding;
+  border-radius: $panel-padding;
+  color: #FFFFFF;
+
+  @media screen and (min-width: $screen-md) {
+    font-size: 16px;
+  }
+
+  &.alert-success {
+    background-color: $brand-success;
+  }
+  &.alert-info {
+    background-color: $brand-info;
+  }
+  &.alert-warning {
+    background-color: $brand-warning;
+  }
+  &.alert-danger {
+    background-color: $brand-danger;
+  }
+
+  button.close {
+    background-color: transparent;
+    border: none;
+    border-radius: 100%;
+    color: #FFFFFF;
+    float: right;
+    height: 2.5rem;
+    padding: 0;
+    position: relative;
+    transition: all 0.2s ease;
+    width: 2.5rem;
+    z-index: 2;
+
+    &:hover {
+      /*background-color: $color-picton-blue;*/
+    }
+
+    @media screen and (min-width: $screen-md) {
+      margin-top: 0.75rem;
+    }
+  }
+}
+
+#root-alerts-container {
+  .alert {
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .alert-inner {
+    padding-left: $panel-padding;
+    padding-right: $panel-padding;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    /*max-width: $max-site-width;*/
+    width: auto;
+
+    /*@media screen and (min-width: $screen-md) {*/
+      /*padding-left: $gutter-side-notebook;*/
+      /*padding-right: $gutter-side-notebook;*/
+      /*padding-bottom: 1.25rem;*/
+    /*}*/
+
+    /*@media screen and (min-width: $screen-lg) {*/
+      /*padding-left: $gutter-side-desktop;*/
+      /*padding-right: $gutter-side-desktop;*/
+    /*}*/
+  }
+}
+
+#panels-alerts-container {
+  @media screen and (min-width: $screen-md) {
+    .alert-level {
+      display: block;
+      margin-right: 0;
+    }
+
+    button.close {
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+.alert-level {
+  /*font-family: $font-vesperlibre-regular;*/
+  font-size: 20px;
+
+  /*@media screen and (min-width: $screen-md) {*/
+    /*display: inline-block;*/
+    /*font-size: 28px;*/
+    /*margin-bottom: 0;*/
+    /*margin-right: 8rem;*/
+    /*position: relative;*/
+    /*top: 3px;*/
+  /*}*/
+}

@@ -1,0 +1,42 @@
+{% load analysis help humanize i18n panels_extras website_tags %}
+<div class="cost-breakdown">
+    <div class="cost-breakdown__group cost-breakdown__group--top-cost-categories">
+        <h3 class="cost-breakdown__group-label">{% translate 'Top Cost Categories' %}{% help 'insights__top_cost_categories_all_other_costs' %}</h3>
+        <canvas id="insightsPie" class="insightsPie cost-breakdown__graph" data-pie-chart-data="{{ cost_breakdown.chart_data|jsonattr }}"></canvas>
+    </div>
+    <div class="cost-breakdown__group cost-breakdown__group--program-costs">
+    <div class="page-break"></div>
+        <h3 class="cost-breakdown__group-label">{% translate 'All Cost Categories' %}</h3>
+        <table class="cost-breakdown__table">
+            <col style="width:35%">
+            <col style="width:35%">
+            <col style="width:15%">
+            <col style="width:15%">
+            <thead>
+                <tr>
+                    <th>{{ 'Cost Type'|label_override:'ci_cost_type' }}</th>
+                    <th>{% translate 'Category' %}</th>
+                    <th class="cost-breakdown__table-right">{% translate 'Amount' %}</th>
+                    <th class="cost-breakdown__table-right">{% translate '% of Total Amount' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cost_breakdown.costs_by_cost_type_category %}
+                <tr>
+                    <td>{{ item.cost_type_name }}</td>
+                    <td class="cost-breakdown__category">{{ item.category_name }}</td>
+                    <td class="cost-breakdown__amount cost-breakdown__table-right">{{ item.amount|format_currency:analysis.currency_code }}</td>
+                    <td class="cost-breakdown__percentage cost-breakdown__table-right">{{ item.percent_of_total|floatformat:2 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"><strong>{% translate 'Total Amount' %}</strong></td>
+                    <td class="cost-breakdown__table-right">{{ cost_breakdown.total_cost|format_currency:analysis.currency_code }}</td>
+                    <td class="cost-breakdown__table-right">100%</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

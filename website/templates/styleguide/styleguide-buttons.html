@@ -1,0 +1,87 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+
+{% block content %}
+  <h1 class="styleguide__title"><a href="{% url 'styleguidetoc' %}">Styleguide</a> / Buttons and Links</h1> 
+  <div class="styleguide__layout-table">
+    <div class="styleguide__layout-table-row styleguide__layout-table-row--header">
+      <div class="styleguide__layout-table-cell"></div>
+      <div class="styleguide__layout-table-cell">Resting</div>
+      <div class="styleguide__layout-table-cell">Focus</div>
+      <div class="styleguide__layout-table-cell">Hover</div>
+      <div class="styleguide__layout-table-cell">Active (Pressed)</div>
+    </div>
+    {% if primary.visible == 'true' %}
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">
+        <div>Primary</div>
+        {% if primary.usage %}
+        <small><ul class="styleguide__typography-typeface-usage-list">
+          {% for usage in primary.usage %}
+            <li class="styleguide__typography-typeface-usage">{{ usage }}</li>
+          {% endfor %}
+        </ul></small>
+        {% endif %}
+      </div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-primary">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-primary focus">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-primary hover">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-primary active">Button</a></div>
+    </div>
+    {% endif %}
+    {% if secondary.visible == 'true' %}
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">
+        <div>Secondary</div>
+        {% if secondary.usage %}
+        <small><ul class="styleguide__typography-typeface-usage-list">
+          {% for usage in secondary.usage %}
+            <li class="styleguide__typography-typeface-usage">{{ usage }}</li>
+          {% endfor %}
+        </ul></small>
+        {% endif %}
+      </div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-secondary">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-secondary focus">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-secondary hover">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-secondary active">Button</a></div>
+    </div>   
+    {% endif %} 
+    {% if tertiary.visible == 'true' %}
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">
+        <div>Tertiary</div>
+        {% if tertiary.usage %}
+        <small><ul class="styleguide__typography-typeface-usage-list">
+          {% for usage in tertiary.usage %}
+            <li class="styleguide__typography-typeface-usage">{{ usage }}</li>
+          {% endfor %}
+        </ul></small>
+        {% endif %}
+      </div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-tertiary">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-tertiary focus">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-tertiary hover">Button</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="btn-tertiary active">Button</a></div>
+    </div>   
+    {% endif %}
+    {% if textLink.visible == 'true' %}
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">
+        <div>Text Links</div>
+        {% if textLink.usage %}
+        <small><ul class="styleguide__typography-typeface-usage-list">
+          {% for usage in textLink.usage %}
+            <li class="styleguide__typography-typeface-usage">{{ usage }}</li>
+          {% endfor %}
+        </ul></small>
+        {% endif %}
+      </div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="">Link Text</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="focus">Link Text</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="hover">Link Text</a></div>
+      <div class="styleguide__layout-table-cell"><a href="#" class="active">Link Text</a></div>
+    </div>
+    {% endif %}  
+  </div>
+
+{% endblock content %}

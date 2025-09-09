@@ -1,0 +1,39 @@
+{% load panels_extras %}
+<div class="table-wrapper">
+    <table class="list">
+        <thead>
+            <tr>
+                {% for field in list_display %}
+                    <th class="{{ field.2 }}{% if not field.0 in list_display_mobile %} hidden-xs{% endif %}">{{ field.1 }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in results %}
+                <tr class="{% if row.operations|length %}mark-trigger{% endif %}" data-obj-info='{{ row.obj_info|jsonattr }}'>
+                    {% for field_name, field_value in row.fields %}
+                    <td class="{% if not field_name in list_display_mobile %} hidden-xs{% endif %}{% if forloop.first and row.operations|length %} filter-list-title-truncated-cell{% endif %}">
+                        {% if forloop.first and row.operations|length %}
+                            <span class="filter-list-title-truncated">
+                                <a title="{{ field_value|strip_svg_and_tags }}" href="#">{{ field_value }}</a>
+                                <div class="operations">
+                                    <a class="operations-primary" href="#">{{ field_value }}</a>
+                                    <div class="operations-links">
+                                        {% for operation in row.operations %}
+                                            {{ operation.render }}
+                                        {% endfor %}
+                                    </div>
+                                    <a href="#" class="operations-close"><span>&#x2573;</span></a>
+                                </div>
+                            </span>
+                        {% else %}
+                            {{ field_value }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

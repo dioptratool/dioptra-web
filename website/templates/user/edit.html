@@ -1,0 +1,13 @@
+{% extends 'panel-form.html' %}
+{% load panels_extras panels_form_extras static %}
+
+
+{% block panel-body %}
+    {% csrf_token %}
+    {% if form.Meta.fieldsets %}
+        {% include '_form-with-fieldsets.html' with form=form only %}
+    {% else %}
+        {% include '_form.html' with form=form only %}
+    {% endif %}
+
+{% endblock panel-body %}

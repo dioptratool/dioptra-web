@@ -1,0 +1,18 @@
+{% extends 'html-panel.html' %}
+
+{% block panel-head %}
+<div class="panel-head-top">
+  <div class="panel-head-title">
+    <h2>More Help</h2>
+    <h1 class="help__category-title">Percentage Allocation Suggestion</h1>
+  </div>
+  <div class="panel-head-auxiliary">
+  </div>
+</div>
+{% endblock panel-head %}
+
+{% block panel-body %}
+    <div class="panel-body-contents help__category-container">
+        <span class="help__category-text">{{ help_text|safe }}</span>
+    </div>
+{% endblock panel-body %}

@@ -1,0 +1,45 @@
+from allauth.socialaccount.providers.base import AuthAction, ProviderAccount
+from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
+from .views import MicrosoftGraphOAuth2Adapter
+
+
+class MicrosoftGraphAccount(ProviderAccount):
+    def get_avatar_url(self):
+        return self.account.extra_data.get("photo")
+
+    def to_str(self):
+        dflt = super().to_str()
+        return self.account.extra_data.get("displayName", dflt)
+
+
+class MicrosoftGraphProvider(OAuth2Provider):
+    id = "microsoft"
+    name = "Microsoft Graph"
+    account_class = MicrosoftGraphAccount
+    logo_filename = "website/images/microsoft-logo.png"
+    oauth2_adapter_class = MicrosoftGraphOAuth2Adapter
+
+    def get_default_scope(self):
+        """
+        Docs on Scopes and Permissions:
+        https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#scopes-and-permissions
+        """
+        return ["User.Read", "openid", "profile", "email"]
+
+    def get_auth_params_from_request(self, request, action):
+        ret = super().get_auth_params_from_request(request, action)
+        if action == AuthAction.REAUTHENTICATE:
+            ret["prompt"] = "select_account"
+        return ret
+
+    def extract_uid(self, data):
+        return str(data["id"])
+
+    def extract_common_fields(self, data):
+        return dict(
+            email=data.get("mail") or data.get("userPrincipalName"),
+            name=data["displayName"],
+        )
+
+
+provider_classes = [MicrosoftGraphProvider]

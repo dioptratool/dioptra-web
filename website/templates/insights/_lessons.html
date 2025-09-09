@@ -1,0 +1,39 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="lessons">
+    {% with lesson=object|attr:lesson_field %}
+        <span class="lessons__header">
+            {% if lesson or can_change_analysis %}
+                {% if lesson_field == 'breakdown_lesson' %}
+                    <h3 class="lessons__group-label-cost-breakdown">
+                        {% blocktranslate %} Takeaways from the cost breakdown {% endblocktranslate %}
+                    </h3>
+                {% else %}
+                    <h3 class="lessons__group-label-analysis">
+                        {% blocktranslate %} Lessons and takeaways from the analysis results {% endblocktranslate %}
+                    </h3>
+                {% endif %}
+            {% endif %}
+            {% if can_change_analysis %}
+                <a class="lessons__edit" href="{% url 'analysis-insights-lesson-editor' pk=object.pk lesson_field=lesson_field %}"
+                   data-panels-trigger data-panels-reload-on="saved">
+                    {% translate 'Edit' %}
+                </a>
+            {% endif %}
+        </span>
+        <div class="lessons__input">
+            {% if lesson %}
+                <span class="lessons__value">{{ lesson|safe }}</span>
+            {% elif can_change_analysis %}
+                <p class="lessons__placeholder">
+                    {% if lesson_field == 'breakdown_lesson' %}
+                        {% blocktranslate %} You may enter any takeaways from the
+                        cost breakdown here. {% endblocktranslate %}
+                    {% else %}
+                        {% blocktranslate %} You may enter lessons and takeaways
+                        from the analysis results here. {% endblocktranslate %}
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+    {% endwith %}
+</div>

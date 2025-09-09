@@ -1,0 +1,102 @@
+.btn-primary,
+.btn-secondary {
+  background-color: transparent;
+  color: darken($color-topaz, 4%);
+  font-weight: $font-weight-bold;
+  text-decoration: underline;
+  @include font-size(24, 1.25);
+
+  &:after {
+    background-repeat: no-repeat;
+    background-position: 0 -28px;
+    background-image: url('../images/btn-primary--bg.png');
+    background-size: 18px 42px;
+    content: "";
+    display: inline-block;
+    margin-left: 1.2rem;
+    vertical-align: middle;
+    width:  18px;
+    height: 14px;    
+  }
+
+  &.focus,
+  &:focus {
+    background-color: transparent;
+    color: darken($color-topaz, 4%);
+
+    &:hover {
+      color: $color-lapis;
+
+      &:after {
+        background-position: 0 -14px;
+      }         
+    }
+  }   
+
+  &:active,
+  &.active {
+    background-color: transparent;
+    color: $color-black;
+
+    &:after {
+      background-position: 0 0;
+    }
+
+    &:hover {
+      background-color: transparent;
+      color: $color-lapis;
+
+      &:after {
+        background-position: 0 -14px;
+      }         
+    }      
+  }
+
+  &:hover,
+  &.hover {
+    background-color: transparent;
+    color: $color-lapis;
+
+    &:after {
+      background-position: 0 -14px;
+    }    
+  } 
+}
+
+.btn-secondary {
+  font-style: italic;
+  @include font-size(20, 1.5);
+
+  &:after {
+    background-position: 0 -38px;
+    background-image: url('../images/btn-secondary--bg.png');
+    background-size: 13px 57px;
+    margin-left: 0.8rem;
+    width:  13px;
+    height: 19px;     
+  }  
+
+  &:hover,
+  &.hover {
+
+    &:after {
+      background-position: 0 -19px;
+    }    
+  } 
+
+  &.focus {
+    &:hover {
+      &:after {
+        background-position: 0 -19px;
+      }         
+    }
+  } 
+
+  &.active {
+    &:hover {
+      &:after {
+        background-position: 0 0;
+      }         
+    }
+  }   
+}

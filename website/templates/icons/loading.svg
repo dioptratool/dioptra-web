@@ -1,0 +1,11 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="icon-loading-title">
+  <title id="icon-loading-title">Loading</title>
+  <path d="M24 4V12" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 36V44" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9.85999 9.85986L15.52 15.5199" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32.48 32.48L38.14 38.14" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M4 24H12" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M36 24H44" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9.85999 38.14L15.52 32.48" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32.48 15.5199L38.14 9.85986" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

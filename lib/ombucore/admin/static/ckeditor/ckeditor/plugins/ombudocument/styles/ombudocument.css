@@ -1,0 +1,30 @@
+/**
+ * In Editor styles.
+ */
+[data-widget="ombudocument"] {
+  padding: 0.5em 1em;
+  margin-bottom: 0.5em;
+  border-radius: 10px;
+
+}
+[data-widget="ombudocument"] .ombudocument-type {
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+[data-widget="ombudocument"] .ombudocument-title {}
+
+.ombuassets-document-align-left {
+  float: left;
+  margin-right: 1em;
+}
+.ombuassets-document-align-right {
+  float: right;
+  margin-left: 1em;
+}
+
+
+/**
+ * Dialog styles.
+ */
+.ombudocument-dialog {}
+.ombudocument-dialog .preview {}

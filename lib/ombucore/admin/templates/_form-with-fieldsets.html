@@ -1,0 +1,48 @@
+{% load panels_form_extras %}
+
+<div class="form-tabs">
+  <div class="form-tabs-tabs">
+    {% for fieldset in form.Meta.fieldsets %}
+    <a href="#" data-tab="{{ fieldset.0|slugify }}" class="{% if forloop.first %}active{% endif %} {% if form|fieldset_has_errors:fieldset %}error{% endif %} {% if forloop.first and form.non_field_errors %}error{% endif %}">
+          {% if fieldset.1.legend %}
+              {{ fieldset.1.legend }}
+          {% else %}
+              {{ fieldset.0 }}
+          {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+  <div class="form-tabs-contents contents-at-top contents-at-bottom">
+    <div class="form-tabs-contents-scroller">
+      {% for fieldset in form.Meta.fieldsets %}
+        <div data-tab="{{ fieldset.0|slugify }}" class="{% if forloop.first %}active{% endif %} fieldset.2">
+          {% if forloop.first %}
+            {% if form.non_field_errors %}
+              <div class="help-block errors">
+                <ul>
+                  {% for error in form.non_field_errors %}
+                    <li><em>{{ error }}</em></li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endif %}
+          {% if fieldset.1.intro %}
+            <div class="help-block intro">{{ fieldset.1.intro|safe }}</div>
+          {% endif %}
+          {% for field_name in fieldset.1.fields %}
+            {% if field_name in form.fields %}
+                {% with field=form|get_field:field_name %}
+                    {% if field.is_hidden %}
+                      {{ field }}
+                    {% else %}
+                      {% include 'bootstrap/field.html' with field=field|add_input_classes %}
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

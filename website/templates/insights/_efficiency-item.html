@@ -1,0 +1,19 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="efficiency-item">
+    <div class="efficiency-item__groups">
+        <div class="efficiency-item__group efficiency-item__group--direct">
+            <div class="efficiency-item__group-primary">
+                <div class="efficiency-item__cost">{{ metric.output_cost_direct_only|format_currency:analysis.currency_code }}</div>
+                <div class="efficiency-item__group-label">{{ metric.output_metric.metric_name }} ({% translate 'Program Costs only' %}){% help 'insights__cost_per_metric_direct' %}</div>
+            </div>
+            <div class="efficiency-item__icon">{% include 'icons/insights/'|add:icon|add:'.svg' %}</div>
+        </div>
+        <div class="efficiency-item__group efficiency-item__group--total">
+            <div class="efficiency-item__group-primary">
+                <div class="efficiency-item__cost">{{ metric.output_cost_all|format_currency:analysis.currency_code }}</div>
+                <div class="efficiency-item__group-label">{{ metric.output_metric.metric_name }} ({% translate 'including Program Costs, Support Costs, Indirect Costs' %}){% help 'insights__cost_per_metric_shared' %}</div>
+            </div>
+            <div class="efficiency-item__icon">{% include 'icons/insights/'|add:icon|add:'.svg' %}</div>
+        </div>
+    </div>
+</div>

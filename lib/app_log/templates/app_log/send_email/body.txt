@@ -1,0 +1,6 @@
+{{log_entry.timestamp}}
+
+Actor: {{log_entry.actor_name}}
+Action: {{log_entry.action}}
+Object: {{log_entry.content_type_name}}
+Message: {{log_entry.message|safe}}

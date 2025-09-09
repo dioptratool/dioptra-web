@@ -1,0 +1,30 @@
+{% load panels_extras %}
+<div class="table-wrapper table-wrapper-media-grid">
+    <div class="grid-media">
+        {% for item in results %}
+          <div class="td">
+            <div class="mark-trigger" data-obj-info='{{ item.obj_info|jsonattr }}'>
+                <div class="media-item-preview">
+                    <div class="media-item-fields">
+                        {% spaceless %}
+                        <div class="media-item-fields-center">
+                            {% for field_name, field_value in item.fields %}
+                                {{ field_value }}
+                            {% endfor %}
+                        </div>
+                        {% endspaceless %}
+                    </div>
+                    <div class="operations">
+                        <div class="operations-links">
+                            {% for operation in item.operations %}
+                                {{ operation.render }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="media-item-title">{{ item.obj.title }}</div>
+            </div>
+          </div>
+        {% endfor %}
+    </div>
+</div>

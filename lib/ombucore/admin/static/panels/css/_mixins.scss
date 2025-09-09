@@ -1,0 +1,187 @@
+@mixin desktop {
+  @media screen and (min-width: $screen-sm-min) {
+    @content;
+  }
+}
+
+@mixin scrolling-shadow-top() {
+  content: '';
+  position: absolute;
+  height: $panel-shadow-height;
+  background-repeat: no-repeat;
+  background: radial-gradient(50% 0, farthest-side, $panel-shadow-color, rgba(0,0,0,0));
+  background: radial-gradient(farthest-side at 50% 0, $panel-shadow-color, rgba(0,0,0,0));
+  z-index: 10;
+  transition: all 0.1s linear;
+  opacity: 1;
+  top: 0;
+}
+
+@mixin scrolling-shadow-bottom() {
+  content: '';
+  position: absolute;
+  height: $panel-shadow-height;
+  background-repeat: no-repeat;
+  background: radial-gradient(50% 100%, farthest-side, $panel-shadow-color, rgba(0,0,0,0));
+  background: radial-gradient(farthest-side at 50% 100%, $panel-shadow-color, rgba(0,0,0,0));
+  z-index: 10;
+  transition: all 0.1s linear;
+  opacity: 1;
+  bottom: 0;
+}
+
+@mixin dot($dot-size: $panel-form-dot-size) {
+  content: '';
+  position: absolute;
+  width: $dot-size;
+  height: $dot-size;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+@mixin desktop-panel-positions-for($n) {
+  $per-panel: calc((100% - $panel-width) / $n);
+  $i: 1;
+  .is-panel {
+    @if $i == $n {
+      right: 0;
+      + .is-panel {
+        right: -$panel-width;
+      }
+    }
+    @else {
+      right: $per-panel * ($n - $i);
+      $k: $i + 1;
+      @include desktop-sub-panel-position-for($k, $n, $per-panel);
+    }
+  }
+}
+
+@mixin desktop-sub-panel-position-for($i, $n, $per-panel) {
+  + .is-panel {
+    @if $i == $n {
+      right: 0;
+    }
+    @else {
+      right: $per-panel * ($n - $i);
+    }
+    $k: $i + 1;
+    @if $k <= $n {
+      @include desktop-sub-panel-position-for($k, $n, $per-panel);
+    }
+    @else {
+      + .is-panel {
+        right: -$panel-width;
+      }
+    }
+  }
+}
+
+@mixin mobile-panel-positions-for($n) {
+  .is-panel {
+    @if $n == 1 {
+      left: 0;
+      + .is-panel {
+        left: -100%;
+      }
+    }
+    @else {
+      left: 25%;
+      @include mobile-sub-panel-position-for(2, $n)
+    }
+  }
+}
+
+@mixin mobile-sub-panel-position-for($i, $n) {
+  + .is-panel {
+    @if $i == $n {
+      left: 0;
+      + .is-panel {
+        left: -100%;
+      }
+    }
+    @else {
+      $k: $i + 1;
+      @include mobile-sub-panel-position-for($k, $n);
+    }
+  }
+}
+
+@mixin loading-spinner($size: 100px, $color: $panel-gray-dark) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: $size;
+  height: $size;
+  margin-left: calc($size/-2);
+  margin-top: calc($size/-2);
+  border: calc($size / 10) solid lighten($color, 20%);
+  border-bottom-color: $color;
+  border-radius: 50%;
+  @include animate(spin, 1.1s, infinite, ease-in-out);
+}
+
+
+@mixin animate($name, $duration: 0.15s, $iteration: infinite, $timing-function: linear, $direction: normal) {
+  -webkit-animation-duration: $duration;
+     -moz-animation-duration: $duration;
+       -o-animation-duration: $duration;
+          animation-duration: $duration;
+  -webkit-animation-iteration-count: $iteration;
+     -moz-animation-iteration-count: $iteration;
+       -o-animation-iteration-count: $iteration;
+          animation-iteration-count: $iteration;
+  -webkit-animation-name: $name;
+     -moz-animation-name: $name;
+       -o-animation-name: $name;
+          animation-name: $name;
+  -webkit-animation-direction: $direction;
+     -moz-animation-direction: $direction;
+       -o-animation-direction: $direction;
+          animation-direction: $direction;
+  -webkit-animation-timing-function: $timing-function;
+     -moz-animation-timing-function: $timing-function;
+       -o-animation-timing-function: $timing-function;
+          animation-timing-function: $timing-function;
+}
+
+@mixin transform-origin($value) {
+  -webkit-transform-origin: $value;
+     -moz-transform-origin: $value;
+       -o-transform-origin: $value;
+          transform-origin: $value;
+}
+
+@mixin transform($value) {
+  -webkit-transform: $value;
+     -moz-transform: $value;
+       -o-transform: $value;
+          transform: $value;
+}
+
+// element invisible
+@mixin visually-hidden {
+  // "!important" is used to prevent unintentional overrides.
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+// Turns off the visually-hidden effect.
+@mixin visually-hidden-off {
+  position: static !important;
+  clip: auto;
+  height: auto;
+  width: auto;
+  overflow: auto;
+}
+
+// Reinstates bootstrap default focus state if it has been removed
+@mixin default-focus() {
+  border-color: #66afe9;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}

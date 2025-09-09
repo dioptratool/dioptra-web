@@ -1,0 +1,33 @@
+# Base app
+django==5.2.4
+psycopg[binary, pool]==3.2.9
+
+beautifulsoup4==4.13.4
+structlog==25.4.0
+typeguard==4.4.4
+requests==2.32.4
+
+# Django packages
+django-any-urlfield==2.7.post1
+django-ckeditor==6.7.3
+django-imagekit==5.0.0
+django-polymorphic-tree==2.1
+django-taggit-autosuggest==0.4.2
+django-sortedm2m==4.0.0
+django-filter==25.1
+
+
+# Permissions
+rules==3.5 # https://github.com/dfunckt/django-rules
+
+# Authentication and Users
+django-allauth==65.10.0
+django_otp==1.6.1
+
+# Excel Integration
+openpyxl==3.1.5
+xlrd==2.0.2
+
+
+# currency
+Babel==2.17.0

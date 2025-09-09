@@ -1,0 +1,103 @@
+{% extends "theme_base.html" %}
+
+{% block content_top %}{% endblock %}
+
+{% block content %}
+
+  <div class="analysis {% if not step_guidance_is_open %}analysis--guidance-collapsed{% endif %}">
+    <div class="analysis__sidebar">
+      {% block analysis_sidebar %}
+        <div class="analysis-sidebar">
+          <div class="analysis-sidebar__exit">
+            <a class="analysis-sidebar__navigation-link analysis-sidebar__navigation-link--exit" href="{% url 'dashboard' %}">{% include 'icons/exit.svg' %}Exit Analysis</a>
+          </div>
+          <div class="analysis-sidebar__logo"><a class="analysis-sidebar__logo-link" href="/">{% include 'icons/logo-s.svg' %}</a></div>
+          <ul class="analysis-sidebar__navigation analysis-sidebar__navigation--primary">
+            {% for step in workflow.main_analysis_steps %}
+              {% if step.is_enabled %}
+              <li class="analysis-sidebar__navigation-item">
+                {% if step.dependencies_met %}
+                  <a class="analysis-sidebar__navigation-link{% if step == view.parent_step %} analysis-sidebar__navigation-link--active{% endif %}{% if step.is_complete %} analysis-sidebar__navigation-link--complete{% endif %}{% if step.steps and step == view.parent_step %} analysis-sidebar__navigation-link--with-substeps{% endif %}" href="{{ step.get_href }}">{% if step == view.parent_step %}{% include 'icons/caret-right.svg' %}{% elif step.is_complete %}{% include 'icons/checkmark.svg' %}{% endif %}{{ step.get_nav_title }}</a>
+                  {% if step.steps and step == view.parent_step %}
+                    <ul class="analysis-sidebar__navigation analysis-sidebar__navigation--subnav">
+                      {% for substep in step.steps %}
+                        <li class="analysis-sidebar__navigation-item analysis-sidebar__navigation-item--subnav">
+                          {% if substep.dependencies_met %}
+                            <a class="analysis-sidebar__navigation-subnav-link{% if substep.get_href == request.path %} analysis-sidebar__navigation-subnav-link--active{% endif %}{% if substep.is_complete %} analysis-sidebar__navigation-subnav-link--complete{% endif %}" href="{{ substep.get_href }}">{% if substep.is_complete %}{% include 'icons/checkmark.svg' %}{% endif %}{{ substep.get_nav_title }}{% if substep.get_href == request.path %}<span class="analysis-sidebar__navigation-subnav-link-active-icon">{% include 'icons/sidebar-arrow.svg' %}</span>{% endif %}</a>
+                          {% else %}
+                            <span class="analysis-sidebar__navigation-subnav-link analysis-sidebar__navigation-subnav-link--locked">{{ substep.get_nav_title }}</span>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                {% else %}
+                  <span class="analysis-sidebar__navigation-link analysis-sidebar__navigation-link--locked">{{ step.get_nav_title }}</span>
+                {% endif %}
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endblock analysis_sidebar %}
+    </div>
+
+    <div class="analysis__main">
+
+      {% block analysis_navigation %}
+
+        <div class="analysis-navigation">
+          <div class="container">
+            <div class="analysis-navigation__inner">
+              <div class="analysis-navigation__summary">
+                {# Nav text (e.g. "Choose data source") #}
+                {% if analysis.pk %}
+                  <strong>{{ analysis.title }}</strong><span class="analysis__navigation-intervention-name">{{ analysis.intervention_name }}</span>
+                {% endif %}
+              </div>
+
+            {% if analysis.pk %}
+              <div class="analysis-navigation__prev-next-wrapper">
+                {% with prev=step.get_prev %}
+                  {% if prev %}
+                    {% if prev.dependencies_met %}
+                      <a class="analysis-navigation__prev-next analysis-navigation__prev-next--prev" href="{{ prev.get_href }}">{% include 'icons/caret-left-thin.svg' %}<strong>Back</strong></a>
+                    {% else %}
+                      <span class="analysis-navigation__prev-next analysis-navigation__prev-next--prev disabled" disabled>{% include 'icons/caret-left-thin.svg' %}<strong>Back</strong></span>
+                    {% endif %}
+                  {% endif %}
+                {% endwith %}
+
+                {% with next=step.get_next %}
+                  {% if next %}
+                    {% if next.dependencies_met %}
+                      <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next" href="{{ next.get_href }}"><strong>Next</strong>{% include 'icons/caret-right-thin.svg' %}</a>
+                    {% else %}
+                      <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>Next</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+                    {% endif %}
+                  {% endif %}
+                {% endwith %}
+              </div>
+            {% endif %}
+
+            </div>
+          </div>
+        </div>
+
+      {% endblock analysis_navigation %}
+
+      <div class="container">
+        {% block analysis_header %}
+          <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+            <h1 class="analysis__title">{{ title }}</h1>
+          </div>
+        {% endblock analysis_header %}
+
+        {% block analysis_content %}
+        {% endblock analysis_content %}
+      </div>
+    </div>
+  </div>
+
+  <div class="analysis__loading">{% include 'icons/loading.svg' %}</div>
+{% endblock content %}

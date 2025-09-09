@@ -1,0 +1,70 @@
+.rte table {
+  & {
+    border-collapse: separate;
+    border-spacing: 1px 0;
+    margin-top: 5rem;
+    margin-bottom: 5.8rem;
+    text-align: left;
+    width: 100%;
+  }
+
+  > caption {
+    font-weight: $font-weight-bold;
+    margin-bottom: 2.6rem;
+    text-align: left;
+    @include font-size(20, 1.44);
+  }
+
+  > thead > tr > th {
+    background-color: $color-lapis;
+    color: $color-white;
+    font-weight: $font-weight-bold;
+    padding: 1rem 1.5rem;
+    text-transform: uppercase;
+    @include font-size(14, 2.142857);
+  }
+
+  > tbody > tr > td {
+    padding: 1.5rem;
+    @include font-size(16, 1.25);
+  }
+
+  > tbody > tr {
+    &:nth-child(odd) {
+      background-color: $color-moonstone;
+    }
+  }
+}
+
+// Sort 
+
+.table-header-order-link-group {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.table-header-order-link--sorted-link,
+.table-header-order-link--unsorted-link {
+  display: block;
+  min-width: 2rem;
+  text-align: center;
+  text-decoration: none;
+
+  &:focus {
+    @include default-focus-dark();
+  }
+
+  svg {
+    * {
+      fill: $color-smoke;
+    }
+  }
+
+  .results__heading-sort__active {
+    svg {
+      * {
+        fill: $color-white;
+      }
+    }
+  }  
+}

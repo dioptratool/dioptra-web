@@ -1,0 +1,10 @@
+{% load i18n %}
+<button class="analysis-table__category-toggle" aria-label="{% translate 'Toggle Category' %}"></button>
+<div class="analysis-table__category-toggle-icon-wrapper">
+    <span class="analysis-table__category-toggle-icon analysis-table__category-toggle-icon--expand">
+        {% include 'icons/plus.svg' %}
+    </span>
+    <span class="analysis-table__category-toggle-icon analysis-table__category-toggle-icon--collapse">
+        {% include 'icons/minus.svg' %}
+    </span>
+</div>

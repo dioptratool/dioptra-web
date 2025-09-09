@@ -1,0 +1,3 @@
+{{ token|stringformat:".6d" }}
+
+This is your Dioptra verification code. Visit [Dioptra] [https://{{ domain }}{% url 'two-factor-authenticate' %}] to enter your code and login.

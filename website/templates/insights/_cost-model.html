@@ -1,0 +1,51 @@
+{% load help humanize i18n website_tags %}
+<div class="cost-model" id="cost-model">
+    <div class="cost-model__description">
+        <p>{% blocktranslate %}The cost-efficiency results above reflect all of the features of this program: how many inputs were needed, what prices were paid for those inputs, and how much of each input was used for {{ intervention_name }} compared with the other interventions in this grant. A good way to explore what is driving these results is to arrange the lines of the cost model from highest-value to lowest-value, in order to see which inputs account for most of the cost of {{ intervention_name }}. Are the inputs which we spend the most money on also those which provide the most value to our clients? If spending on a particular input seems disproportionately high, why is it higher than in other programs? Did we use more of that input for this program, versus others? Did that input cost more for this program than it usually does?{% endblocktranslate %}</p>
+    </div>
+    <div class="cost-model__table-group">
+        <div class="cost-model__actions cost-model__actions--header">
+            <a class="cost-model__action" href="{% url 'analysis-cost-model-spreadsheet' object.id %}">Download full cost model</a>
+        </div>        
+        <div class="cost-model__table-wrapper">
+            <table class="cost-model__table">
+                <thead>
+                    <tr>
+                        <th>{{ 'Cost Type'|label_override:'ci_cost_type' }}</th>
+                        <th>{% translate 'Category' %}</th>
+                        <th>{% translate 'Cost Item' %}</th>
+                        <th class="analysis-table__grant-cell">{{ 'Grant'|label_override:'ci_grant_code' }}</th>
+                        <th>{{ 'Sector Code' }}</th>
+                        <th>{{ 'Site'|label_override:'ci_site_code' }}</th>
+                        <th class="cost-model__table-right-aligned">{{ 'Total Cost'|label_override:'ci_total_cost' }}{% include 'features/_table-header-order-link.html' with column='total_cost' column_name='total_cost' order_by=request.GET.order_by|default:'-allocated_cost' anchor="cost-model" %}</th>
+                        <th class="cost-model__table-right-aligned">{% translate '% to Intervention' %}{% include 'features/_table-header-order-link.html' with column='config__allocation' column_name='config__allocation' order_by=request.GET.order_by|default:'-allocated_cost' anchor="cost-model" %}</th>
+                        <th class="cost-model__table-right-aligned">{% translate 'Item Total' %}{% include 'features/_table-header-order-link.html' with column='allocated_cost' column_name='allocated_cost' order_by=request.GET.order_by|default:'-allocated_cost' anchor="cost-model" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page.object_list %}
+                    <tr>
+                        <td>{{ item.config.cost_type.name }}</td>
+                        <td>{% if item.config.category %}{{ item.config.category.name }}{% elif item.config.analysis_cost_type %}{{ item.config.get_pretty_analysis_cost_type }}{% else %}Other Supporting Costs{% endif %}</td>
+                        <td>{{ item.budget_line_description }}</td>
+                        <td>{{ item.grant_code }}</td>
+                        <td>{{ item.sector_code }}</td>
+                        <td>{{ item.site_code }}</td>
+                        <td class="cost-model__table-right-aligned">{{ item.total_cost|format_currency:analysis.currency_code }}</td>
+                        <td class="cost-model__table-right-aligned">{% if item.note %}{% include 'help/_help-allocation.html' %}{% endif %}
+                            {% get_allocation_by_intervention_instance_for_cost_line_item item intervention_instance %}
+                        </td>
+                        <td class="cost-model__table-right-aligned">{{ item.allocated_cost|format_currency:analysis.currency_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="cost-model__actions cost-model__actions--footer">
+            {% include 'features/_pagination.html' with is_paginated=True page_obj=page paginator=paginator anchor="cost-model" %}
+            {% if not hide_download %}
+              <a class="cost-model__action" href="{% url 'analysis-cost-model-spreadsheet' object.id %}">Download full cost model</a>
+            {% endif %}
+        </div>           
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{% if is_paginated %}
+<div class="pager">
+    <span class="pager__status">{{ page_obj.start_index }}-{{ page_obj.end_index }} / {{ paginator.count }}</span>
+    <ul class="pager__items">
+        {% if page_obj.has_previous %}
+            <li class="pager__item pager__item--prev-next pager__item--prev"><a href="?page={{ page_obj.previous_page_number }}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}{% if anchor %}#{{ anchor }}{% endif %}" class="pager__link">Prev</a></li>
+        {% else %}
+            <li class="pager__item pager__item--prev-next pager__item--prev"><span class="pager__link pager__link--disabled">Prev</span></li>
+        {% endif %}
+        {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+                <li class="pager__item"><span class="pager__link active">{{ i }}</span></li>
+            {% else %}
+                <li class="pager__item"><a href="?page={{ i }}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}{% if anchor %}#{{ anchor }}{% endif %}" class="pager__link">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="pager__item pager__item--prev-next pager__item--next"><a href="?page={{ page_obj.next_page_number }}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}{% if anchor %}#{{ anchor }}{% endif %}" class="pager__link">Next</a></li>
+        {% else %}
+            <li class="pager__item pager__item--prev-next pager__item--next"><span class="pager__link pager__link--disabled">Next</span></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

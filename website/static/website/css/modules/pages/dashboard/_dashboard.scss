@@ -1,0 +1,89 @@
+.dashboard {
+  margin-bottom: $large-margin;
+}
+
+.dashboard__header {
+  margin-bottom: 2.1rem;
+}
+
+.dashboard__create {
+  @include button-submit();
+}
+
+.dashboard__table-wrapper {
+  margin-bottom: 3.6rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.dashboard__table {
+  border-collapse: separate;
+  border-spacing: 1px 0;
+  border-bottom: 1px solid $color-smoke;
+  margin-top: 0;
+  margin-bottom: 0;
+  text-align: left;
+  width: 100%;
+
+  > thead > tr > th {
+    background-color: $color-lapis;
+    color: $color-white;
+    font-weight: $font-weight-bold;
+    padding: 1rem;
+    vertical-align: middle;
+    white-space: nowrap;
+    @include font-size(14, 1.1429);
+
+    &.dashboard__table-th--long {
+      padding-right: 2rem;
+      position: relative;
+      white-space: normal;
+
+      .table-header-order-link-group {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 0;
+      }
+    }
+
+    span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+
+  > tbody > tr {
+    &:nth-child(odd) {
+      background-color: $color-moonstone;
+    }
+
+    > td {
+      border: none;
+      padding: 1rem;
+      vertical-align: top;
+      @include font-size(14, 1.429);
+    }
+  } 
+}
+
+.dashboard__table-actions {
+  white-space: nowrap;
+}
+
+.dashboard__date-cell {
+  min-width: 13.5rem;
+}
+
+.dashboard__cost-cell {
+}
+
+.dashboard__edit-link {
+  display: inline-block;
+  margin-right: 1rem;
+  text-decoration: none;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}

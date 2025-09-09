@@ -1,0 +1,6 @@
+{% load panels_extras %}
+<script type="text/javascript">
+    $(function() {
+        Panels.current.{{ panel_method }}({{ payload|jsonify|safe }});
+    });
+</script>

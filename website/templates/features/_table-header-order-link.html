@@ -1,0 +1,17 @@
+{% if order_by == column %}
+    <div class="table-header-order-link-group">
+        <span class="table-header-order-link--sorted-link"><span class="results__heading-sort results__heading-sort--ascending results__heading-sort__active">{% include 'svg/arrow-up.svg.html' %}</span></span>
+        <a class="table-header-order-link--sorted-link" title="Sort descending" href="?order_by={{ "-"|add:column }}{% for key,value in request.GET.items %}{% if key != 'order_by' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if anchor %}#{{ anchor }}{% endif %}"><span class="results__heading-sort results__heading-sort--descending">{% include 'svg/arrow-down.svg.html' %}</span></a>
+    </div>
+{% elif order_by == "-"|add:column %}
+    <div class="table-header-order-link-group">
+        <a class="table-header-order-link--sorted-link" href="?order_by={{ column }}{% for key,value in request.GET.items %}{% if key != 'order_by' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if anchor %}#{{ anchor }}{% endif %}"><span class="results__heading-sort results__heading-sort--ascending" title="Sort ascending">{% include 'svg/arrow-up.svg.html' %}</span></a>
+        <span class="table-header-order-link--sorted-link"><span class="results__heading-sort results__heading-sort--descending results__heading-sort__active">{% include 'svg/arrow-down.svg.html' %}</span></span>
+    </div>
+{% else %}
+    <div class="table-header-order-link-group">
+        <a class="table-header-order-link--unsorted-link table-header-order-link--unsorted-link--ascending" href="?order_by={{ column }}{% for key,value in request.GET.items %}{% if key != 'order_by' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if anchor %}#{{ anchor }}{% endif %}"><span class="results__heading-sort results__heading-sort--ascending" title="Sort ascending">{% include 'svg/arrow-up.svg.html' %}</span></a>
+        <a class="table-header-order-link--unsorted-link table-header-order-link--unsorted-link--descending" href="?order_by={{ "-"|add:column }}{% for key,value in request.GET.items %}{% if key != 'order_by' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% if anchor %}#{{ anchor }}{% endif %}" title="Sort descending"><span class="results__heading-sort results__heading-sort--descending">{% include 'svg/arrow-down.svg.html' %}</span></a>
+    </div>
+  </span>
+{% endif %}

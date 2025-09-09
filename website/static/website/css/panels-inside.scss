@@ -1,0 +1,10 @@
+/**
+ * Panels styles for panels contents.
+ *
+ * Should be included in panel content pages.
+ */
+
+@import 'init/constants-base';
+@import 'panels-overrides';
+@import 'panels/css/panels-inside-base';
+@import 'panels-extras';

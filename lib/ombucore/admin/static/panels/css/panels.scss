@@ -1,0 +1,21 @@
+/**
+ * Panels main styles, should be included on the base page.
+ *
+ * Only includes css that is necessary to display a panel, none of the styles
+ * for panel contents.
+ */
+* { box-sizing: border-box; }
+
+
+@import 'mixins';
+@import 'constants';
+@import 'overrides';
+@import 'bootstrap/mixins';
+@import 'bootstrap/variables';
+@import 'bootstrap/component-animations';
+
+@import 'panels-project';
+@import 'panels-structure';
+@import 'panels-alerts';
+@import 'messages';
+@import 'panels-alerts-themed';

@@ -1,0 +1,41 @@
+{% extends "account/login_base.html" %}
+{% load account i18n imagekit socialaccount static website_tags %}
+
+{% block head_title %}{% translate "Two-Factor Authentication" %}{% endblock %}
+
+{% block login_content %}
+
+    <div class="login__header">
+        <div class="login__header-logo">
+            {% if dioptra_settings.instance_logo %}
+                {% generateimagesafe 'website:login-logo' source=dioptra_settings.instance_logo -- class="login__header-logo-image" alt="Dioptra logo" %}
+            {% else %}
+                <img class="login__header-logo-image" alt="Dioptra logo" src="{% static 'website/images/logo.png' %}">
+            {% endif %}
+        </div>
+        <div class="login__header-primary">
+            <h1 class="login__title">{% translate "Welcome to Dioptra" %}</h1>
+            {% include 'account/_login-header-text.html' %}
+        </div>
+    </div>
+
+    <form class="login__form" method="POST">
+        <h2>{% translate "Two-Factor Authentication" %}</h2>
+        {% if form.errors %}
+            {% include 'forms/_errors.html' with errors=form.non_field_errors %}
+        {% endif %}
+        {% csrf_token %}
+        <div class="form__group">
+            {% if form.login.errors %}
+                {% include 'forms/_errors.html' with errors=form.otp_token.errors %}
+            {% endif %}
+            <label>Please check your email inbox (or junk/spam folder) for the Verification Code and enter it below:</label>
+            {{ form.otp_token }}
+        </div>
+        <div class="login__actions">
+            <button class="form__submit" type="submit">{% translate "Authenticate" %}</button>
+        </div>
+    </form>
+
+
+{% endblock login_content %}

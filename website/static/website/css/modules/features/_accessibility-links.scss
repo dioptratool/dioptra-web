@@ -1,0 +1,20 @@
+// Accessibility Links
+// -----------------------------------------------------------------------------
+.skip-link,
+.sitemap-link {
+  color: $color-white;
+  display: block;
+  height: 0;
+  position: absolute;
+  text-indent: -9999px;
+  top: 0;
+
+  &:focus,
+  &:active,
+  &:hover {
+    color: blue;
+    display: inline-block;
+    height: auto;
+    text-indent: 0;
+  }
+}

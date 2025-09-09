@@ -1,0 +1,47 @@
+{% extends 'html-panel.html' %}
+{% load panels_extras panels_form_extras static %}
+
+{% block extrahead %}
+  {{ form.media.js }}
+{% endblock extrahead %}
+
+{% block extrastyle %}
+  {{ form.media.css }}
+{% endblock extrastyle %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form bulk-subcomponent-allocate-form" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+{% endblock form-start %}
+
+{% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block panel-body %}
+        {% csrf_token %}
+        {% if form.Meta.fieldsets %}
+            {% include '_form-with-fieldsets.html' with form=form only %}
+        {% else %}
+            {% include '_form.html' with form=form only %}
+        {% endif %}
+
+        <div class="bulk-subcomponent-allocate-form__total form-group">
+          <p class="control-label">Total Percentage (cannot exceed 100%)</p>
+          <p class="bulk-subcomponent-allocate-form__total-value">0%</p>
+          <p class="bulk-subcomponent-allocate-form__exceed-warning">Total exceeds 100%</p>
+        </div>
+    {% endblock panel-body %}
+
+{% block panel-foot %}
+        {% if form.buttons != None %}
+          {% include '_panel-form-buttons.html' with buttons=form.buttons form=form only %}
+        {% elif view.buttons != None %}
+          {% include '_panel-form-buttons.html' with buttons=view.buttons form=form only %}
+        {% elif buttons != None %}
+          {% include '_panel-form-buttons.html' with buttons=buttons form=form only %}
+        {% else %}
+          {% include '_panel-form-buttons.html' with buttons=view|get_default_buttons form=form only %}
+        {% endif %}
+    {% endblock panel-foot %}
+
+{% block form-end %}
+    </form>
+{% endblock form-end %}

@@ -1,0 +1,270 @@
+{% load analysis help humanize i18n panels_form_extras website_tags %}
+<form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" class="categorize-cost_type-bulk-form" novalidate data-show-loading-on-submit autocomplete="off">
+        {% csrf_token %}
+        <div class="analysis-table__heading-actions">
+            <div class="analysis-table__heading-select-all">
+                <div class="form__checkbox form__checkbox--simple">
+                    <label for="select-all-{{ cost_type_category_grant.pk }}" class="analysis-table__select-all-label">
+                        <input type="checkbox" class="select-all" value="select-all" id="select-all-{{ cost_type_category_grant.pk }}" disabled>
+                        <span>Select All</span>
+                    </label>
+                </div>
+                {% if not step.cost_type.type_obj|get_class_name == "Indirect" %}
+                <button type="submit" class="bulk-assign-items analysis-table__bulk-assign-btn" data-href="{% url 'subcomponent-cost-analysis-allocate-bulk' analysis.pk %}" disabled data-dialog-confirm="There are unsaved changes to the sub-component percentage data in this table. Proceeding with this action will lose all unsaved changes.">
+                    <span>Set Percentage for Selected Items</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    <div class="analysis-table__wrapper{% if allocateEdit == 'true' %} analysis-table__wrapper--allocate{% endif %}">
+        {% if step.cost_type.type_obj|get_class_name != "Support" %}
+            {% if cost_type_category_grant.show_allocation_calculator %}
+                {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-calculator.html' %}
+            {% elif lumpSumTable == 'true' and show_special_calculator %}
+                {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-calculator-special.html' %}
+            {% endif %}
+        {% endif %}
+        <table class="analysis-table__table">
+            <thead>
+            <tr>
+                {# 0 Checkbox #}
+                {# 1)  X Cost Items #}
+                <th colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+                {# 2)  Grant #}
+                {% if costItemEdit == 'true' %}
+                    <th class="analysis-table__grant-cell">{{ 'Grant'|label_override:'ci_grant_code' }}</th>{% endif %}
+                {# 5)  Total Cost #}
+                <th>Total Cost</th>
+                {# 6)  % to Intervention #}
+                <th class="analysis-table__intervention-header">% to Intervention</th>
+                {# 7)  Item Total #}
+                <th>Item Total</th>
+                {# 8-?) Subcomponent Analysis Labels #}
+                {% for each in analysis.subcomponent_cost_analysis.subcomponent_labels %}
+                    <th class="analysis-table__subcomponent-header">{{ each }}</th>
+                {% endfor %}
+                {# -1)  Total Percentage Must equal 100% #}
+                <th colspan="2" class="analysis-table__subcomponent-header--total">Total %<br><small><em>Must equal 100%</em></small></th>
+
+            </tr>
+            </thead>
+            {% for cost_line_item in cost_line_items %}
+                <tbody class="analysis-table__tbody">
+                {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
+                    {% with transactions_count=cost_line_item.transactions.count %}
+                    {% with skipped=cost_line_item.config.subcomponent_analysis_allocations_skipped %}
+                        <tr{% if skipped %} class="skipped"{% endif %}>
+                            {# Checkbox #}
+                            <td class="analysis-table__bulk-update-checkbox">
+                                <div class="form__checkbox form__checkbox--simple form__checkbox--no-label">
+                                    <label>
+                                        <input type="checkbox" class="bulk-checkbox"
+                                                {# No name attribute so it isn't submitted with the form, only used via JS #}
+                                               value="{{ cost_line_item.config.id }}" aria-label="Select">
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </td>
+                            {# 1)  X Cost Items #}
+                            <td class="analysis-table__cost-item-cell">
+                                <div class="analysis-table__cost-item-summary">
+                                    {% if dioptra_settings.show_transactions %}
+                                        {% if transactions_count > 0 %}
+                                            <button class="analysis-table__transactions-toggle"
+                                                    aria-label="{% translate 'Toggle transactions' %}"
+                                                    data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                                    data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
+                                            <div class="analysis-table__transactions-toggle-inner">
+                                          <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
+                                           {% render_icon 'triangle-right' %}
+                                          </span>
+                                                <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--collapse">
+                                            {% render_icon 'triangle-down' %}
+                                          </span>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <div class="analysis-table__cost-item-title">{{ cost_line_item.budget_line_description }}</div>
+
+                                    {% if dioptra_settings.show_transactions %}
+                                        {% if transactions_count > 0 %}
+                                            <div class="analysis-table__cost-item-transactions-summary">
+                                                {% blocktranslate %}{{ transactions_count }}
+                                                    transactions{% endblocktranslate %}</div>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            {# 2)  Grant #}
+                            {% if costItemEdit == 'true' %}
+                                <td>{{ cost_line_item.grant_code }}</td>
+                            {% endif %}
+                            {# 5)  Total Cost #}
+                            {% if lumpSumTable != 'true' %}
+                                <td class="analysis-table__amount-cell">
+                                    {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}
+                                </td>
+                            {% endif %}
+                            {# 6)  % to Intervention #}
+                            <td class="analysis-table__intervention-cell">
+                                {{ cost_line_item.config.allocation }}%
+                            </td>
+                            {# 7)  Item Total #}
+                            <td class="analysis-table__item-total-cell">
+                                {{ cost_line_item.allocated_cost_on_model|format_currency:analysis.currency_code }}
+                            </td>
+
+                            {# 8-?) Subcomponent Analysis Labels #}
+                            {% for each in cost_line_item.labeled_subcomponent_analysis_allocations %}
+                                <td class="analysis-table__subcomponent-input-cell">
+                                    <div class="analysis-table__subcomponent-allocate">
+                                        <input class="analysis-table__subcomponent-allocate-input
+                                               {% if errors|dict_get:cost_line_item.id %}error{% endif %} 
+                                               {% if cost_line_item.config.cost_type.type_obj|get_class_name == "Indirect" %}
+                                               visible-when-disabled
+                                               {% endif %}"
+                                               
+                                               type="text"
+                                               name="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_{{ forloop.counter0 }}"
+                                               {% if errors|dict_get:cost_line_item.id %}
+                                                value="{{ previous_data|dict_get:cost_line_item.id|dict_get_as_str:forloop.counter0 }}"
+                                               {% else %}
+                                               value="{{ each.1 }}"
+                                               {% endif %}
+                                               {% if skipped %}
+                                               disabled
+                                               {% endif %}
+                                               {% if cost_line_item.config.cost_type.type_obj|get_class_name == "Indirect" %}
+                                               disabled
+                                               {% endif %}
+                                        >
+                                    </div>
+                                </td>
+                            {% endfor %}
+                            {# -1)  Total Percentage Must equal 100% #}
+                            <td class="analysis-table__subcomponent-total">
+                                <span id="subcomponent-total-{{ cost_line_item.id }}">0</span>%
+                            </td>
+                            <td class="analysis-table__subcomponent-skip">
+                                <input class="analysis-table__skip-input {% if errors|dict_get:cost_line_item.id %}error{% endif %}"
+                                       type="checkbox"
+                                       id="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_skip"
+                                       name="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_skip"
+                                       {% if skipped %} checked="true"{% endif %}
+                                >
+                                <label class="analysis-table__subcomponent-skip__label" for="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_skip">Skip </label>
+                                <label class="analysis-table__subcomponent-skip__label--skipped" for="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_skip">Skipped</label>
+
+                                {% if errors|dict_get:cost_line_item.id and not cost_type_category_grant.show_allocation_calculator %}
+                                    <div class="form__errors form__errors--left form__errors--subcomponent">
+                                        <ul class="form__errors-list">
+                                            <li class="form__errors-list-item">
+                                                <em><strong>{{ errors|dict_get:cost_line_item.id }}</strong></em></li>
+                                        </ul>
+                                    </div>
+                                {% elif errors|dict_get:cost_line_item.id %}
+                                    <div class="form__errors form__errors--left form__errors--subcomponent">
+                                        <ul class="form__errors-list">
+                                            <li class="form__errors-list-item"></li>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% if dioptra_settings.show_transactions %}
+                            {% if transactions_count > 0 %}
+                                <tr class="analysis-table__transaction-row">
+                                    <td colspan="{% if type == 'fixData' %}12{% elif type == 'categorizeCostType' %}12{% else %}11{% endif %}"
+                                        class="analysis-table__transaction-cell">
+                                        <div class="analysis-table__transactions-detail">
+                                            <table
+                                                    class="analysis-table__transaction-table{% if showSectorCode == 'true' %} analysis-table__transaction-table--with-sector-code{% endif %}">
+                                                <thead>
+                                                <tr>
+                                                    <th class="analysis-table__transaction-table-summary">
+                                                        {% blocktranslate %}{{ transactions_count }}
+                                                            Transactions{% endblocktranslate %}</th>
+                                                    <th>{{ 'Site'|label_override:'tr_site_code' }}</th>
+                                                    <th>{{ 'Date'|label_override:'tr_date' }}</th>
+                                                    <th class="analysis-table__amount-cell">{{ 'Amount'|label_override:'tr_amount' }}</th>
+                                                    <th {% if type == 'fixData' %}colspan="3"
+                                                        {% elif type == 'categorizeCostType' %}colspan="3"{% endif %}></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody data-cost-line-item-transactions="{{ cost_line_item.id }}">
+                                                <tr>
+                                                    <td
+                                                            class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">{% translate "Loading..." %}</td>
+                                                    <td class="analysis-table__site-cell"></td>
+                                                    <td class="analysis-table__description-cell"></td>
+                                                    <td class="analysis-table__amount-cell"></td>
+                                                    <td {% if type == 'fixData' %}colspan="3"
+                                                        {% elif type == 'categorizeCostType' %}colspan="3"{% endif %}
+                                                        class="analysis-table__edit-cell"></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if costItemEdit == 'true' %}
+                            {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-edit-row.html' %}
+                        {% elif allocateEdit == 'true' %}
+                            {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
+                                <tr class="analysis-table__edit-row allocate-costs">
+                                    <td
+                                            colspan="{% if showSectorCode == 'true' %}7{% elif type == 'categorizeCostType' %}8{% else %}6{% endif %}"
+                                            class="analysis-table__edit-row-cell">
+                                        <form action="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}"
+                                              method="POST"
+                                              novalidate data-show-loading-on-submit>
+                                            {% csrf_token %}
+                                            <table class="analysis-table__edit-table">
+                                                <tbody>
+                                                <tr>
+                                                    <td class="analysis-table__edit-sector_code-cell">
+                                                    </td>
+                                                    <td class="analysis-table__edit-category-cell analysis-table__edit-category-cell--note">
+                                                        <label for="id_category"
+                                                               class="analysis-table__edit-row-label">{% translate 'Note' %}</label>
+                                                        <textarea name="note"
+                                                                  class="analysis-table__edit-note-input">{{ cost_line_item.note }}</textarea>
+                                                        <div class="form__help-text">Provide a note explaining how you
+                                                            arrived at the
+                                                            allocation percent for this cost line item
+                                                        </div>
+                                                    </td>
+                                                    <td class="analysis-table__edit-actions-cell">
+                                                        <button class="analysis-table__edit-action analysis-table__edit-action--save"
+                                                                type="submit" data-object-id="{{ cost_line_item.id }}"
+                                                                data-endpoint="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}"
+                                                                name="action"
+                                                                value="save_cost_line_item_config">{% translate 'Save' %}</button>
+                                                        <button class="analysis-table__edit-action analysis-table__edit-action--cancel"
+                                                                type="submit" name="action"
+                                                                value="cancel">{% translate 'Cancel' %}</button>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                            {% endif %}
+                        {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+                </tbody>
+            {% endfor %}
+        </table>
+    </div>
+</form>

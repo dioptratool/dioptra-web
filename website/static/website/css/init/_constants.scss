@@ -1,0 +1,40 @@
+/**
+ * Constants
+ */
+
+ @import 'constants-base';
+
+// Typography
+$font-size-root: 62.5%;
+$font-size-root-px: 10px;
+$font-size-base-mobile: 15px;
+$font-size-base: 18px;
+$line-height-base: 1.75;
+$line-height-header: 1.5;
+$font-weight-bold: 700;
+$font-weight-regular: 400;
+$font-weight-semibold: 600;
+
+// Transition effects
+$transition-duration-default: 0.2s;
+
+// Gutters and breakpoints
+$gutter-side-tile: 15px;
+$gutter-side-mobile: 20px;
+$gutter-side-tablet: 20px;
+$gutter-side-desktop: 53px;
+
+$breakpoint-tablet: 768px;
+$breakpoint-notebook: 992px;
+$breakpoint-desktop: 1200px;
+$breakpoint-desktop-wide: 1800px;
+
+$max-site-width: 1400px;
+
+// Helper vars
+$default-margin: 3rem;
+$large-margin: 7rem;
+$analysis-sidebar-caret-width: 0.7rem;
+$analysis-sidebar-width: 16.8rem + $analysis-sidebar-caret-width;
+$touch-target-size: 4.4rem;
+$input-height: 4rem;

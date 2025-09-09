@@ -1,0 +1,16 @@
+{% extends 'html-panel.html' %}
+{% load static %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">Are you sure you want to apply the suggested percentage to all cost items in the {{ step.cost_type.name }} cost type?</p>
+    <p>This action will overwrite any unique percentage allocations you have made to individual cost items on this page. Please note down any
+      unique percentage allocations for individual cost items before confirming this action, so that you don't lose your work.</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+<form method="post">
+  {% csrf_token %}
+    <button class="btn btn-primary" type="submit">Yes, save</button>
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">No, cancel</a>
+</form>
+{% endblock panel-foot %}

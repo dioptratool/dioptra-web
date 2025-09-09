@@ -1,0 +1,65 @@
+.panel-tabs {
+  background-color: rgb(224, 224, 224);
+  display: flex;
+  justify-content: space-between;
+  margin-left: -$panel-padding;
+  margin-right: -$panel-padding;
+  margin-top: 25px;
+}
+
+.panel-tabs--tabs {
+  display: flex;
+  list-style: none;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+}
+
+.panel-tabs--tab-item {
+  flex: 0 0 auto;
+}
+
+html.is-in-panel a.panel-tabs--tab {
+  align-items: flex-end;
+  color: $panel-blue-new-2;
+  display: flex;
+  font-size: 11px;
+  height: 100%;
+  line-height: 1.818181818;
+  min-height: 80px;
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  width: 140px;
+
+  svg {
+    left: 50%;
+    position: absolute;
+    top: 27px;
+    transform: translate(-50%, -50%);
+
+    * {
+      fill: $panel-blue-new-2;
+      transition: all 0.2s ease;
+    }
+  }
+
+  span {
+    display: block;
+    font-weight: $font-weight-medium;
+    padding-bottom: 14px;
+    width: 100%;
+  }
+
+  &:hover,
+  &:focus,
+  &.active {
+    background-color: $panel-gray-sidebar-bg;
+    color: $panel-gray-sidebar;
+
+    svg * {
+      fill: rgb(155, 155, 155);
+    }
+  }
+}

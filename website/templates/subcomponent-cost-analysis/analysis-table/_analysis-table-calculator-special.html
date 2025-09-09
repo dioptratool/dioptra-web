@@ -1,0 +1,12 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="analysis-table__shared-cost-estimate-sub">
+    <div class="analysis-table__special-cost-estimate-title-calc">
+        <span>Other Supporting Costs Allocation</span>
+    </div>
+
+    <div class="analysis-table__special-cost-estimate-country-specific-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-category-value">{{ grant_proportions }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-category-label">Proportion of {{ analysis.intervention_name }} costs within {{ grant }}</span></div>
+    <div class="analysis-table__special-cost-estimate-country-overall-calc"><span class="analysis-table__shared-cost-estimate-direct-cost-total-value">{{ country_proportions }}</span><span class="analysis-table__shared-cost-estimate-direct-cost-total-label">Proportion of {{ analysis.country.name }} costs supported by other units</span></div>
+    <div class="analysis-table__special-allocation-suggestion-calc">
+        {% include 'icons/allocate-arrow.svg' %}<span class="analysis-table__shared-allocation-suggestion-value-action">{{ other_suggested_allocation|default:"Unable to calculate" }}</span><span class="analysis-table__shared-allocation-suggestion-label">Other Supporting Costs Suggested Allocation</span><br/>
+    </div>
+</div>

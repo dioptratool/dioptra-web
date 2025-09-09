@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% load help i18n static website_tags %}{% get_base_url as base_url %}
+<html class="{% if user.is_authenticated %}authenticated-request{% endif %}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1"/>
+    <title>{% block title %}{{ title }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{% endblock %}"></meta>
+
+    {% include "_google-analytics.html" %}
+    {% block extrahead %}{% endblock %}
+
+    {# if user.is_authenticated #}
+    <link href="{{ base_url }}{% static "panels/css/panels.css" %}" rel="stylesheet" type="text/css"/>
+    {# endif #}
+    <link href="{{ base_url }}{% static "website/css/style.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,800&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ base_url }}{% static 'website/images/favicon.ico' %}" type="image/x-icon">
+
+    {{ currency_config|json_script:"dioptra-currency" }}
+
+    {% block extrastyle %}{% endblock %}
+</head>
+<body>
+<div id="root-alerts-container"></div>
+
+{% block header %}{% endblock %}
+
+{% block content_top %}
+    {% if title %}<h1>{{ title }}</h1>{% endif %}
+{% endblock content_top %}
+
+{% block content %}{% endblock %}
+
+{% block content_bottom %}{% endblock %}
+
+<script type="text/javascript" src="{% static "panels/lib/jquery-3.7.1.min.js" %}"></script>
+<script type="text/javascript" src="{% static "website/scripts.js" %}"></script>
+{% include 'admin-scripts.html' %}
+
+{% block extrascript %}{% endblock %}
+{% block page_bottom %}{% endblock %}
+
+</body>
+</html>

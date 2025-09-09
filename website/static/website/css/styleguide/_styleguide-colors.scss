@@ -1,0 +1,39 @@
+// colors
+.styleguide__colors-group {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -$styleguide-gutter-side-tile;
+  margin-right: -$styleguide-gutter-side-tile;
+}
+
+.styleguide__colors-description {
+  margin-bottom: 5rem;
+}
+
+.styleguide__color-wrapper {
+  flex: 0 0 auto;
+  padding-left: $styleguide-gutter-side-tile;
+  margin-bottom: 3rem;
+  padding-right: $styleguide-gutter-side-tile;
+}
+
+.styleguide__colors-heading {
+}
+
+.styleguide__colors-label {
+  margin-bottom: 0.5rem;
+}
+
+.styleguide__colors-usage-list {
+  @include usage-list();
+}
+
+.styleguide__color-usage {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.styleguide__color {
+  height: 12rem;
+  width: 12rem;
+}

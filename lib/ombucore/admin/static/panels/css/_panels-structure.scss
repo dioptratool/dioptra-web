@@ -1,0 +1,166 @@
+/**
+ * Panels managed from the parent page.
+ */
+#panels-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  overflow: visible;
+  z-index: $z-index-panels;
+
+  #panels-container-veil {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    background-color: $panel-veil-color;
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+    cursor: w-resize;
+  }
+
+  &.active #panels-container-veil {
+    width: 100%;
+  }
+
+  &[data-panel-count] #panels-container-veil {
+    opacity: 1;
+  }
+
+  &[data-panel-count="0"] #panels-container-veil {
+    opacity: 0;
+  }
+
+  .is-panel {
+    position: fixed;
+    border: 0;
+    right: 0;
+    width: 100%;
+    max-width: 1000px;
+    left: -100%;
+    height: 100%;
+    transform: translate3d(0,0,0); // Hardware acceleration.
+    transition: left 0.2s ease-in;
+    .panel-inner {
+      border-right: 1px solid rgba(0, 0, 0, 0.40);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: $mobile-panel-offset;
+      bottom: 0;
+      height: 100%;
+      background: $panel-background;
+      background-clip: padding-box;
+    }
+  }
+  @for $i from 1 through 10 {
+    &[data-panel-count="#{$i}"] {
+      @include mobile-panel-positions-for($i);
+    }
+  }
+
+  .panel-close {
+    $size: 40px;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: calc(-1 * (($mobile-panel-offset/2) + ($size/2)));
+    text-decoration: none;
+    color: #FFFFFF;
+    font-size: $size;
+    line-height: $size;
+    width: $size;
+    height: $size;
+    text-align: center;
+  }
+
+  .is-panel {
+    .panel-veil {
+      display: block;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 0;
+      background-color: $panel-veil-color;
+      opacity: 0;
+      transition: opacity 0.2s ease-in;
+      cursor: w-resize;
+    }
+    &.veil-open .panel-veil {
+      width: 100%;
+    }
+    &.veiled .panel-veil {
+      opacity: 1;
+    }
+
+    .loading {
+      @include loading-spinner();
+    }
+
+    .panel-inner {
+    }
+
+    iframe {
+      border: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+
+  }
+
+}
+
+
+body #djDebug #djDebugToolbarHandle {
+  right: -50px;
+  @include desktop {
+    right: 0;
+  }
+}
+
+
+/**
+ * Greater than Mobile.
+ */
+@include desktop {
+  #panels-container {
+    .is-panel {
+      top: 0;
+      right: -$panel-width;
+      width: $panel-width;
+      left: auto !important;
+      bottom: 0;
+      height: 100%;
+      transition: right 0.2s ease-in;
+      .panel-inner {
+        border-top: 0;
+        border-left: 10px solid rgba(0, 0, 0, 0.40);
+        border-right: 0;
+        right: 0;
+      }
+    }
+    @for $i from 1 through 10 {
+      &[data-panel-count="#{$i}"] {
+        @include desktop-panel-positions-for($i);
+      }
+    }
+
+    .panel-close {
+      top: calc($panel-padding / 4);
+      right: calc($panel-padding / 4);
+      color: $panel-gray-dark;
+      text-align: center;
+    }
+  }
+}

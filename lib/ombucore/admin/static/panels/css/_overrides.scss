@@ -1,0 +1,35 @@
+// Allowable color and font overrides to theme OMBU Core Panels for specific projects
+// See README for more information on customizing panels
+
+$panel-background: $panel-gray !default;
+$font-family-sans-serif: 'Rubik', sans-serif !default;
+$text-color: $panel-charcoal !default;
+$label-text-color: darken($panel-gray, 30) !default;
+$accent-color: darken($panel-gray, 15) !default;
+$link-color: $panel-blue-light !default;
+
+// buttons
+$btn-primary-color: $panel-white !default;
+$btn-primary-bg: #0372ff !default;
+$btn-primary-border: #0066e9 !default;
+$btn-cancel-color: $panel-gray-dark !default;
+$btn-cancel-bg: transparent !default;
+$btn-cancel-border: transparent !default;
+$btn-danger-color: $panel-white !default;
+$btn-danger-bg: #d9534f !default;
+$btn-danger-border: #d9534f !default;
+$btn-default-color: $panel-charcoal !default;
+$btn-default-bg: $panel-white !default;
+$btn-default-border: #adadad !default;
+
+// filter list
+$filter-list-header-color: $panel-gray-dark !default;
+$filter-list-header-bg: transparent !default;
+$filter-list-stripe-bg: transparent !default;
+$filter-list-operations-bg: $panel-blue-dark !default;
+$filter-list-operations-color: $panel-white !default;
+$filter-list-filter-bg: $panel-blue-light !default;
+$filter-list-filter-label: darken($panel-blue-light, 35%) !default;
+$filter-list-filter-value: $panel-white !default;
+$filter-list-clear-color: $panel-gray-dark !default;
+$filter-list-clear-hover-color: $color-ombu-red !default;

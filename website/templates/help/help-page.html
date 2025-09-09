@@ -1,0 +1,23 @@
+{% extends 'dashboard_base.html' %}
+{% load assets help i18n mptt_tags rules %}
+
+{% block content %}
+    <div class="help-page">
+        <div class="container">
+            {% has_perm 'website.change_helppage' user as can_edit_help %}
+            {% if can_edit_help %}
+                <div class="help-page__edit-link-wrapper">
+                    <a class="help-page__edit-link" href="{% url 'ombucore.admin:help_helppage_change' pk=page.id %}" data-panels-trigger
+                 data-panels-reload-on="saved">{% translate 'Edit' %}</a>
+                </div>
+            {% endif %}            
+            <div class="help-page__inner">
+                <div class="help-page__supertitle">{{ page.topic }}</div>
+                <h1 class="help-page__title">{{ page.title }}</h1>  
+                <div class="help-page__content rte">
+                    {{ page.body|assets|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

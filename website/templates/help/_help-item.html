@@ -1,0 +1,45 @@
+{% load help i18n rules %}
+{% if item.type == 'step' %}
+<div class="step-help step-help--open">
+    <button class="step-help__button" type="button" aria-expanded="true" id="step-help__button" aria-controls="step-help__modal">
+        {% include 'icons/help.svg' %}<span class="step-help__button-label">{% translate 'Show Guidance' %}</span>
+    </button>
+    <div class="step-help__modal" aria-labelledby="step-help__button" role="region" id="step-help__modal">  
+        <button type="button" class="step-help__close">{% translate 'Hide' %}</button>
+        <div class="step-help__modal-content">
+            {{ help_text|safe }}
+        </div>
+        {% if link %}
+            <div class="step-help__modal-link"><a href="{{ link }}">More help</a></div>
+        {% endif %}
+        {% if user_can_edit_help %}
+            <div class="step-help__edit-link-wrapper">
+                <a class="step-help__edit-link" href="{% url 'ombucore.admin:help_helpitem_change' pk=item.id %}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="help">
+    <button class="help__button" type="button">
+        {% include 'icons/help.svg' %}
+    </button>
+    <div class="help__modal" role="dialog" aria-modal="true" aria-labelledby="{{ identifier }}">  
+        <button type="button" class="help__close" aria-label="{% translate 'Close' %}"><span class="help__close-icon">×</span></button>
+        <h2 class="help__title" id="{{ identifier }}">{% translate 'Help for' %} {{ title }}</h2>
+        {% if help_text %}
+            <div class="help__modal-content">
+                {{ help_text|safe }}
+            </div>
+        {% endif %}
+        {% if link %}
+            <div class="help__modal-link"><a href="{{ link }}">More help</a></div>
+        {% endif %}
+        {% if user_can_edit_help %}
+            <div class="help__edit-link-wrapper">
+                <a class="help__edit-link" href="{% url 'ombucore.admin:help_helpitem_change' pk=item.id %}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

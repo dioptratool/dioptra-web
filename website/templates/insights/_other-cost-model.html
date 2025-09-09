@@ -1,0 +1,37 @@
+{% load help humanize i18n website_tags %}
+<div class="cost-model" id="cost-model">
+  <div class="cost-model__description">
+    <p>{% blocktranslate %}In addition to financial costs, you may also use Client Time and In-Kind Contributions to compare the social costs between different programs and inform decisions centered on clients. The Other Costs table is included in the Full Cost Model Download file.{% endblocktranslate %}</p>
+  </div>
+  <div class="cost-model__table-group">
+    <div class="cost-model__table-wrapper">
+      <table class="cost-model__table">
+        <thead>
+        <tr>
+          <th>{% translate 'Category' %}</th>
+          <th>{% translate 'Cost Item' %}</th>
+          <th class="cost-model__table-right-aligned">{{ 'Total Cost'|label_override:'ci_total_cost' }}{% include 'features/_table-header-order-link.html' with column='total_cost' column_name='total_cost' order_by=request.GET.order_by|default:'' anchor="cost-model" %}</th>
+          <th class="cost-model__table-right-aligned">{% translate '% to Intervention' %}{% include 'features/_table-header-order-link.html' with column='coalesced_allocation' column_name='coalesced_allocation' order_by=request.GET.order_by|default:'' anchor="cost-model" %}</th>
+          <th class="cost-model__table-right-aligned">{% translate 'Item Total' %}{% include 'features/_table-header-order-link.html' with column='allocated_cost' column_name='allocated_cost' order_by=request.GET.order_by|default:'' anchor="cost-model" %}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {# foreach item #}
+        {% for item in page.object_list %}
+          <tr>
+            <td>{{ item.config.get_pretty_analysis_cost_type }}</td>
+            <td>{{ item.budget_line_description }}</td>
+            <td class="cost-model__table-right-aligned">{{ item.total_cost|format_currency:analysis.currency_code }}</td>
+            <td class="cost-model__table-right-aligned">{{ item.coalesced_allocation|floatformat:2 }}%</td>
+            <td class="cost-model__table-right-aligned">{% if item.note %}{% include 'help/_help-allocation.html' %}{% endif %}{{ item.allocated_cost|format_currency:analysis.currency_code }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="cost-model__actions cost-model__actions--footer">
+      {% include 'features/_pagination.html' with is_paginated=True page_obj=page paginator=paginator anchor="cost-model" %}
+      <a class="cost-model__action" href="{% url 'analysis-cost-model-spreadsheet' object.id %}">Download full cost model</a>
+    </div>
+  </div>
+</div>

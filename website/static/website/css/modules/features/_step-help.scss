@@ -1,0 +1,104 @@
+.step-help__button {
+  display: none;
+
+  .analysis--guidance-collapsed & {
+    display: block;
+  }  
+}
+
+.step-help__modal {
+  background-color: $color-moonstone-2;
+  border-radius: 6px;
+  display: block;
+  margin-top: 3.8rem;
+  padding: 1.5rem 2.2rem 0.9rem;
+  position: relative;
+
+  .analysis--guidance-collapsed & {
+    display: none;
+  }
+}
+
+
+.step-help {
+  flex: 0 0 100%;
+
+  .analysis--guidance-collapsed & {
+    flex: 0 0 auto;
+  }
+}
+
+.step-help__button {
+  background: transparent;
+  border: none;
+  color: $color-boulder;
+  margin-top: -0.7rem;
+  margin-bottom: -0.7rem;
+  padding: 0.7rem;
+
+  &:focus {
+    @include default-focus();
+  }
+
+  svg {
+    display: inline-block;
+    margin-right: 0.7rem;
+    vertical-align: middle;    
+
+    * {
+      fill: $color-boulder;
+    }
+  }
+
+  span {
+    display: inline-block;
+    vertical-align: middle;
+    text-decoration: underline;
+  }
+}
+
+.step-help__modal-content {
+  max-width: 100%;
+  width: 90rem;
+  @include font-size(13, 1.6);
+
+  p,h2,h3,h4,h5,h6,ul,ol {
+    margin-top: calc($default-margin / 2);
+    margin-bottom: calc($default-margin / 2);
+    
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.step-help__close {
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  text-decoration: underline;
+  padding-right: 1.7rem;
+  padding-top: 1.6rem;
+  padding-left: 1.7rem;
+  padding-bottom: 1.6rem;
+  right: 0;
+  top: 0;
+
+  &:focus {
+    @include default-focus();
+  }
+}
+
+.step-help__title {
+  @include element-invisible();
+}
+
+.step-help__modal-link,
+.step-help__edit-link-wrapper {
+  margin-top: 1.5rem;
+  @include font-size(13, 1.6);
+}

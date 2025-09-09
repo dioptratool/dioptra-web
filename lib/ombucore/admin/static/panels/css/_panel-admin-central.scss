@@ -1,0 +1,81 @@
+/**
+ * Admin Central panel styles.
+ */
+
+.admin-central {
+  padding-bottom: 5.0em;
+
+  h2 {
+    text-transform: uppercase;
+    font-size: 16px;
+    font-weight: $font-weight-medium;
+    color: $label-text-color;
+    margin: 2.0em 0 1.0em 0;
+
+  }
+
+  ul, li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  ul.items {
+    margin: 0 -2.0em;
+
+    > li {
+      padding: 0 2.0em 1.0em 2.0em;
+
+      > div.item {
+        position: relative;
+        margin-left: 0.25em;
+        padding-left: 1.0em;
+
+        &:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 3px;
+          border-radius: 3px;
+          background-color: $accent-color;
+        }
+      }
+
+      h3 {
+        margin: 0.5em 0;
+      }
+
+      ul.links {
+        a {
+          display: inline-block;
+          padding: 0.5em 0;
+        }
+      }
+    }
+  }
+}
+
+
+@include desktop {
+  .admin-central {
+
+    ul.items {
+      overflow: auto;
+
+      > li {
+        float: left;
+        width: 50%;
+
+        > div.item {
+          padding-left: 1.5em;
+        }
+
+        &:nth-child(2n+1) {
+          clear: left;
+        }
+      }
+    }
+  }
+}

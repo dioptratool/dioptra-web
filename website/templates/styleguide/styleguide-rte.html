@@ -1,0 +1,73 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+{% load help static %}
+
+{% block content %}
+  <h1 class="styleguide__title"><a href="{% url 'styleguidetoc' %}">Styleguide</a> / Rich Text Styles</h1>
+  <article class="styleguide__rte richtextblock--content rte">
+    <h1>Building an Analysis</h1>
+    <p>Dioptra will walk you through the process of entering monitoring and finance data, and breaking down both program and support costs, so you can see how much it costs to deliver services to your clients.</p>
+    <figure>
+      <img alt="People walking" src="{% static 'website/images/styleguide-placeholder.png' %}">
+      <figcaption> Ship of the imagination in a cosmic arena courage of our questions vastness is bearable only through love with pretty stories for which there's little good evidence inconspicuous motes of rock and gas</figcaption>
+    </figure>
+    <h2>How do I know if I am ready?</h2>
+    <ol>
+      <li>Know the purpose of your cost analysis.</li>
+      <li>Define the program and output.</li>
+      <li>Monitor <a href="#">output data</a>.</li>
+      <li>Monitor cost data.</li>
+    </ol>
+    <hr>
+    <h3>Defining Outputs & Time Frame for a Dioptra Analysis</h3>
+    <ul>
+      <li>Choose an intervention/output to analyze.</li>
+      <li>Define the time frame to study.</li>
+      <li>You do not need to analyze every intervention on a particular grant.</li>
+    </ul>
+    <table>
+      <caption>Table 1: Consumption expenditures by category</caption>
+      <thead>
+        <tr>
+          <th>Consumption</th>
+          <th>Control</th>
+          <th>Tungane</th>
+          <th>N</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Food</td>
+          <td>40.48</td>
+          <td>-1.9</td>
+          <td>3,194</td>
+        </tr>
+        <tr>
+          <td>Medical</td>
+          <td>24.23</td>
+          <td>-1.15</td>
+          <td>3,334</td>
+        </tr>
+        <tr>
+          <td>Leisure</td>
+          <td>1.02</td>
+          <td>-0.32</td>
+          <td>3,374</td>
+        </tr>
+        <tr>
+          <td>Clothes</td>
+          <td>7.26</td>
+          <td>-0.58</td>
+          <td>3,386</td>
+        </tr>
+        <tr>
+          <td>Alcohol</td>
+          <td>2.94</td>
+          <td>-0.52</td>
+          <td>3,323</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><a href="#" class="btn-primary">Proceed to Dioptra</a></p>
+    <p><a href="#" class="btn-secondary">Grant Information</a></p>
+  </article>
+{% endblock content %}

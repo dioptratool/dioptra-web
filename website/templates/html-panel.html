@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{% load panels_extras static website_tags %}{% get_base_url as base_url %}
+<html class="is-in-panel">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1" />
+        <title>{% block title %}{% if supertitle %}{{ supertitle|striptags }}{% endif %} {% if title %}{{ title|striptags }}{% endif %}{% endblock %}</title>
+        <link href="{{ base_url }}{% static "website/css/panels-inside.css" %}" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,500,700" rel="stylesheet">
+
+        {% include "_google-analytics.html" %}
+
+        <script type="text/javascript" src="{% static "panels/lib/jquery-3.7.1.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "panels/js/jquery.init.js" %}"></script>
+        <link href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,500,700" rel="stylesheet">
+
+        <script type="text/javascript" src="{% static "panels/js/panels-inside.js" %}"></script>
+        {% panels_messages %}
+        
+
+
+        {% if panel_commands|length %} 
+            {% for command in panel_commands %}
+                {{ command.render|safe }}
+            {% endfor %}
+        {% endif %}
+
+        {% block extrahead %}{% endblock %}
+        {% block extrastyle %}{% endblock %}
+    </head>
+
+    <body>
+        {% block form-start %}{% endblock %}
+
+        <div class="panel-wrapper-wrapper">
+
+            <div class="panel-wrapper">
+
+                {% block panel-head-wrapper %}
+                    <div class="panel-head panel-head--with-tabs">
+                        {% block panel-head %}
+
+                            <div class="panel-head-top">
+                              <div class="panel-head-title">
+                                {% if supertitle %}
+                                    <h2>{{ supertitle }}</h2>
+                                {% endif %}
+
+                                {% if title %}
+                                    <h1>{{ title|truncatechars:40 }}</h1>
+                                {% endif %}
+                              </div>
+
+                              <div class="panel-head-auxiliary">
+                                  {% block panel-head-auxiliary %}
+                                    {% if panel_action_links.primary|length or panel_action_links.secondary|length %}
+                                      {% for action_link in panel_action_links.primary %}
+                                          {{ action_link.render }}
+                                      {% endfor %}
+                                      {% for action_link in panel_action_links.secondary %}
+                                          {{ action_link.render }}
+                                      {% endfor %}
+                                    {% elif panel_head_auxiliary %}
+                                        {{ panel_head_auxiliary }}
+                                    {% endif %}
+                                  {% endblock panel-head-auxiliary %}
+                              </div>
+                            </div>
+
+                            {% block panel-head-tabs %}
+                                {% if tabs|length %}
+                                    <div class="panel-tabs">
+                                        <ul class="panel-tabs--tabs">
+                                            {% for tab in tabs %}
+                                                {% if not tab.align or tab.align == 'left' %}
+                                                    <li class="panel-tabs--tab-item">
+                                                        <a href="{{ tab.url }}" class="panel-tabs--tab {% if tab.url == request.path %}active{% endif %}">{% include tab.icon %}<span>{{ tab.title }}</span></a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                        <div class="panel-tabs--operations">
+                                            {% for tab in tabs %}
+                                                {% if tab.align == 'right' %}
+                                                    <a href="{{ tab.url }}" class="panel-tabs--tab {% if tab.url == request.path %}active{% endif %}">{% include tab.icon %}<span>{{ tab.title }}</span></a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endblock panel-head-tabs %}
+
+                            {% block panel-head-subtitle %}
+                                {% if subtitle or subtitle_auxiliary %}
+                                    <div class="panel-subtitle-group-with-actions">
+                                        <h3 class="panel-subtitle panel-subtitle--with-actions">{% if subtitle %}{{ subtitle }}{% endif %}</h3>
+
+                                        <div class="panel-subtitle--actions">
+                                            {% if subtitle_auxiliary %}
+                                                {{ subtitle_auxiliary }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endblock panel-head-subtitle %}
+
+                        {% endblock panel-head %}
+                    </div>
+                {% endblock panel-head-wrapper %}
+
+                <div class="panel-body {% block panel-scrollable %}panel-body-scrollable at-top at-bottom{% endblock %}">
+                  <div class="panel-body-scroller">
+                    {% block panel-body %}{% endblock %}
+                  </div>
+                </div>
+
+                {% block panel-foot-wrapper %}
+                    <div class="panel-foot">
+                        {% block panel-foot %}{% endblock %}
+                    </div>
+                {% endblock panel-foot-wrapper %}
+                <a href="#" class="panel-close panel-close--inner" data-panels-action="reject-close"><span>Close</span></a>
+            </div>
+        </div>
+
+        {% block form-end %}{% endblock %}
+
+        {% block extrascript %}
+        {% endblock extrascript %}
+
+    </body>
+</html>

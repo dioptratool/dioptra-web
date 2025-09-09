@@ -1,0 +1,60 @@
+{% load i18n panels_extras panels_form_extras %}
+{% with form=filterset.form %}
+
+<div class="filter-list">
+    <form action="#" method="GET" class="filter-list-form" accept-charset="utf-8">
+
+        <div class="form-inline">
+        {% spaceless %}
+            {% if form.search %}
+                {% with field=form.search|add_input_classes %}
+                    <div class="form-group form-group-search">
+                        <label class="icon-label" for="id_search">{% include "icons/search.svg" %}</label>
+                        {{ field }}
+                        {% if form.search.value %}
+                            <a href="#" class="clear-search-phrase">{% include "svg/ombu-icon-circle-x.svg" %}</a>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="filter__search-btn">Search</button>                    
+                {% endwith %}
+            {% endif %}
+
+            {% if form.fields|length > 1 or has_search == False %}
+
+                <div class="form-group dropdown add-filter-dropdown">
+                    <a href="#" class="filter__add-filter-btn" data-toggle="dropdown">Add filter</a>
+                    <div class="dropdown-menu filter__menu">
+                        <ul class="dropdown-menu-items filter__menu-items">
+                            {% for field in form %}
+                                {% if field.name != 'search' and field.name != 'order_by' %}
+                                    <li class="filter__menu-item"><a class="filter__menu-link" href="#" data-filter-target="{{ field.name }}">{{ field.label }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% for field in form %}
+                            {% if field.name != 'search' and field.name != 'order_by' %}
+                                <div class="hidden filter__facet" data-filter="{{ field.name }}">
+                                    {% include 'bootstrap/field.html' with field=field|add_input_classes hide_help=True %}
+                                    {% if field|filter_field_should_use_button %}
+                                        <button type="submit" class="btn btn-primary">Apply</button>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+            {% endif %}
+
+            <input type="submit" value="{{ submit_text }}" class="btn btn-primary {% if not submit_text %}hidden{% endif %}"/>
+
+        {% endspaceless %}
+        </div>
+
+        <div class="filter-results">
+            <a href="#" class="clear-all hidden">{% translate 'Clear all filters' %}</a>
+        </div>
+
+    </form>
+</div>
+{% endwith %}

@@ -1,0 +1,221 @@
+@media print {
+  .help {
+    display: none
+  }
+  @page { margin: 1.25rem; }
+  .page-break { display: block; page-break-before: always; }
+}
+
+.insights {
+    font-size: 1.45rem;
+    line-height: 2.1rem;
+
+    p {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+}
+
+.insights__actions {
+  margin-top: 1.8rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.insights__action_edit {
+  background-color: $color-light-gray;
+  border: none;
+  border-radius: 2px;
+  color: $color-light-black;
+  display: inline-block;
+  font-weight: $font-weight-bold;
+  min-width: 10rem;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all $transition-duration-default ease;
+  @include font-size(13, 1.125);
+
+  &:hover {
+    background-color: #BDD5ED;
+    text-decoration: none;
+  }
+}
+
+.insights__download_pdf {
+  @include button-submit();
+  display: inline-block;
+  margin-right: 1.5rem;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  @include font-size(13, 1.3846);
+}
+
+.insights__header {
+  display: flex;
+  margin-top: 6rem;
+}
+
+.insight__header-primary {
+  flex: 1 1 auto;
+  min-width: 0;
+
+   @media (max-width: $breakpoint-notebook - 1px) {
+    margin-bottom: 1.5rem;
+    width: 100%;
+  }
+}
+
+.insights__header-secondary {
+  align-self: flex-start;
+  background-color: $color-moonstone;
+  border-radius: 6px;
+  flex: 0 0 auto;
+  margin-left: 3rem;
+  padding: 2.2rem 2.8rem 2.4rem;
+  min-width: 38.2rem;
+  max-width: 50%;
+}
+
+.insights__title {
+  font-size: 28px;
+  margin-bottom: 0.7rem;
+  margin-top: 0;
+}
+
+.insights__subtitle {
+  font-size: 18px;
+  margin-bottom: 0.8rem;
+  margin-top: 0;
+}
+
+.insights__description {
+  margin-bottom: 0;
+  margin-top: 1rem;
+  max-width: 100%;
+  width: 75.5rem;
+  font-size: 1.5rem;
+}
+
+.insights__data-list {
+  display: grid;
+  grid-template-columns: min-content auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  @include font-size(14, 1.35);
+}
+
+.insights__data-label {
+  font-weight: $font-weight-bold;
+  margin-right: 0.5rem;
+  margin-bottom: 1rem;
+  min-width: 8.3rem;
+  margin-left: 0;
+}
+
+.insights__data-value {
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.insights__created {
+  color: $color-boulder;
+  @include font-size(14, 1.142857143);
+  grid-column: span 2;
+}
+
+.insights__heading {
+  @include font-size(20);
+  margin-top: 1.0rem;
+  margin-bottom: 1.2rem;
+  padding-top: 2.0rem;
+}
+
+.insights__subheading {
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+  @include font-size(18);
+}
+
+.insights__efficiency-items {
+  margin-bottom: 4.3rem;
+  @media print{
+    margin-bottom: 1.5rem;
+  }
+}
+
+.insight__header {
+ display: block;
+ margin-right: 0
+}
+
+.insights__header-secondary {
+ padding-right: 1em;
+}
+
+.insights__group .col-md-6 {
+  padding-inline: 0;
+}
+
+.insights__intervention-list {
+  width: 100%;
+  margin-top: 5rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  border-bottom: 1px solid #DBE5F0;
+}
+
+.insights__intervention-tab {
+  background-color: #F1F7FD;
+  border: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  padding: 1.8rem;
+  text-align: left;
+
+  &[aria-selected="true"] {
+    background-color: $color-lapis;
+    color: $color-white;
+    .cost-badge {
+      background-color: $color-total-green;
+    }
+  }
+  &[aria-selected="false"]:hover {
+    background-color: #C4DEF7;
+  }
+  .intervention-name {
+    @include font-size(14);
+    margin: 0;
+    font-weight: $font-weight-bold;
+    margin-bottom: 1rem;
+  }
+  .cost-badge {
+    @include font-size(16);
+    display: inline-block;
+    margin: 0;
+    padding: 0.8rem 1.5rem;
+    border-radius: 3rem;
+    background-color: #DCEAF9;
+
+    span {
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+
+.insights__intervention {
+  margin-top: 3.6rem;
+  .insights__intervention-title {
+    @include font-size(22);
+    margin-bottom: 0;
+  }
+  .insights__intervention-subtitle,
+  .insights__intervention-metric {
+    margin: 0.5rem;
+  }
+}

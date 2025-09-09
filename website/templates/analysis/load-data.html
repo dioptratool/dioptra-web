@@ -1,0 +1,226 @@
+{% extends "analysis/base.html" %}
+{% load analysis help humanize i18n panels_form_extras static website_tags %}
+
+{% block extrastyle %}
+    {{ form.media.css }}
+{% endblock extrastyle %}
+
+{% block extrascript %}
+    {{ form.media.js }}
+{% endblock extrascript %}
+
+{% block analysis_header %}
+    <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+        <h1 class="analysis__title">{{ title }}</h1>
+        {% help 'step_guidance__load_data' %}
+    </div>
+    <p class="analysis__description">Choose one of the methods below.</p>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+    {% if not step.is_complete and not analysis.needs_transaction_resync %}
+
+        <div class="row row--flex">
+
+            <div class="col-md-6 analysis__load-data-group analysis__load-data-group--upload">
+                <h2 class="analysis__subtitle">{% translate "Import transactions from the data store" %}</h2>
+                {% if import_errors %}
+                    {% include 'forms/_errors.html' with errors=import_errors %}
+                {% endif %}
+                {% if transactions_count != None or special_count != None %}
+                    <div class="analysis__load-data-import-transactions-count">
+                        {% if transactions_count %}
+                            {% blocktranslate with transactions_count=transactions_count|intcomma %}
+                                We found <strong>{{ transactions_count }}</strong>
+                                transactions in the data store matching your
+                                analysis <span
+                                    class="analysis__load-data-import-transactions-count-inline">parameters.</span>
+                            {% endblocktranslate %}
+                        {% endif %}
+                        {% if special_count %}
+                            {% blocktranslate with special_count=special_count|intcomma %}
+                                Additionally, we found <strong>{{ special_count }}</strong> transactions in the data
+                                store for other supporting costs related to your analysis.
+                            {% endblocktranslate %}
+                        {% endif %}
+                        {% if transactions_count %}
+                            {% help 'load_data__matching_transactions' %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <dl class="analysis__data-list">
+                    {% if transaction_country_filter %}
+                        <dt class="analysis__data-list-label">{% translate "Country:" %}</dt>
+                        <dd class="analysis__data-list-value">{{ analysis.country.name }}</dd>
+                    {% endif %}
+                    <dt class="analysis__data-list-label">{{ 'Grants'|label_override:'ci_grant_code' }}:</dt>
+                    <dd class="analysis__data-list-value">{{ analysis.query_grants|join:", " }}</dd>
+                    <dt class="analysis__data-list-label">{% translate "Date Range:" %}</dt>
+                    <dd class="analysis__data-list-value">{{ analysis.start_date }} - {{ analysis.end_date }}</dd>
+                </dl>
+                <form action="{{ request.path }}" method="POST" novalidate data-show-loading-on-submit>
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="import_data" class="form__file-button form__file-button--upload"
+                            {% if transactions_count == 0 or transactions_count > import_transaction_limit %}disabled{% endif %}>{% translate "Import Data" %}</button>
+                </form>
+                {% if transactions_count == 0 %}
+                    <p class="analysis__error">{% translate "No matching transactions were found for these parameters. If you believe there should be data for this analysis, please contact the Dioptra administrator." %}</p>
+                {% endif %}
+                {% if transactions_count > import_transaction_limit %}
+                    <p class="analysis__error">{% translate "The number of transactions for this analysis exceeds Dioptra's data limit of " %} {{ import_transaction_limit|intcomma }}. {% translate "Please return to the previous step to double check if all parameters such as the date range are accurate. If this error still persists, please contact the Dioptra administrator." %}</p>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 analysis__load-data-group analysis__load-data-group--upload">
+                <h2 class="analysis__subtitle">{% translate "Upload a cost spreadsheet" %}</h2>
+                <p>{% translate "Upload cost data at the budget or transaction level." %}</p>
+                
+                <form action="{{ request.path }}" method="POST" enctype="multipart/form-data" novalidate
+                      data-show-loading-on-submit>
+                    {% csrf_token %}
+                    
+                    {% if upload_budget_errors %}
+                        {% include 'forms/_errors.html' with errors=upload_budget_errors %}
+                    {% endif %}
+
+                    {% if upload_transactions_errors %}
+                        {% include 'forms/_errors.html' with errors=upload_transactions_errors %}
+                    {% endif %}
+
+                    {# radio #}
+                    <div class="form-group form-group--upload-type active">
+                        <fieldset>
+                            <legend>Select type of cost data</legend>
+                            <div class="radio-input">
+                                <input type="radio" id="upload-type-budget" name="upload-type" value="budget" />
+                                <label for="upload-type-budget">Budget-level costs</label>
+                            </div>
+                            <div class="radio-input">
+                                <input type="radio" id="upload-type-transactions" name="upload-type" value="transactions" />
+                                <label for="upload-type-transactions">Transaction-level costs</label>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="form-group form-group--currency" data-section="budget">
+                        <label for="currency_code">Select Currency</label>
+                        <select name="currency_code" id="currency_code">
+                            {% for currency, currency_name in analysis.CURRENCY_CHOICES %}
+                                <option {% if currency == currency_config.code %}selected    {% endif %}
+                                        value="{{ currency }}">{{ currency_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group form-group--file">
+                        <div class="form__file">
+                            <input type="file" name="file"/>
+                            <div class="form__file-names"></div>
+                            <button type="button" class="form__file-button">{% translate "Choose File" %}</button>
+                        </div>
+                        <button disabled type="submit" name="action" value="upload_budget"
+                                class="form__file-button form__file-button--upload" data-section="budget">{% translate "Upload File" %}</button>
+                        <button disabled type="submit" name="action" value="upload_transactions"
+                                class="form__file-button form__file-button--upload" data-section="transactions">{% translate "Upload File" %}</button>
+                    </div>
+
+                    <div class="analysis__load-data-download-group form-group form-group--template">
+                        <p class="analysis__load-data-help-text">{% translate "Accepted formats" %}: csv, tsv, xls, xlsx<br />
+                        The following template contains the expected format for uploaded data:</p>
+
+                        <div class="analysis__load-data-details" data-section="budget">
+                            {% if dioptra_settings.budget_upload_template %}
+                                <a class="analysis__load-data-download-link"
+                                href="{{ dioptra_settings.budget_upload_template.url }}"
+                                download>{% translate "Download Template" %}</a>{% help 'load_data__download_template' %}
+                            {% endif %}
+                        </div>
+                        <div class="analysis__load-data-details" data-section="transactions">
+                            <a class="analysis__load-data-download-link" 
+                            href="{% static 'website/transactions.csv' %}"
+                            download>{% translate "Download Template" %}</a>
+                            {% help 'load_data__download_template' %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    {% else %}
+        <h3 class="analysis__label">Details</h3>
+        <dl class="analysis__data-list">
+            <dt class="analysis__data-list-label">{% translate "Source:" %}</dt>
+            <dd class="analysis__data-list-value">{{ analysis.source }}</dd>
+            {% with transaction_count=analysis.transactions.count %}
+                {% if transaction_count > 0 %}
+                    <dt class="analysis__data-list-label">{% translate "Transactions:" %}</dt>
+                    <dd class="analysis__data-list-value">{{ transaction_count|intcomma }}</dd>
+                {% endif %}
+            {% endwith %}
+            {% with cost_line_item_count=analysis.cost_line_items.count %}
+                <dt class="analysis__data-list-label">{% translate "Cost Line Items:" %}</dt>
+                <dd class="analysis__data-list-value">{{ cost_line_item_count|intcomma }}</dd>
+            {% endwith %}
+            {% if transaction_country_filter %}
+                <dt class="analysis__data-list-label">{% translate "Country:" %}</dt>
+                <dd class="analysis__data-list-value">{{ analysis.country.name }}</dd>
+            {% endif %}
+            <dt class="analysis__data-list-label">{% translate "Grants"|label_override:'ci_grant_code' %}:</dt>
+            <dd class="analysis__data-list-value">{{ analysis.grants_list|join:', ' }}</dd>
+            <dt class="analysis__data-list-label">{% translate "Date Range:" %}</dt>
+            <dd class="analysis__data-list-value">{{ analysis.start_date }} - {{ analysis.end_date }}</dd>
+            <dt class="analysis__data-list-label">{% translate "Currency:" %}</dt>
+            <dd class="analysis__data-list-value">
+                {% if analysis.get_currency_code_display %}{{ analysis.get_currency_code_display }} {% else %}
+                    {{ currency_config.name }}{% endif %}</dd>
+        </dl>
+
+        {% if analysis.needs_transaction_resync %}
+            <form action="{{ request.path }}" method="POST" novalidate class="analysis__reset-form"
+                  data-show-loading-on-submit>
+                {% csrf_token %}
+                <p class="analysis__reset-help">
+                    <em>{% translate "This analysis has been duplicated with new dates, so the transactions need to be synchronized." %}</em>
+                </p>
+                <p class="analysis__reset-help">
+                    <em>{% translate "This may cause new transactions to be imported; transactions that were previously imported but no longer match the new dates will be deleted. This may change the number of transactions and cost line items displayed above." %}</em>
+                </p>
+                <p class="analysis__reset-help">
+                    <em>{% translate "Some analysis steps may become incomplete and need to be completed. Please remember to update the output number on the Define Analysis step, as well as the percentage allocation for Support Costs and Indirect Costs on the Allocate Costs step if necessary." %}</em>
+                </p>
+                <p class="analysis__reset-help">
+                    <button class="form__file-button form__file-button--upload" type="submit" name="action"
+                            value="transaction_resync">{% translate "Synchronize transactions" %}</button>
+                </p>
+            </form>
+        {% else %}
+
+            <form action="{{ request.path }}" method="POST" novalidate class="analysis__reset-form"
+                  data-show-loading-on-submit>
+                {% csrf_token %}
+                <p class="analysis__reset-help">
+                    <em>{% translate "If you need to load transactions with a different date range into the analysis, go to the Dashboard and Duplicate this analysis with a different date range. To change other parameters, you need to clear all data, which will clear all your work in all subsequent steps of the analysis." %}</em>
+                    <button class="analysis__reset" type="submit" name="action" value="reset_data"
+                            data-click-confirm="{% translate "Are you sure you would like to clear all data for this analysis? All subsequent steps will need to be updated. " %}"> {% translate "Clear All Data" %}</button>
+                </p>
+
+
+            </form>
+
+        {% endif %}
+
+    {% endif %}
+    <div class="analysis__actions">
+        {% with next=step.get_next %}
+            {% if next and next.dependencies_met %}
+                <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next"
+                   href="{{ next.get_href }}"><strong>{% translate "Next" %}</strong>{% include 'icons/caret-right-thin.svg' %}
+                </a>
+            {% else %}
+                <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled"
+                      disabled><strong>{% translate "Next" %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+            {% endif %}
+        {% endwith %}
+    </div>
+{% endblock analysis_content %}

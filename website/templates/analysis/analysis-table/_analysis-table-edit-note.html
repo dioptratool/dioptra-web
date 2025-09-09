@@ -1,0 +1,25 @@
+{% load help humanize i18n panels_form_extras %}
+<tr class="analysis-table__edit-row allocate-costs">
+      <td colspan="{% if showSectorCode == 'true' %}7{% elif type == 'categorizeCostType' %}8{% else %}6{% endif %}" class="analysis-table__edit-row-cell">
+            <form action="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}" method="POST" novalidate data-show-loading-on-submit>
+              {% csrf_token %}
+                  <table class="analysis-table__edit-table">
+                    <tbody>
+                        <tr>
+                            <td class="analysis-table__edit-sector_code-cell">                           
+                            </td>
+                            <td class="analysis-table__edit-category-cell analysis-table__edit-category-cell--note">
+                                <label for="id_category" class="analysis-table__edit-row-label">{% translate 'Note' %}</label>
+                                <textarea name="note" class="analysis-table__edit-note-input">{{ cost_line_item.note }}</textarea>
+                                <div class="form__help-text">Provide a note explaining how you arrived at the allocation percent for this cost line item</div>
+                            </td>
+                            <td class="analysis-table__edit-actions-cell">
+                                <button class="analysis-table__edit-action analysis-table__edit-action--save" type="submit" data-object-id="{{ cost_line_item.id }}" data-endpoint="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}" name="action" value="save_cost_line_item_config">{% translate 'Save' %}</button>
+                                <button class="analysis-table__edit-action analysis-table__edit-action--cancel" type="submit" name="action" value="cancel">{% translate 'Cancel' %}</button>
+                            </td>
+                        </tr>
+                    </tbody>
+              </table>
+            </form>
+      </td>
+</tr>

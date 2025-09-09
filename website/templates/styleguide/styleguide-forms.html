@@ -1,0 +1,195 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+{% comment %}{% load form_helpers help static %}{% endcomment %}
+
+{% block content %}
+  <h1 class="styleguide__title"><a href="{% url 'styleguidetoc' %}">Styleguide</a> / Form Inputs</h1>
+  <div class="styleguide__forms">
+  <div class="styleguide__layout-table">
+    <div class="styleguide__layout-table-row styleguide__layout-table-row--header">
+      <div class="styleguide__layout-table-cell"></div>
+      <div class="styleguide__layout-table-cell">Resting</div>
+      <div class="styleguide__layout-table-cell">Disabled</div>
+      <div class="styleguide__layout-table-cell">Focus</div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Text Input</div>
+      <div class="styleguide__layout-table-cell"><label>Text Input Label</label><input type="text" placeholder="Placeholder"></div>
+      <div class="styleguide__layout-table-cell"><label>Text Input Label</label><input disabled type="text" value="Text Input"></div>
+      <div class="styleguide__layout-table-cell"><label>Text Input Label</label><input type="text" class="focus" placeholder="Placeholder"></div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Multiline Text Input</div>
+      <div class="styleguide__layout-table-cell"><label>Multiline Label</label><textarea placeholder="Placeholder"></textarea></div>
+      <div class="styleguide__layout-table-cell"><label>Multiline Label</label><textarea disabled>Multiline Text Input</textarea></div>
+      <div class="styleguide__layout-table-cell"><label>Multiline Label</label><textarea class="focus" placeholder="Placeholder"></textarea></div>
+    </div>    
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Dropdown</div>
+      <div class="styleguide__layout-table-cell"><label>Dropdown Label</label><select required><option disabled selected>Choose one</option><option>Chosen Selection</option><option>Unchosen Selection</select></div>
+      <div class="styleguide__layout-table-cell"><label>Dropdown Label</label><select required disabled><option disabled selected>Choose one</option><option>Chosen Selection</option><option>Unchosen Selection</select></div>
+      <div class="styleguide__layout-table-cell"><label>Dropdown Label</label><select required class="focus"><option disabled selected>Choose one</option><option>Chosen Selection</option><option>Unchosen Selection</select></div>
+    </div>  
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Number</div>
+      <div class="styleguide__layout-table-cell">
+        <label>Number Label</label>
+        <div class="form__number">
+          <input type="number">
+          <div class="form__number-toggles">
+            <button class="form__number-toggle form__number-toggle--decrease">{% include 'icons/minus.svg' %}
+            <button class="form__number-toggle form__number-toggle--increase">{% include 'icons/plus.svg' %}                        
+          </div>
+        </div>        
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>Number Label</label>
+        <div class="form__number disabled">
+          <input disabled type="number">
+          <div class="form__number-toggles">
+            <button class="form__number-toggle form__number-toggle--decrease">{% include 'icons/minus.svg' %}
+            <button class="form__number-toggle form__number-toggle--increase">{% include 'icons/plus.svg' %}                        
+          </div>
+        </div>          
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>Numer Label</label>
+        <div class="form__number">
+          <input class="focus" type="number">
+          <div class="form__number-toggles">
+            <button class="form__number-toggle form__number-toggle--decrease">{% include 'icons/minus.svg' %}
+            <button class="form__number-toggle form__number-toggle--increase">{% include 'icons/plus.svg' %}                        
+          </div>
+        </div>          
+      </div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Date</div>
+      <div class="styleguide__layout-table-cell">
+        <label>Date Label</label>
+        <div class="form__date">
+          <input type="text" class="flatpickr-input" data-flatpickr='{"dateFormat": "d-M-Y"}'>
+          <div class="form__date-icon">
+            {% include 'icons/calendar.svg' %}
+          </div>
+        </div>       
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>Date Label</label>
+        <div class="form__date disabled">
+          <input type="text" class="flatpickr-input" data-flatpickr='{"dateFormat": "d-M-Y"}' disabled>
+          <div class="form__date-icon">
+            {% include 'icons/calendar.svg' %}
+          </div>
+        </div>          
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>Date Label</label>
+        <div class="form__date">
+          <input type="text" class="flatpickr-input focus" data-flatpickr='{"dateFormat": "d-M-Y"}'>
+          <div class="form__date-icon">
+            {% include 'icons/calendar.svg' %}
+          </div>
+        </div>       
+      </div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">File Upload</div>
+      <div class="styleguide__layout-table-cell">
+        <label>File Upload Label</label>
+        <div class="form__file">
+          <input type="file" name="file">
+          <button type="submit" class="form__file-button">Choose File</button>
+          <div class="form__file-names"></div>
+        </div>       
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>File Upload Label</label>
+        <div class="form__file disabled">
+          <input disabled type="file" name="file">
+          <button disabled type="submit" class="form__file-button">Choose File</button>
+          <div class="form__file-names"></div>
+        </div>           
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <label>File Upload Label</label>
+        <div class="form__file">
+          <input type="file" name="file" class="focus">
+          <button type="submit" class="form__file-button">Choose File</button>
+          <div class="form__file-names"></div>
+        </div>         
+      </div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Radio</div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input type="radio" value="Yes" name="styleguide__radio_1">
+            <span>Yes</span>
+          </label>                                           
+        </div>   
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input type="radio" value="Yes" name="styleguide__radio_1">
+            <span>No</span>
+          </label>                                           
+        </div>
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input disabled type="radio" value="Yes" name="styleguide__radio_2">
+            <span>Yes</span>
+          </label>                                           
+        </div>   
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input disabled type="radio" value="Yes" name="styleguide__radio_2">
+            <span>No</span>
+          </label>                                           
+        </div>         
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input class="focus" type="radio" value="Yes" name="styleguide__radio_3">
+            <span>Yes</span>
+          </label>                                           
+        </div>   
+        <div class="form__radio form__radio--inline">
+          <label>
+            <input class="focus" type="radio" value="Yes" name="styleguide__radio_3">
+            <span>No</span>
+          </label>                                           
+        </div>        
+      </div>
+    </div>
+    <div class="styleguide__layout-table-row">
+      <div class="styleguide__layout-table-cell">Checkbox</div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__checkbox">
+          <label>
+            <input type="checkbox" value="Yes" name="styleguide__checkbox_1">
+            <span>I agree</span>
+          </label>                                           
+        </div>   
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__checkbox">
+          <label>
+            <input disabled type="checkbox" value="Yes" name="styleguide__checkbox_2">
+            <span>I agree</span>
+          </label>                                           
+        </div>           
+      </div>
+      <div class="styleguide__layout-table-cell">
+        <div class="form__checkbox">
+          <label>
+            <input class="focus" type="checkbox" value="Yes" name="styleguide__checkbox_3">
+            <span>I agree</span>
+          </label>                                           
+        </div>   
+      </div>
+    </div>      
+  </div>
+{% endblock content %}

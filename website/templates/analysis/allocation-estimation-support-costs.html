@@ -1,0 +1,38 @@
+{% load analysis help humanize i18n website_tags %}
+<h2 class="analysis__subtitle">{% translate "Support Costs Allocation Estimates" %}{% help 'allocate_costs__shared_cost_allocation_estimate' %}</h2>
+
+{% for each_intervention_instance, suggestions in suggested_allocation_calculations.items %}
+    <div class="analysis-table__shared-cost-estimate">
+        <div class="analysis-table__shared-cost-estimate-title">
+            <span>{{ each_intervention_instance.display_name }}</span>
+        </div>
+        <div class="analysis-table__shared-cost-estimate-direct-cost-category">
+            <span class="analysis-table__shared-cost-estimate-direct-cost-category-value">
+                {{ suggestions|dict_get:'suggested_allocation_numerator'|format_currency:analysis.currency_code }}
+            </span>
+            <span class="analysis-table__shared-cost-estimate-direct-cost-category-label">
+                {% with intervention_name=each_intervention_instance.display_name %}
+                    {% blocktranslate %}Program Costs of<br> {{ intervention_name }}{% endblocktranslate %}
+                {% endwith %}
+            </span>
+        </div>
+        <div class="analysis-table__shared-cost-estimate-direct-cost-total">
+            <span class="analysis-table__shared-cost-estimate-direct-cost-total-value">
+                {{ suggestions|dict_get:'suggested_allocation_denominator'|format_currency:analysis.currency_code }}
+            </span>
+            <span class="analysis-table__shared-cost-estimate-direct-cost-total-label">
+                {% with grant=step.grant %}
+                    {% blocktranslate %}All Program Costs of<br> {{ grant }}{% endblocktranslate %}
+                {% endwith %}
+            </span>
+        </div>
+        <div class="analysis-table__shared-allocation-suggestion">{% include 'icons/allocate-arrow.svg' %}
+            <span class="analysis-table__shared-allocation-suggestion-value">
+                {{ suggestions|dict_get:'suggested_allocation'|floatformat:2 }}%
+            </span>
+            <span class="analysis-table__shared-allocation-suggestion-label">
+                {% translate "Support Costs" %}<br/>{% translate "Suggested Allocation" %}
+            </span>
+        </div>
+    </div>
+{% endfor %}

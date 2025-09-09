@@ -1,0 +1,37 @@
+name: "dioptra-all"
+
+services:
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: dioptra
+      POSTGRES_USER: dioptra
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:5432:5432'
+
+  transaction_db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: dioptra_transactions
+      POSTGRES_USER: dioptra
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:5433:5432'
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    volumes:
+      - ..:/var/www
+    environment:
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      TRANSACTION_STORE_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:8000:8000'
+    links:
+      - db
+      - transaction_db

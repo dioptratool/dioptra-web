@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class="help">
+    <button class="help__button help__button--note" type="button">
+        {% include 'icons/note.svg' %}
+    </button>
+    <div class="help__modal" role="dialog" aria-modal="true" aria-labelledby="{{ item.pk }}">
+        <button type="button" class="help__close" aria-label="{% translate 'Close' %}"><span class="help__close-icon">×</span></button>
+        <h2 class="help__title" id="{{ item.pk }}">{% translate 'Allocation Note' %}</h2>
+        <div class="help__modal-content">
+            {{ item.note }}
+        </div>
+    </div>
+</div>

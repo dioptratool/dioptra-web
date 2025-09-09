@@ -1,0 +1,11 @@
+$styleguide-gutter-side-tile: 15px;
+$styleguide-color-charcoal: #333333;
+$styleguide-breakpoint-notebook: 992px;
+$styleguide-color-diminished-text: #666666;
+
+@mixin usage-list() {
+  color: $styleguide-color-diminished-text;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}

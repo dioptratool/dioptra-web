@@ -1,0 +1,38 @@
+{% extends 'html-panel.html' %}
+{% load panels_extras %}
+
+{% block panel-head %}
+    <h1>{{ title }}</h1>
+{% endblock panel-head %}
+
+{% block panel-body %}
+
+  <div class="admin-central">
+
+  {% if prefix_copy %}{{ prefix_copy|safe }}{% endif %}
+
+  {% for group in groups %}
+    <h2>{{ group.title }}</h2>
+    <ul class="items">
+      {% for item in group.items %}
+        <li>
+          <div class="item">
+            <h3>{{ item.title|smart_title }}</h3>
+            <p>{{ item.description }}</p>
+            <ul class="links">
+            {% for link in item.links %}
+              <li><a href="{{ link.url }}" data-panels-trigger>{{ link.title|safe }}</a></li>
+            {% endfor %}
+            </ul>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+
+  </div>
+
+{% endblock panel-body %}
+
+{% block panel-foot-wrapper %}
+{% endblock panel-foot-wrapper %}

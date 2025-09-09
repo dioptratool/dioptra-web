@@ -1,0 +1,135 @@
+.help {
+  display: inline-block;
+  position: relative;
+  text-align: left;
+  vertical-align: top;
+  white-space: normal;
+  z-index: 5;
+
+  &.help__modal--open {
+    z-index: 6;
+  }
+
+  th &,
+  .analysis-table__allocated-input-group & {
+    vertical-align: middle;
+  }
+}
+
+
+.help__button {
+  background: transparent;
+  border: none;
+  margin-top: -0.7rem;
+  margin-bottom: -0.7rem;
+  padding: 0.7rem;
+
+  &:focus {
+    @include default-focus();
+  }
+
+  svg {
+    vertical-align: top;
+
+    th &,
+    .analysis-table__category--active .analysis-table__category-name &,
+    .efficiency-item & {
+      * {
+        fill: $color-white;
+      }
+    }
+
+    .analysis-table__subtitle &,
+    .analysis-table__shared-cost-estimate-title &,
+    .insights__subheading &,
+    .cost-breakdown__group-label & {    
+      margin-bottom: 3px;
+      vertical-align: middle;
+    }    
+
+    .analysis-table__category-name &,
+    .insights__heading & {
+      margin-bottom: 5px;      
+      vertical-align: middle;
+    }
+  }
+}
+
+.help__modal {
+  display: none;
+  position: absolute;
+  background-color: $color-modal;
+  border: none;
+  border-radius: 0;
+  box-shadow: 0px 0px 15px rgba(17, 17, 17, 0.5);
+  font-weight: $font-weight-regular;
+  left: 0;
+  margin-top: 0;
+  min-height: 4rem;
+  padding: 1.2rem 1.5rem 1.5rem 4.4rem;
+  width: 34rem;
+  top: -0.7rem;
+  @include font-size(13, 1.444);    
+
+  .help__modal--open & {
+    display: block;
+  }
+
+  p,h1,h2,h3,h4,h5,h6,ul,ol {
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .help--right & {
+    left: auto;
+    padding: 1.2rem 4.4rem 1.5rem 1.5rem;
+    right: 0;
+  }
+}
+
+.help__modal-content {
+  color: $color-mineshaft;
+}
+
+.help__modal-label {
+  @include element-invisible();
+}
+
+.help__close {
+  background-color: transparent;
+  border: none;
+  color: darken($color-topaz, 4%);
+  font-size: 28px;
+  height: 4rem;
+  padding: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4rem;
+
+  &:focus {
+    @include default-focus();
+  }  
+
+  .help--right & {
+    left: auto;
+    right: 0;
+  }
+}
+
+.help__title {
+  @include element-invisible();
+}
+
+.help__modal-content ~ .help__modal-link {
+  margin-top: 1.5rem;
+}
+
+.help__edit-link-wrapper {
+  margin-top: 1.5rem;
+}

@@ -1,0 +1,10 @@
+{% extends 'filter-list/filter-list.html' %}
+
+{% block panel-foot-wrapper %}
+    <div class="panel-foot">
+        {% block panel-foot %}
+            <input type="submit" value="Choose" class="panels-select-btn btn btn-primary" disabled />
+            <input type="submit" data-panels-action="reject-close" class="btn btn-default" value="Cancel" />
+        {% endblock panel-foot %}
+    </div>
+{% endblock panel-foot-wrapper %}

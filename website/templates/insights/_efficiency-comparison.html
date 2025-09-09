@@ -1,0 +1,34 @@
+{% load analysis help humanize i18n panels_extras website_tags %}
+<div class="comparison">
+    <div class="comparison__main">
+        <div class="comparison__graph">
+            <!-- height = 40 * number of rows + 52px -->
+            <canvas class="insights-chart" height="{{ metric.insights_chart_data|length|insights_chart_height }}" data-insights-chart-data="{{ metric.insights_chart_data|jsonattr }}" data-direct-only-text="{% translate "Direct Costs" %}" data-all-text="{% translate "Total Costs" %}" data-x-axis-label="{{ metric.output_metric.metric_name }}"></canvas>
+        </div>
+        <div class="comparison__items">
+            {% for item in metric.insights_chart_data %}
+                <div class="comparison__item-wrapper {% if item.highlight %}comparison__item-wrapper--current-analysis{% endif %}">
+                    {% if item.tooltip %}
+                        <button type="button" aria-describedby="comparison__tooltip--{{ index }}"{% else %}
+                        <div{% endif %} class="comparison__item">
+                        <div class="comparison__item-cost comparison__item-cost--direct">{{ item.output_cost_direct_only|format_currency }}</div>
+                        <div class="comparison__item-cost comparison__item-cost--with-shared">{{ item.output_cost_all|format_currency }}</div>
+                        <div class="comparison__item-description">{{ item.grants }} - {{ item.description }}</div>
+                        {% if item.tooltip %}</button>{% else %}</div>{% endif %}
+                    {% if item.tooltip %}
+                        <div id="comparison__tooltip--{{ index }}" class="comparison__item-tooltip" role="tooltip">{{ item.tooltip }}</div>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="comparison__key">
+        <div class="comparison__key-label">{% translate "Key" %}</div>
+        <div class="comparison__key-item comparison__key-item--direct">{{ metric.output_metric.metric_name }} {% translate "(Program Costs only)" %}</div>
+        <div class="comparison__key-item comparison__key-item--with-shared">{{ metric.output_metric.metric_name }} {% translate "(inclu Program Costs, Support Costs, Indirect Costs)" %}</div>
+    </div>
+    {% if data_excluded_footnote %}
+        <div class="comparison__footnote">
+            {{ data_excluded_footnote }}
+        </div>
+    {% endif %}     
+</div>

@@ -1,0 +1,8 @@
+{% extends 'email/email-base.html' %}
+
+{% load i18n %}
+
+{% block email_body %}
+    <h1>{{ token|stringformat:".6d" }}</h1>
+    <p>{% translate 'This is your Dioptra verification code. Visit ' %} <a href="https://{{ domain }}{% url 'two-factor-authenticate' %}">Dioptra</a> {% translate 'to enter your code and login.' %}</p>
+{% endblock email_body %}

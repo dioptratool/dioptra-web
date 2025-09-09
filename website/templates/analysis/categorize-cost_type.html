@@ -1,0 +1,193 @@
+{% extends "analysis/base.html" %}
+{% load analysis help humanize i18n panels_form_extras website_tags %}
+
+{% block analysis_header %}
+  <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+    <h1 class="analysis__title">{{ title }}</h1>
+    {% help 'step_guidance__confirm_categories' %}
+  </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+
+
+
+  <div class="analysis-table analysis-categories analysis-table__confirm-categories">
+    <div>
+      {% include 'features/_filters.html' with filterset=filter request=request only %}
+    </div>
+    <div class="analysis-table__header">
+      <h2 class="analysis-table__subtitle">
+        {{ step.cost_type.name }}{% help_cost_type step.cost_type.name 'confirm_categories' %}</h2>
+      <div class="analysis-table__summary">
+        {% if unconfirmed_count > 0 %}{{ unconfirmed_count }} {% if unconfirmed_count == 1 %}
+          {% translate 'Category to confirm' %}{% else %}{% translate 'Categories to confirm' %}{% endif %}{% endif %}</div>
+    </div>
+
+    <div class="analysis-table__categories">
+      {% for cost_type_category, cost_line_items in cost_type_category_items %}
+        <div
+           class="analysis-table__category{% if not cost_type_category.confirmed %} analysis-table__category--unconfirmed{% endif %}">
+            <div class="analysis-table__category-header">
+              <h3 class="analysis-table__category-name">
+                {{ cost_type_category.category.name }}{% help_category cost_type_category.category.name 'confirm_categories' %}</h3>
+              <div class="analysis-table__category-header-supplement">
+                <div
+                   class="analysis-table__cost-items{% if cost_type_category.confirmed %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }}
+                  {% translate 'Cost Items' %}{% if cost_type_category.confirmed %} {% translate 'Confirmed' %}{% endif %}</div>
+                <div class="analysis-table__category-header-total">
+                  <strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong></div>
+                {% include 'analysis/analysis-table/_analysis-table-header-toggle.html' %}
+              </div>
+            </div>
+
+            <div class="analysis-table__category-content">
+              <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" class="categorize-cost_type-bulk-form" novalidate
+                    data-show-loading-on-submit autocomplete="off">
+                <div class="analysis-table__heading-actions">
+                  <div class="analysis-table__heading-select-all">
+                    <div class="form__checkbox form__checkbox--simple">
+                      <label for="select-all-{{ cost_type_category.pk }}" class="analysis-table__select-all-label">
+                         <input type="checkbox" class="select-all" id="select-all-{{ cost_type_category.pk }}" value="select-all"><span>Select All</span></label>
+                    </div>
+                    <button type="submit" class="bulk-assign-items analysis-table__bulk-assign-btn"
+                            data-href="{% url 'analysis-categorize-cost_type-bulk' analysis.pk cost_type_category.pk %}"
+                            disabled>{% include 'icons/disallowed.svg' %}<span>Assign Selected Items</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="analysis-table__wrapper">
+                  <table class="analysis-table__table">
+                    <thead>
+                    <tr>
+                      <th class="analysis-table__ categorize-cost_type-checkbox-heading" colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+                      <th>{{ 'Grant'|label_override:'ci_grant_code' }}</th>
+                      <th>{{ 'Site'|label_override:'ci_site_code' }}</th>
+                      <th>{{ 'Sector Code' }}</th>
+                      <th>{% translate 'Account Code Description' %}</th>
+                      <th class="analysis-table__amount-cell">
+                        {% if not cost_line_items|contains_sensitive_data %}
+                          {% if allocateEdit == 'true' %}
+                            {{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}
+                          {% else %}
+                            {{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}
+                          {% endif %}
+                        {% endif %}
+                      </th>
+                      <th class="analysis-table__edit-cell">
+                        {% help 'confirm_categories__edit_cost_type_category' %}<span
+                         class="analysis-table__help-in-th-label">{% translate 'Edit Cost Type & Category' %}</span>
+                      </th>
+                    </tr>
+                    </thead>
+                    {% for cost_line_item in cost_line_items %}
+                      <tbody class="analysis-table__tbody">
+                      {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
+                        {% with transactions_count=cost_line_item.transactions.count %}
+                          <tr>
+                            <td class="analysis-table__bulk-update-checkbox">
+                              <div class="form__checkbox form__checkbox--simple form__checkbox--no-label">
+                                <label>
+                                  <input type="checkbox" class="bulk-checkbox"
+                                     {# No name attribute so it isn't submitted with the form, only used via JS #}
+                                         value="{{ cost_line_item.config.id }}" aria-label="Select">
+                                  <span></span>
+                                </label>
+                              </div>
+                            </td>
+                            <td class="analysis-table__cost-item-cell">
+                              <div class="analysis-table__cost-item-summary">
+                                {% if dioptra_settings.show_transactions %}
+                                  {% if transactions_count > 0 %}
+                                    <button class="analysis-table__transactions-toggle"
+                                            aria-label="{% translate 'Toggle transactions' %}"
+                                            data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                            data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
+                                    <div class="analysis-table__transactions-toggle-inner"><span
+                                       class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">{% include 'icons/triangle-right.svg' %}</span><span
+                                       class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--collapse">{% include 'icons/triangle-down.svg' %}</span>
+                                    </div>
+                                  {% endif %}
+                                {% endif %}
+
+                                <div
+                                   class="analysis-table__cost-item-title">{{ cost_line_item.budget_line_description }}</div>
+
+                                {% if dioptra_settings.show_transactions %}
+                                  {% if transactions_count > 0 %}
+                                    <div class="analysis-table__cost-item-transactions-summary">
+                                      {% blocktranslate %}{{ transactions_count }}
+                                        transactions{% endblocktranslate %}</div>
+                                    </button>
+                                  {% endif %}
+                                {% endif %}
+                              </div>
+                            </td>
+                            <td>{{ cost_line_item.grant_code }}</td>
+                            <td class="analysis-table__site-cell">{{ cost_line_item.site_code }}</td>
+                            <td class="analysis-table__sector_code-cell">{{ cost_line_item.sector_code }}</td>
+                            <td class="analysis-table__description-cell">
+                              {% if account_code_descriptions|dict_get:cost_line_item.account_code %}
+                                {{ account_code_descriptions|dict_get:cost_line_item.account_code|attr:'account_description' }}{% else %}
+                                {{ cost_line_item.account_code }}{% endif %}</td>
+                            <td class="analysis-table__amount-cell">{% if not sensitive_data %}
+                              {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
+                            <td class="analysis-table__edit-cell">
+                              <button class="analysis-table__category-edit">{% translate 'Edit' %}</button>
+                              <span
+                                 class="analysis-table__category-edit-active-label">{% translate 'Editing' %}</span>
+                            </td>
+                          </tr>
+                          {% include 'analysis/analysis-table/_analysis-table-transaction-rows.html' with cost_line_item=cost_line_item transactions_count=transactions_count showSectorCode='true' sensitive_data=sensitive_data type='categorizeCostType' %}
+                          {% include 'analysis/analysis-table/_analysis-table-edit-row.html' with type='categorizeCostType' %}
+                        {% endwith %}
+                      {% endwith %}
+                      </tbody>
+                    {% endfor %}
+                  </table>
+                </div>
+              </form>
+              {# end include #}
+
+
+              <div class="analysis-table__category-footer">
+                <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit>
+                  {% csrf_token %}
+                  <input type="hidden" name="cost_type_category_id" value="{{ cost_type_category.id }}"/>
+                  {% if not cost_type_category.confirmed %}
+                    <button type="submit" name="action" value="confirm_cost_type_category"
+                            class="analysis-table__category-footer-action">{% translate 'Confirm' %} {{ cost_line_items|length }} {% translate 'Items' %}</button>{% endif %}
+                </form>
+              </div>
+            </div>
+
+
+        </div>
+      {% endfor %}
+    </div>
+    <div class="analysis-table__actions">
+      <form class="analysis-table__actions-form" action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit>
+        {% csrf_token %}
+        <input type="hidden" name="cost_type_category_id_all" value="{{ cost_type_category.id }}"/>
+        {% if unconfirmed_count != 0 %}
+          <button type="submit" name="action" value="confirm_cost_type_category_all"
+                  class="analysis-table__category-footer-action">{% translate 'Confirm All Items' %}</button>
+        {% endif %}
+      </form>
+      {% with next=step.get_next %}
+        {% if next and next.dependencies_met %}
+          <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next"
+             href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}
+          </a>
+        {% else %}
+          <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled"
+                disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+        {% endif %}
+      {% endwith %}
+      {% if next_message %}
+        <div class="analysis-table__summary">{{ next_message }}</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock analysis_content %}

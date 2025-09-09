@@ -1,0 +1,77 @@
+html.is-in-panel .form-group {
+
+  &.disabled {
+    pointer-events: none;
+  }
+
+  ul.as-selections {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    .as-selection-item {
+      @extend .btn;
+      @extend .btn-default;
+      position: relative;
+      margin: 0 0.5em 0.5em 0;
+      padding-right: 35px;
+      background-color: darken($panel-gray, 8);
+      font-weight: $font-weight-light;
+      min-width: 0;
+
+      .as-close {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 30px;
+        font-size: 22px;
+        color: darken($panel-gray, 20);
+
+        &:hover {
+          color: darken($panel-gray, 50);
+        }
+      }
+    }
+  }
+
+  .as-results {
+    position: relative;
+
+    .as-list {
+      @extend .dropdown-menu;
+      display: block;
+      max-width: 30.0em;
+
+      > li {
+        display: block;
+        padding: 3px 1.0em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+
+        em {
+          font-style: normal;
+          color: black;
+          background-color: yellow;
+        }
+
+        &.as-message {
+          font-style: italic;
+          color: $panel-gray-dark;
+        }
+
+        &.as-result-item {
+          &:hover,
+          &:focus,
+          &.active {
+            text-decoration: none;
+            color: $dropdown-link-hover-color;
+            background-color: $dropdown-link-hover-bg;
+          }
+        }
+      }
+    }
+  }
+}

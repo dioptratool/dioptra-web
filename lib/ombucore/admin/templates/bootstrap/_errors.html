@@ -1,0 +1,9 @@
+{% if field.errors|length %}
+    <div class="help-block errors">
+        <ul>
+        {% for error in field.errors %}
+            <li><em>{{ error }}</em></li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endif %}

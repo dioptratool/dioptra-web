@@ -1,0 +1,48 @@
+.login {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5.1rem;
+  margin-bottom: $large-margin;
+  max-width: 100%;
+  width: 55rem;
+}
+
+.login__title {
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.login__header-logo {
+  flex: 0 0 auto;
+  margin-right: 3rem;
+  width: 11.4rem;
+}
+
+.login__header-logo-image {
+  max-width: 100%;
+}
+
+.login__header {
+  display: flex;
+  margin-bottom: 3rem; 
+}
+
+.login__header-primary {
+  flex: 1 1 auto;
+}
+
+.login__header-text {
+  @include font-size(16, 1.3125);
+}
+
+.login__actions {
+  text-align: right;
+}
+
+.login__or {
+  font-weight: $font-weight-bold;
+  margin-bottom: 3rem;
+  text-align: center;
+  text-transform: uppercase;
+  @include font-size(18, 1.2);
+}

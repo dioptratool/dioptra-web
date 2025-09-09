@@ -1,0 +1,191 @@
+{% extends "theme_base.html" %}
+{% load analysis help humanize i18n panels_form_extras rules static website_tags %}
+
+{% block header %}{% include 'layout/_header.html' %}{% endblock %}
+
+{% block content_top %}{% endblock %}
+
+{% block content %}
+    <div class="insights">
+        <div class="container">
+            <div class="insights__header">
+                <div class="insight__header-primary">
+                    <h1 class="insights__title">{{ analysis.title }}</h1>
+                    <p class="insights__description">{{ analysis.description }}</p>
+
+                    <div class="insights__actions">
+                        <details class="analysis__dropdown download" onblur="this.removeAttribute('open')">
+                            <summary>
+                                Download {% include "icons/dropdown-arrow.svg" %}
+                            </summary>
+                            <ul>
+                                <li><a href="{% url 'analysis-insights-print' analysis.pk %}">PDF Report</a></li>
+                            </ul>
+                        </details>
+                        {% has_perm 'website.change_analysis' user analysis as can_change_analysis %}
+                        {% if can_change_analysis %}
+                            <a href="{% url 'analysis-define-update' analysis.pk %}" class="insights__action_edit">
+                                Edit Analysis
+                            </a>
+                            {% if analysis.interventioninstance_set.count == 1 %}
+                            <details class="analysis__dropdown">
+                                <summary>
+                                    Sub-components {% include "icons/dropdown-arrow.svg" %}
+                                </summary>
+                                <ul>
+                                    {% if analysis.subcomponent_cost_analysis.pk and not subcomponent_analysis_complete %}
+                                        <li class="has-progress">
+                                            <a href="{% url 'subcomponent-cost-analysis' analysis.pk analysis.subcomponent_cost_analysis.pk %}">
+                                                Continue Sub-component Analysis
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'subcomponent-cost-analysis-delete' analysis.pk analysis.subcomponent_cost_analysis.pk %}"
+                                               data-panels-trigger="" data-panels-reload-on="deleted">
+                                                Remove Sub-component Analysis
+                                            </a>
+                                        </li>
+                                    {% elif analysis.subcomponent_cost_analysis.pk and subcomponent_analysis_complete %}
+                                        <li class="has-progress">
+                                            <a href="{% url 'subcomponent-cost-analysis' analysis.pk analysis.subcomponent_cost_analysis.pk %}">
+                                                Edit Sub-component Analysis
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'subcomponent-cost-analysis-delete' analysis.pk analysis.subcomponent_cost_analysis.pk %}"
+                                               data-panels-trigger="" data-panels-reload-on="deleted">
+                                                Remove Sub-component Analysis
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li><a href="{% url 'subcomponent-cost-analysis-create' analysis.pk %}">
+                                            Add Sub-component Analysis
+                                        </a></li>
+                                    {% endif %}
+                                </ul>
+                            </details>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="insights__header-secondary">
+                    <dl class="insights__data-list">
+                        <dd class="insights__data-label">{% translate 'Date Range' %}</dd>
+                        <dl class="insights__data-value">{{ analysis.start_date }} - {{ analysis.end_date }}</dl>
+                        <dd class="insights__data-label">{% translate 'Country' %}</dd>
+                        <dl class="insights__data-value">{{ analysis.country.name }}</dl>
+                        <dd class="insights__data-label">{{ 'Grants'|label_override:'ci_grant_code' }}</dd>
+                        <dl class="insights__data-value">{{ analysis.grants_list|join:", " }}</dl>
+                        {% if analysis.output_count_source %}
+                            <dd class="insights__data-label">{% translate 'Output count data source' %}</dd>
+                            <dl class="insights__data-value">{{ analysis.output_count_source }}</dl>
+                        {% endif %}
+                        <dd class="insights__data-label">{% translate 'Currency' %}</dd>
+                        <dl class="insights__data-value">{% if analysis.get_currency_code_display %}
+                            {{ analysis.get_currency_code_display }} {% else %}
+                            {{ currency_config.name }}{% endif %}</dl>
+
+                    </dl>
+                    <div class="insights__created">
+                        Created by {{ analysis.owner.name }} on {{ analysis.created|date }}
+                    </div>
+                </div>
+            </div>
+            <div class="insights__intervention-list" role="tablist" aria-label="Interventions">
+                {% include 'insights/_interventions-tab-list.html' %}
+            </div>
+            {% for intervention_instance in analysis.interventioninstance_set.all %}
+                <div class="insights__intervention" role="tabpanel" tabindex="0"
+                     aria-labelledby="intervention-tab-{{ intervention_instance.id }}"
+                     id="intervention-panel-{{ intervention_instance.id }}" {% if forloop.counter > 1 %}hidden{% endif %}>
+                    <h2 class="insights__intervention-title">{{ intervention_instance.display_name }}</h2>
+                    <p class="insights__intervention-subtitle">{{ intervention_instance.intervention.name }}</p>
+                    {% with parameters=parameters_lookup|dict_get:intervention_instance.id %}
+                        {% for label, value in parameters.items %}
+                            <p class="insights__intervention-metric"><b>{{ label }}:</b> {{ value }}</p>
+                        {% endfor %}
+                    {% endwith %}
+                    {% with output_metrics=output_metrics_by_intervention|dict_get:intervention_instance.id %}
+                        <div class="insights__group">
+                            <h2 class="insights__heading">{% translate 'Cost Efficiency' %}</h2>
+                            {% for metric in output_metrics %}
+                                <div class="insights__efficiency">
+                                    <div class="insights__efficiency-items">
+                                        {% if forloop.counter == 1 %}
+                                            {% include 'insights/_efficiency-items-insights.html' with icon=intervention_instance.intervention.icon show_client=True %}
+                                        {% else %}
+                                            {% include 'insights/_efficiency-items-insights.html' with icon=intervention_instance.intervention.icon %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if subcomponent_analysis_breakdown.chart_data %}
+                                    <div class="insights__subcomponent">
+                                        <h3 class="insights__subtitle">
+                                            Cost of Each Sub-component, per {{ metric.output_metric }}
+                                        </h3>
+                                        {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_all %}
+                                    </div>
+                                {% endif %}
+
+                                {% if forloop.counter == 1 %}
+                                    {% include 'insights/_lessons.html' with object=object lesson_field='efficiency_lesson' can_change_analysis=can_change_analysis %}
+                                {% endif %}
+                                {% if metric.insights_chart_data %}
+                                    <h3 class="insights__subheading">
+                                        {% translate 'Comparison to Similar Programs' %}{% help 'insights__comparison_to_similar_programs' %}</h3>
+                                    {% include 'insights/_efficiency-comparison.html' with metric=metric %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if cost_efficiency_strategies_by_intervention.intervention.id|length > 0 %}
+                                <div class="insights__group">
+                                    <h2 class="insights__heading">
+                                        {% translate 'Strategies' %}{% help 'insights__strategies' %}
+                                    </h2>
+                                    {% include 'insights/_strategies.html' with strategies=cost_efficiency_strategies_by_intervention.intervention.id %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endwith %}
+                    <div class="insights__group">
+                        <h2 class="insights__heading">{% translate 'Cost Breakdown' %}</h2>
+
+                        {% include 'insights/_cost-breakdown.html' with cost_breakdown=cost_breakdown|dict_get:intervention_instance.id %}
+
+                        {% include 'insights/_lessons.html' with object=object lesson_field='breakdown_lesson' can_change_analysis=can_change_analysis %}
+                    </div>
+                    <div class="insights__group">
+                        <h2 class="insights__heading">
+                            {% translate 'Full Cost Model' %}{% help 'insights__full_cost_model' %}
+                        </h2>
+                        {% with intervention_name=intervention_instance.display_name %}
+                            {% include 'insights/_cost-model.html' with intervention_name=intervention_name paginator=cost_model_table_paginator|dict_get:intervention_name page=cost_model_table_page|dict_get:intervention_name hide_download=analysis.allows_other_costs %}
+                            {% if analysis.allows_other_costs %}
+                                <h2 class="insights__heading">
+                                    {% translate 'Other Costs' %}{% help 'insights__full_cost_model' %}
+                                </h2>
+                                {% include 'insights/_other-cost-model.html' with paginator=other_cost_model_table_paginator|dict_get:intervention_name page=other_cost_model_table_page|dict_get:intervention_name %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extrascript %}
+    <script type="text/javascript" src="{% static 'website/js/chart.umd.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'website/js/insights-charts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'website/js/content-tabs.js' %}"></script>
+    <script type="text/javascript">
+        window.addEventListener('click', (e) => {
+            document.querySelectorAll('.analysis__dropdown')?.forEach((dropdown) => {
+                if (!(e.target.closest('.analysis__dropdown') == dropdown)) {
+                    dropdown.removeAttribute('open')
+                }
+            });
+        });
+    </script>
+{% endblock extrascript %}

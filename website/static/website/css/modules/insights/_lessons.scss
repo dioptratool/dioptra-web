@@ -1,0 +1,58 @@
+.lessons {
+  margin-bottom: 6.3rem;
+}
+
+.lessons__edit {
+  margin-left: 0.5rem;
+}
+
+.lessons__group-label-analysis {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  @include font-size(16, 1.8125);
+}
+
+.lessons__group-label-cost-breakdown {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  @include font-size(16, 1.8125);
+  @media print {
+    margin-top: 8.0rem;
+  }
+}
+
+.lessons__header {
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  display: flex;
+}
+
+.lessons__input {
+  p {
+    &:first-child {
+      margin-top: 0;
+    }
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  li {
+    margin-bottom: 1.5rem;
+  }
+  ul, ol {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.lessons__placeholder {
+  color: #636c72;
+  font-style: italic;
+}
+
+.lessons__value {
+  p {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}

@@ -1,0 +1,41 @@
+{% load help static website_tags %}{% get_base_url as base_url %}
+
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>{% block title %}{% endblock %}</title>
+
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+
+      {% block extrahead %}{% endblock %}
+      <link href="{{ base_url }}{% static "panels/lib/flatpickr/dist/flatpickr.min.css" %}" type="text/css" media="all" rel="stylesheet">
+      <link href="{{ base_url }}{% static "website/css/styleguide.css" %}" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body class="{% block body_class %}{% endblock %}">
+    <div id="root-alerts-container"></div>
+
+    <div class="styleguide__page">
+
+      <main>
+        <div class="styleguide__container">
+          {% block content %}
+          {% endblock content %}
+        </div>
+      </main>
+      
+    </div>
+  
+    <script type="text/javascript" src="{% static "panels/js/jquery-1.12.3.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "panels/lib/flatpickr/dist/flatpickr.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "panels/js/flatpickr-init.js" %}"></script>
+    <script type="text/javascript" src="{% static "website/scripts.js" %}"></script>
+
+    {% block extrascript %}{% endblock %}
+
+    {% block page_bottom %}
+    {% endblock page_bottom %}
+  </body>
+</html>

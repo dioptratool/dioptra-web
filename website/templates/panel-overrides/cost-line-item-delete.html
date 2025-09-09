@@ -1,0 +1,11 @@
+{% extends 'html-panel.html' %}
+{% load static %}
+
+{% block panel-body %}
+  <p class="delete-confirmation lead">Are you sure you want to delete "{{ object }}"?</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+  <a href="{{ request.get_full_path }}?confirmed=true" class="panels-delete-btn btn btn-danger">Yes, delete</a>
+  <a href="" data-panels-action="reject-close" class="btn btn-cancel">No, cancel</a>
+{% endblock panel-foot %}

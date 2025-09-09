@@ -1,0 +1,26 @@
+{% extends 'dashboard_base.html' %}
+{% load help i18n mptt_tags %}
+
+{% block content %}
+  <div class="help-menu">
+    <div class="container">
+      <h1 class="help-menu__title">{% translate 'Help' %}</h1>
+      <ul class="help-menu__topics">
+        {% for title, pages in pages_by_topic.items %}
+        {% if pages %}
+        <li class="help-menu__topic">
+          <h2 class="help-menu__topic-name">{{ title }}</h2>
+          <ul class="help-menu__items">
+            {% for page in pages %}
+            <li class="help-menu__item">
+              <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock content %}

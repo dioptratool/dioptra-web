@@ -1,0 +1,103 @@
+{% extends "dashboard_base.html" %}
+{% load analysis help humanize i18n rules website_tags %}
+
+{% block title %}{% translate 'Dashboard' %}{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="dashboard">
+            <div class="container">
+                <h1 class="dashboard__title">{% translate 'Dashboard' %}</h1>
+                <div class="dashboard__header">
+                    <a href="{% url 'analysis-define-create' %}" class="dashboard__create">Create New Analysis</a>
+                    {% include 'features/_filters.html' with filterset=filter request=request only %}
+                </div>
+
+                {% if object_list %}
+                    <div class="dashboard__table-wrapper">
+                        <table class="dashboard__table">
+                            <thead>
+                            <tr>
+                                <th><span>{% translate 'Grants'|label_override:'ci_grant_code' %}</span>{% include 'features/_table-header-order-link.html' with column='grants' column_name='grants' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Country' %}</span>{% include 'features/_table-header-order-link.html' with column='country' column_name='country' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Interventions' %}</span>{% include 'features/_table-header-order-link.html' with column='interventions' column_name='interventions' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Title' %}</span>{% include 'features/_table-header-order-link.html' with column='title' column_name='title' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Last Updated' %}</span>{% include 'features/_table-header-order-link.html' with column='updated' column_name='updated' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Owner' %}</span>{% include 'features/_table-header-order-link.html' with column='owner' column_name='owner' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Cost per Output' %}</span>{% help 'dashboard__cost_per_output' %}{% include 'features/_table-header-order-link.html' with column='output_costs' column_name='output_costs' order_by=filter.form.order_by.value.0 %}</th>
+                                <th><span>{% translate 'Actions' %}</span></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for analysis in object_list %}
+                                {% has_perm 'website.change_analysis' user analysis as can_change_analysis %}
+                                {% has_perm 'website.change_analysis' user analysis as can_clone_analysis %}
+                                {% has_perm 'website.view_analysis' user analysis as can_view_analysis %}
+                                {% has_perm 'website.delete_analysis' user analysis as can_delete_analysis %}
+                                <tr>
+                                    <td>{% if analysis.grants_list|length > 0 %}{{ analysis.grants_list|join:", " }}{% else %}{{ analysis.query_grants|join:", " }}{% endif %}</td>
+                                    <td>{{ analysis.country }}</td>
+                                    <td>
+                                    {% for intervention_instance in analysis.interventioninstance_set.all %}
+                                        {% if not forloop.last %}
+                                            {{ intervention_instance.label|default:intervention_instance.display_name }},<br>
+                                        {% else %}
+                                            {{ intervention_instance.label|default:intervention_instance.display_name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if can_change_analysis or can_view_analysis %}
+                                            <a class="dashboard__title-link" href="{% url 'analysis' analysis.id %}"><strong>{{ analysis.title }}</strong></a>
+                                        {% else %}
+                                            <strong>{{ analysis.title }}</strong>
+                                        {% endif %}
+                                    </td>
+                                    <td class="dashboard__date-cell">{{ analysis.updated|date }}</td>
+                                    <td>{% if analysis.owner %}{{ analysis.owner.name }}{% else %}N/A{% endif %}</td>
+                                    <td class="dashboard__cost-cell">
+                                        {% with cost_per_output=analysis.get_first_cost_per_output_all %}
+                                            {% if cost_per_output %}
+                                                {% with interventions=analysis.interventioninstance_set.all %}
+                                                    {% if interventions|length > 1 %}
+                                                        Multiple Outputs
+                                                    {% else %}
+                                                        {{ cost_per_output|format_currency:analysis.currency_code }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="dashboard__table-actions">
+                                        {% if can_change_analysis %}
+                                            <a class="dashboard__edit-link" href="{% url 'analysis' analysis.id %}">{% translate 'Edit' %}</a>
+                                        {% endif %}
+                                        {% if can_clone_analysis %}
+                                            <a class="dashboard__edit-link" href="{% url 'analysis-create-copy' analysis.id %}" data-panels-trigger data-panels-reload-on="duplicated">{% translate 'Duplicate' %}</a>
+                                        {% endif %}
+                                        {% if can_delete_analysis %}
+                                            <a class="dashboard__edit-link" href="{% url 'ombucore.admin:website_analysis_delete' analysis.id %}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Delete' %}</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td>{% translate 'You need to create some analyses.' %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif user.has_analyses %}
+                    <p class="dashboard__no-results">{% translate 'No matching analyses.' %}</p>
+                {% else %}
+                    <p class="dashboard__no-results">{% translate 'No analyses exist for the country you have access to. If you think this is an error please contact your Dioptra administrator, or get started by creating your own analysis.' %}</p>
+                {% endif %}
+                {% include 'features/_pagination.html' %}
+            </div>
+        </div>
+
+    {% endif %}
+
+
+{% endblock content %}

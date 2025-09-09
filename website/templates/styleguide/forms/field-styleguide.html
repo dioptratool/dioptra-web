@@ -1,0 +1,32 @@
+<div class="input__wrapper input__wrapper--{{ field.type }}{% for class in field.styleguide.class %} input__wrapper--{{ class }}{% endfor %}">
+  {% include 'website/styleguide/forms/input-header-styleguide.html' %}
+  <div class="input__inner">
+    {% if field.type == "text" %}
+      {% include 'website/forms/widgets/text.html' with widget=field %}
+    {% elif field.type == "textarea" %}
+      {% include 'website/forms/widgets/textarea.html' with widget=field %}
+    {% elif field.type == "checkbox" %}
+      {% include 'website/forms/widgets/checkbox_select.html' with widget=field %}
+    {% elif field.type == "radio" %}
+      {% include 'website/forms/widgets/radio.html' with widget=field %}
+    {% elif field.type == "select" %}
+      {% include 'website/forms/widgets/select.html' with widget=field %}
+    {% elif field.type == "date" %}
+      {% include 'website/forms/widgets/date.html' with widget=field %}
+    {% elif field.type == "number" %}
+      {% include 'website/forms/widgets/number.html' with widget=field %}
+    {% elif field.type == "tel" %}
+      {% include 'website/forms/widgets/input.html' with widget=field %}
+    {% elif field.type == "email" %}
+      {% include 'website/forms/widgets/email.html' with widget=field %}
+    {% elif field.type == "address" %}
+      {% include 'website/forms/widgets/address.html' with widget=field %}      
+    {% endif %}
+    <span class="input__valid-icon">{% include 'website/icons/valid.svg' %}</span>
+    <span class="input__invalid-icon">{% include 'website/icons/invalid.svg' %}</span>
+    <span class="input__focus-indicator"></span>
+  </div>
+  {% for error in field.errors %}
+    <div class="input__error">{{ error }}</div>
+  {% endfor %}
+</div>

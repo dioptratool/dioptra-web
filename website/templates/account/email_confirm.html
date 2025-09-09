@@ -1,0 +1,32 @@
+{% extends "login_base.html" %}
+
+{% load account i18n %}
+
+{% block head_title %}{% translate "Confirm E-mail Address" %}{% endblock %}
+
+{% block login_content %}
+    <h1 class="login__title">{% translate "Confirm E-mail Address" %}</h1>
+
+    {% if confirmation %}
+
+        {% user_display confirmation.email_address.user as user_display %}
+
+        <p>{% blocktranslate with email=confirmation.email_address.email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktranslate %}</p>
+
+        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}" class="login__form">
+            {% csrf_token %}
+
+            <div class="login__actions">
+                <button name="action" class="form__submit" type="submit">{% translate 'Confirm' %}</button>
+            </div>          
+        </form>
+
+    {% else %}
+
+        {% url 'account_email' as email_url %}
+
+        <p>{% blocktranslate %}This e-mail confirmation link expired or is invalid. Please <a href="{{ email_url }}">issue a new e-mail confirmation request</a>.{% endblocktranslate %}</p>
+
+    {% endif %}
+
+{% endblock login_content %}

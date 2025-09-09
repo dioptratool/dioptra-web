@@ -1,0 +1,46 @@
+.styleguide__typography {
+  @media (min-width: $styleguide-breakpoint-notebook) {
+    display: flex;
+  }
+}
+
+.styleguide__typography-headings {
+  flex: 1 1 auto;
+}
+
+.styleguide__typography-heading {
+  margin-top: 2.4rem;
+  margin-bottom: 2.4rem;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.styleguide__typography-heading-notes {
+  color: $styleguide-color-diminished-text;
+  font-size: 13px;
+  line-height: 15px;
+}
+
+.styleguide__typography-typefaces {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.styleguide__typography-typeface {
+  margin-bottom: 2.4rem;
+}
+
+.stylguide__tyopgraphy-typeface-example {
+  font-size: 3rem;
+  line-height: 1.2;
+}
+
+.styleguide__typography-typeface-label {
+  font-size: 1.8rem;
+}
+
+.styleguide__typography-typeface-usage-list {
+  @include usage-list();
+}

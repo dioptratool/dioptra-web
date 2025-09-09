@@ -1,0 +1,15 @@
+.panel-form .form-group label.control-label[for="id_subcomponent_labels"] {
+  display: none;
+}
+.panel-form .help_text {
+  color: #767676;
+  font-size: 1em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: normal;
+  margin-block: 1.3em;
+}
+
+.panel-wrapper .panel-body .panel-body-contents {
+  padding-top: 0em;
+}

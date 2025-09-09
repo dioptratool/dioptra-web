@@ -1,0 +1,23 @@
+// 
+// Layout
+//
+// Layout structure
+//
+
+.container {
+  max-width: $breakpoint-desktop-wide;
+  width: 100%;
+
+  @media (min-width: $breakpoint-notebook) {
+    padding-left: $gutter-side-desktop;
+    padding-right: $gutter-side-desktop;
+  }
+}
+
+.row--flex {
+  display: flex;
+  
+  @media (max-width: $breakpoint-notebook - 1px) {
+    flex-wrap: wrap;
+  }
+}

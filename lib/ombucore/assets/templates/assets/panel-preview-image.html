@@ -1,0 +1,44 @@
+{% extends 'panel-preview.html' %}
+{% load imagekit static %}
+
+{% block panel-body %}
+    <div class="asset-preview asset-preview-image">
+        <img src="{{ object.image.url }}" class="img-responsive center-block"/>
+    </div>
+    <div class="asset-preview-info">
+        <table class="table">
+            <tr>
+                <td class="active">Width</td>
+                <td>{{ object.width }}</td>
+            </tr>
+            <tr>
+                <td class="active">Height</td>
+                <td>{{ object.height }}</td>
+            </tr>
+            <tr>
+                <td class="active">Created</td>
+                <td>{{ object.created }}</td>
+            </tr>
+            <tr>
+              <td class="active">Tags</td>
+              <td>
+                {% if object.tags.all %}
+                  {% for tag in object.tags.all %}
+                    {% if tag == object.tags.all.last %}
+                      {{ tag }}
+                    {% else %}
+                      {{ tag }},
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  ----
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+                <td class="active">Folder</td>
+                <td>{% if object.folder %}{{ object.folder }}{% else %}----{% endif %}</td>
+            </tr>
+        </table>
+    </div>
+{% endblock panel-body %}

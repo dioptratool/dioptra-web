@@ -1,0 +1,1395 @@
+{
+    "items": [
+        {
+            "type": "step_field",
+            "title": "Allocate Costs / Apply to all link",
+            "identifier": "allocate_costs__apply_to_all",
+            "help_text": "",
+            "link": [
+                "help.helppage",
+                8
+            ],
+            "source_id": 19
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Assets & Equipment category",
+            "identifier": "allocate_costs__assets_&_equipment_category",
+            "help_text": "<p>All capital assets and equipment costs.</p>",
+            "link": null,
+            "source_id": 56
+        },
+        {
+            "type": "step_field",
+            "title": "Allocate Costs / Assign allocation percent column header",
+            "identifier": "allocate_costs__assign_allocation_percent",
+            "help_text": "<p>For each cost item, indicate the <strong><u>percentage of the item&#39;s amount charged to this project&nbsp;that contributed&nbsp;to the intervention being analyzed</u></strong>, compared to the other interventions the item may also support in this project.</p>\r\n\r\n<p><strong>IMPORTANT: This is&nbsp;different from the percentage&nbsp;of each cost item allocated to this project.</strong></p>",
+            "link": [
+                "help.helppage",
+                8
+            ],
+            "source_id": 18
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Support Cost cost_type",
+            "identifier": "allocate_costs__direct_shared_cost_cost_type",
+            "help_text": "<p>Support costs that are not specific to a cost_typeal/thematic area, and are shared across all projects for the running and management of operations, e.g. country office expenses.</p>",
+            "link": null,
+            "source_id": 92
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Economic Recovery & Development cost_type",
+            "identifier": "allocate_costs__economic_recovery_&_development_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 100
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Education cost_type",
+            "identifier": "allocate_costs__education_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 72
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / ERD cost_type",
+            "identifier": "allocate_costs__erd_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 76
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Governance cost_type",
+            "identifier": "allocate_costs__governance_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 80
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Health cost_type",
+            "identifier": "allocate_costs__health_cost_type",
+            "help_text": "<p>Includes Environmental Health (WASH), Nutrition, Primary Health, and Reproductive Health.</p>",
+            "link": null,
+            "source_id": 84
+        },
+        {
+            "type": "step_field",
+            "title": "Allocate Costs / ICR allocation estimate label",
+            "identifier": "allocate_costs__ICR_allocation_estimate",
+            "help_text": "<p>Dioptra has calculated a suggested percentage for Indirect Costs for this intervention, based on the proportion of Program and Shared Costs of this intervention in this project out of all the Program and Support Costs in this project. Go ahead and save the suggested percentage.</p>",
+            "link": [
+                "help.helppage",
+                9
+            ],
+            "source_id": 21
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / ICR category",
+            "identifier": "allocate_costs__icr_category",
+            "help_text": "",
+            "link": null,
+            "source_id": 68
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / ICR cost_type",
+            "identifier": "allocate_costs__icr_cost_type",
+            "help_text": "<p>Indirect costs that support headquarters (HQ) operations and overall management.</p>",
+            "link": null,
+            "source_id": 96
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / International Staff category",
+            "identifier": "allocate_costs__international_staff_category",
+            "help_text": "<p>All cost items associated with international staff members, e.g. salary, benefits, housing, home leave, professional development.</p>",
+            "link": null,
+            "source_id": 36
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Materials & Activities category",
+            "identifier": "allocate_costs__materials_&_interventions_category",
+            "help_text": "<p>All non-personnel cost items specifically used or procured specifically for the implementation of program interventions, e.g. NFI kits, food transportation, cold chain services, warehousing, logistics, cash transfers, training materials, behavior change incentives, surveys.</p>",
+            "link": null,
+            "source_id": 52
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / National Staff category",
+            "identifier": "allocate_costs__national_staff_category",
+            "help_text": "<p>All cost items associated with national staff members, e.g. salary, benefits, insurance, severance, vacation, professional development, hazard pay.</p>",
+            "link": null,
+            "source_id": 40
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Non-Staff Personnel category",
+            "identifier": "allocate_costs__non-staff_personnel_category",
+            "help_text": "<p>All cost items associated with important personnel who may not be official staff members but play a major role in the intervention, e.g. community health workers, teachers, case workers, protection monitors, latrine builders, training facilitators.</p>",
+            "link": null,
+            "source_id": 44
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Office Expenses category",
+            "identifier": "allocate_costs__office_expenses_category",
+            "help_text": "<p>All non-personnel items associated with having offices, e.g. rent, utilities, stationery, office supplies, generators, legal fees, software licenses.</p>",
+            "link": null,
+            "source_id": 60
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Protection cost_type",
+            "identifier": "allocate_costs__protection_cost_type",
+            "help_text": "<p>Includes Women&#39;s Protection &amp; Empowerment, Child Protection, and Protection &amp; Rule of Law.</p>",
+            "link": null,
+            "source_id": 88
+        },
+        {
+            "type": "step_field",
+            "title": "Allocate Costs / Shared cost allocation estimate label",
+            "identifier": "allocate_costs__shared_cost_allocation_estimate",
+            "help_text": "<p>Dioptra has calculated a suggested percentage for Support Costs for this intervention, based on the proportion of Program Costs of this intervention in this project out of all the Program Costs in this project. Go ahead and save the suggested percentage unless you have good reason to change it.</p>",
+            "link": [
+                "help.helppage",
+                9
+            ],
+            "source_id": 20
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Sub-Grants category",
+            "identifier": "allocate_costs__sub-grants_category",
+            "help_text": "<p>All cost items for goods, services, or interventions that are outsourced to and delivered by a partner, civil society organization, government agency, or contracting agency to provide services to clients on behalf of the lead organization.</p>",
+            "link": null,
+            "source_id": 64
+        },
+        {
+            "type": "cost_type",
+            "title": "Allocate Costs / Technical cost_type",
+            "identifier": "allocate_costs__technical_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 113
+        },
+        {
+            "type": "category",
+            "title": "Allocate Costs / Travel & Transport category",
+            "identifier": "allocate_costs__travel_&_transport_category",
+            "help_text": "<p>All cost items associated with work-related travel, e.g. flights, taxi, accommodation, per diem, visa. This includes vehicle pool expenses such as car rental, motorcycles, fuel, and maintenance.</p>",
+            "link": null,
+            "source_id": 48
+        },
+        {
+            "type": "step_field",
+            "title": "Assign Cost Type & Category / Category column header",
+            "identifier": "assign_cost_type_category__category",
+            "help_text": "<p>Select the most relevant Category for this cost item. If it is an ICR cost, select ICR.</p>",
+            "link": [
+                "help.helppage",
+                5
+            ],
+            "source_id": 14
+        },
+        {
+            "type": "step_field",
+            "title": "Assign Cost Type & Category / Cost Type column header",
+            "identifier": "assign_cost_type_category__cost_type",
+            "help_text": "<p>Select the most relevant programmatic/thematic Cost Type for this cost item. If it is not a Program Cost, select either Support Cost or ICR.</p>",
+            "link": [
+                "help.helppage",
+                5
+            ],
+            "source_id": 13
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Assets & Equipment category",
+            "identifier": "confirm_categories__assets_&_equipment_category",
+            "help_text": "<p>All capital assets and equipment costs.</p>",
+            "link": null,
+            "source_id": 53
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Support Cost cost_type",
+            "identifier": "confirm_categories__direct_shared_cost_cost_type",
+            "help_text": "<p>Support costs that are not specific to a cost_typeal/thematic area, and are shared across all projects for the running and management of operations, e.g. country office expenses.</p>",
+            "link": null,
+            "source_id": 89
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Economic Recovery & Development cost_type",
+            "identifier": "confirm_categories__economic_recovery_&_development_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 97
+        },
+        {
+            "type": "step_field",
+            "title": "Confirm Categories / Edit cost_type & category column header",
+            "identifier": "confirm_categories__edit_cost_type_category",
+            "help_text": "<p>If you believe a particular cost item has been assigned to the wrong cost_type and/or category, click Edit on that cost item to make the necessary changes. Please refresh the page to see the changes take effect.</p>",
+            "link": [
+                "help.helppage",
+                6
+            ],
+            "source_id": 16
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Education cost_type",
+            "identifier": "confirm_categories__education_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 69
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / ERD cost_type",
+            "identifier": "confirm_categories__erd_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 73
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Governance cost_type",
+            "identifier": "confirm_categories__governance_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 77
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Health cost_type",
+            "identifier": "confirm_categories__health_cost_type",
+            "help_text": "<p>Includes Environmental Health (WASH), Nutrition, Primary Health, and Reproductive Health.</p>",
+            "link": null,
+            "source_id": 81
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / ICR category",
+            "identifier": "confirm_categories__icr_category",
+            "help_text": "",
+            "link": null,
+            "source_id": 65
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / ICR cost_type",
+            "identifier": "confirm_categories__icr_cost_type",
+            "help_text": "<p>Indirect costs that support headquarters (HQ) operations and overall management.</p>",
+            "link": null,
+            "source_id": 93
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / International Staff category",
+            "identifier": "confirm_categories__international_staff_category",
+            "help_text": "<p>All cost items associated with international staff members, e.g. salary, benefits, housing, home leave, professional development.</p>",
+            "link": null,
+            "source_id": 33
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Materials & Activities category",
+            "identifier": "confirm_categories__materials_&_interventions_category",
+            "help_text": "<p>All non-personnel cost items specifically used or procured specifically for the implementation of program interventions, e.g. NFI kits, food transportation, cold chain services, warehousing, logistics, cash transfers, training materials, behavior change incentives, surveys.</p>",
+            "link": null,
+            "source_id": 49
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / National Staff category",
+            "identifier": "confirm_categories__national_staff_category",
+            "help_text": "<p>All cost items associated with national staff members, e.g. salary, benefits, insurance, severance, vacation, professional development, hazard pay.</p>",
+            "link": null,
+            "source_id": 37
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Non-Staff Personnel category",
+            "identifier": "confirm_categories__non-staff_personnel_category",
+            "help_text": "<p>All cost items associated with important personnel who may not be official staff members but play a major role in the intervention, e.g. community health workers, teachers, case workers, protection monitors, latrine builders, training facilitators.</p>",
+            "link": null,
+            "source_id": 41
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Office Expenses category",
+            "identifier": "confirm_categories__office_expenses_category",
+            "help_text": "<p>All non-personnel items associated with having offices, e.g. rent, utilities, stationery, office supplies, generators, legal fees, software licenses.</p>",
+            "link": null,
+            "source_id": 57
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Protection cost_type",
+            "identifier": "confirm_categories__protection_cost_type",
+            "help_text": "<p>Includes Women&#39;s Protection &amp; Empowerment, Child Protection, and Protection &amp; Rule of Law.</p>",
+            "link": null,
+            "source_id": 85
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Sub-Grants category",
+            "identifier": "confirm_categories__sub-grants_category",
+            "help_text": "<p>All cost items for goods, services, or interventions that are outsourced to and delivered by a partner, civil society organization, government agency, or contracting agency to provide services to clients on behalf of the lead organization.</p>",
+            "link": null,
+            "source_id": 61
+        },
+        {
+            "type": "cost_type",
+            "title": "Confirm Categories / Technical cost_type",
+            "identifier": "confirm_categories__technical_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 110
+        },
+        {
+            "type": "category",
+            "title": "Confirm Categories / Travel & Transport category",
+            "identifier": "confirm_categories__travel_&_transport_category",
+            "help_text": "<p>All cost items associated with work-related travel, e.g. flights, taxi, accommodation, per diem, visa. This includes vehicle pool expenses such as car rental, motorcycles, fuel, and maintenance.</p>",
+            "link": null,
+            "source_id": 45
+        },
+        {
+            "type": "step_field",
+            "title": "Dashboard / Cost per Output header",
+            "identifier": "dashboard__cost_per_output",
+            "help_text": "<p>Including Program Costs, Support Costs, and Indirect Costs.</p>",
+            "link": null,
+            "source_id": 30
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Intervention to be analyzed field",
+            "identifier": "define_analysis__intervention_to_be_analyzed",
+            "help_text": "<p>Cost-efficiency analysis calculates the cost of implementing <u>one intervention</u> in a project, even if that project included multiple interventions. Please select which intervention you are analyzing.</p>",
+            "link": [
+                "help.helppage",
+                4
+            ],
+            "source_id": 4
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Analysis type field",
+            "identifier": "define_analysis__analysis_type",
+            "help_text": "<p>Indicate whether you are conducting this analysis using <u>actual spending and monitoring data</u> after project implementation, or using <u>budget projection and target data</u> before project implementation.</p>",
+            "link": null,
+            "source_id": 3
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Country field",
+            "identifier": "define_analysis__country",
+            "help_text": "<p>Indicate the country where the intervention was implemented.</p>",
+            "link": null,
+            "source_id": 7
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Grants field",
+            "identifier": "define_analysis__grants",
+            "help_text": "<p>GO406 - Multipurpose Cash Assistance, Columbia</p>",
+            "link": null,
+            "source_id": 6
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Output count data source",
+            "identifier": "define_analysis__output_count_data_source",
+            "help_text": "<p>Indicate the specific data source (e.g. M&amp;E report, TOLA record, PPM-Prime record, CommCare etc.) from which you obtained this output count information.</p>",
+            "link": null,
+            "source_id": 109
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Start date field",
+            "identifier": "define_analysis__start_date",
+            "help_text": "<p>What was the <u>implementation period of the intervention</u>? The start and end dates should match the window of finance data and monitoring data you are using.<br />\r\n<br />\r\nMake sure that the number of outputs you enter below reflects only the outputs produced during this date range.</p>",
+            "link": [
+                "help.helppage",
+                4
+            ],
+            "source_id": 5
+        },
+        {
+            "type": "step_field",
+            "title": "Define Analysis / Title field",
+            "identifier": "define_analysis__title",
+            "help_text": "<p>Give your analysis a name to help you and your colleagues remember and understand what was analyzed. Include some important details: <u>project name, intervention name, timeframe, location</u>.</p>",
+            "link": null,
+            "source_id": 2
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Assets & Equipment category",
+            "identifier": "identify_output_value__assets_&_equipment_category",
+            "help_text": "<p>All capital assets and equipment costs.</p>",
+            "link": null,
+            "source_id": 54
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Support Cost cost_type",
+            "identifier": "identify_output_value__direct_shared_cost_cost_type",
+            "help_text": "<p>Support costs that are not specific to a cost_typeal/thematic area, and are shared across all projects for the running and management of operations, e.g. country office expenses.</p>",
+            "link": null,
+            "source_id": 90
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Economic Recovery & Development cost_type",
+            "identifier": "identify_output_value__economic_recovery_&_development_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 98
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Education cost_type",
+            "identifier": "identify_output_value__education_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 70
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / ERD cost_type",
+            "identifier": "identify_output_value__erd_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 74
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Governance cost_type",
+            "identifier": "identify_output_value__governance_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 78
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Health cost_type",
+            "identifier": "identify_output_value__health_cost_type",
+            "help_text": "<p>Includes Environmental Health (WASH), Nutrition, Primary Health, and Reproductive Health.</p>",
+            "link": null,
+            "source_id": 82
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / ICR category",
+            "identifier": "identify_output_value__icr_category",
+            "help_text": "",
+            "link": null,
+            "source_id": 66
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / ICR cost_type",
+            "identifier": "identify_output_value__icr_cost_type",
+            "help_text": "<p>Indirect costs that support headquarters (HQ) operations and overall management.</p>",
+            "link": null,
+            "source_id": 94
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / International Staff category",
+            "identifier": "identify_output_value__international_staff_category",
+            "help_text": "<p>All cost items associated with international staff members, e.g. salary, benefits, housing, home leave, professional development.</p>",
+            "link": null,
+            "source_id": 34
+        },
+        {
+            "type": "step_field",
+            "title": "Identify Output Value / IOV column header",
+            "identifier": "identify_output_value__IOV_column_header",
+            "help_text": "<p>Select the cost items that correspond to the monetary assets distributed to clients (e.g. cash transfers, vouchers, cash for work, cash grants etc). Do not select admin costs such as bank/hawala fees or voucher printing fees etc.</p>",
+            "link": [
+                "help.helppage",
+                11
+            ],
+            "source_id": 23
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Materials & Activities category",
+            "identifier": "identify_output_value__materials_&_interventions_category",
+            "help_text": "<p>All non-personnel cost items specifically used or procured specifically for the implementation of program interventions, e.g. NFI kits, food transportation, cold chain services, warehousing, logistics, cash transfers, training materials, behavior change incentives, surveys.</p>",
+            "link": null,
+            "source_id": 50
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / National Staff category",
+            "identifier": "identify_output_value__national_staff_category",
+            "help_text": "<p>All cost items associated with national staff members, e.g. salary, benefits, insurance, severance, vacation, professional development, hazard pay.</p>",
+            "link": null,
+            "source_id": 38
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Non-Staff Personnel category",
+            "identifier": "identify_output_value__non-staff_personnel_category",
+            "help_text": "<p>All cost items associated with important personnel who may not be official staff members but play a major role in the intervention, e.g. community health workers, teachers, case workers, protection monitors, latrine builders, training facilitators.</p>",
+            "link": null,
+            "source_id": 42
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Office Expenses category",
+            "identifier": "identify_output_value__office_expenses_category",
+            "help_text": "<p>All non-personnel items associated with having offices, e.g. rent, utilities, stationery, office supplies, generators, legal fees, software licenses.</p>",
+            "link": null,
+            "source_id": 58
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Protection cost_type",
+            "identifier": "identify_output_value__protection_cost_type",
+            "help_text": "<p>Includes Women&#39;s Protection &amp; Empowerment, Child Protection, and Protection &amp; Rule of Law.</p>",
+            "link": null,
+            "source_id": 86
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Sub-Grants category",
+            "identifier": "identify_output_value__sub-grants_category",
+            "help_text": "<p>All cost items for goods, services, or interventions that are outsourced to and delivered by a partner, civil society organization, government agency, or contracting agency to provide services to clients on behalf of the lead organization.</p>",
+            "link": null,
+            "source_id": 62
+        },
+        {
+            "type": "cost_type",
+            "title": "Identify Output Value / Technical cost_type",
+            "identifier": "identify_output_value__technical_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 111
+        },
+        {
+            "type": "category",
+            "title": "Identify Output Value / Travel & Transport category",
+            "identifier": "identify_output_value__travel_&_transport_category",
+            "help_text": "<p>All cost items associated with work-related travel, e.g. flights, taxi, accommodation, per diem, visa. This includes vehicle pool expenses such as car rental, motorcycles, fuel, and maintenance.</p>",
+            "link": null,
+            "source_id": 46
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Comparison to similar programs header",
+            "identifier": "insights__comparison_to_similar_programs",
+            "help_text": "<p>Cost-efficiency results from other programs that implemented this intervention. Each data point is a separate program; they are not country averages.</p>\r\n\r\n<p>Think about why the costs and outputs of implementing the intervention might vary in different programs, different countries, or different time periods.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 26
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Cost per metric, direct costs only (blue box)",
+            "identifier": "insights__cost_per_metric_direct",
+            "help_text": "<p>This only includes programmatic costs that are closely linked to program interventions in one or several projects.</p>",
+            "link": null,
+            "source_id": 24
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Cost per metric, including shared costs (green box)",
+            "identifier": "insights__cost_per_metric_shared",
+            "help_text": "<p>This includes the full costs, i.e. Program Costs, Support Costs, and Indirect Costs.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 25
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Full cost model download",
+            "identifier": "insights__full_cost_model",
+            "help_text": "<p><strong>Total Cost</strong>: This is the cost that was paid for each cost item in this project.</p>\r\n\r\n<p><strong>% to Intervention</strong>: This is the percentage that each cost item contributed to the intervention being analyzed (you had indicated this in the Allocate Costs step).</p>\r\n\r\n<p><strong>Item Total</strong>: This is the cost that each cost item contributed to the intervention being analyzed. Dioptra has calculated this by multiplying the &lsquo;Total Cost&rsquo; with the &lsquo;% to Intervention&rsquo;.</p>",
+            "link": null,
+            "source_id": 29
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Strategies header",
+            "identifier": "insights__strategies",
+            "help_text": "<p>Program design strategies that can help improve the cost-efficiency of this intervention, based on best available findings through past analyses and evaluations, as well as best practices in wider literature.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 27
+        },
+        {
+            "type": "step_field",
+            "title": "Insights / Top cost categories all other costs label",
+            "identifier": "insights__top_cost_categories_all_other_costs",
+            "help_text": "<p>Please focus on the largest cost categories and think about improvements that can be made there, rather than the small cost categories that may not affect the overall costs too much. Note that ICR is always included in &lsquo;All other costs&rsquo;.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 28
+        },
+        {
+            "type": "step_field",
+            "title": "Load Data / Download template link",
+            "identifier": "load_data__download_template",
+            "help_text": "<p>This Dioptra template is a spreadsheet into which you can copy/paste the data from a budget or finance report (make sure to <u><strong>paste as values</strong></u>), and upload directly to Dioptra.</p>",
+            "link": [
+                "help.helppage",
+                10
+            ],
+            "source_id": 10
+        },
+        {
+            "type": "step_field",
+            "title": "Load Data / Matching transactions number",
+            "identifier": "load_data__matching_transactions",
+            "help_text": "<p>Based on the parameters you provided, Dioptra identified these transactions from the finance system. Check that the number of available transactions looks reasonable.<br />\r\n<br />\r\nAfter clicking the Import Data button, Dioptra will import these transactions into your analysis, and remove any transactions that add up to $0 cost items, e.g. recodes. You may see slightly less transactions in the next page.</p>",
+            "link": null,
+            "source_id": 9
+        },
+        {
+            "type": "step_field",
+            "title": "Program Design Lessons / Cost Efficiency Comparison header",
+            "identifier": "program_design_lessons__cost_efficiency_comparison",
+            "help_text": "<p>Cost-efficiency results from other programs that implemented this intervention. Each data point is a separate program; they are not country averages.</p>\r\n\r\n<p>Think about why the costs and outputs of implementing the intervention might vary in different programs, different countries, or different time periods.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 31
+        },
+        {
+            "type": "step_field",
+            "title": "Program Design Lessons / Strategies header",
+            "identifier": "program_design_lessons__strategies",
+            "help_text": "<p>Program design strategies that can help improve the cost-efficiency of this intervention, based on best available findings through past analyses and evaluations, as well as best practices in wider literature.</p>",
+            "link": [
+                "help.helppage",
+                12
+            ],
+            "source_id": 32
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Assets & Equipment category",
+            "identifier": "set_contribution__assets_&_equipment_category",
+            "help_text": "<p>All capital assets and equipment costs.</p>",
+            "link": null,
+            "source_id": 55
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Support Cost cost_type",
+            "identifier": "set_contribution__direct_shared_cost_cost_type",
+            "help_text": "<p>Support costs that are not specific to a cost_typeal/thematic area, and are shared across all projects for the running and management of operations, e.g. country office expenses.</p>",
+            "link": null,
+            "source_id": 91
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Economic Recovery & Development cost_type",
+            "identifier": "set_contribution__economic_recovery_&_development_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 99
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Education cost_type",
+            "identifier": "set_contribution__education_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 71
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / ERD cost_type",
+            "identifier": "set_contribution__erd_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 75
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Governance cost_type",
+            "identifier": "set_contribution__governance_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 79
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Health cost_type",
+            "identifier": "set_contribution__health_cost_type",
+            "help_text": "<p>Includes Environmental Health (WASH), Nutrition, Primary Health, and Reproductive Health.</p>",
+            "link": null,
+            "source_id": 83
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / ICR category",
+            "identifier": "set_contribution__icr_category",
+            "help_text": "",
+            "link": null,
+            "source_id": 67
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / ICR cost_type",
+            "identifier": "set_contribution__icr_cost_type",
+            "help_text": "<p>Indirect costs that support headquarters (HQ) operations and overall management.</p>",
+            "link": null,
+            "source_id": 95
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / International Staff category",
+            "identifier": "set_contribution__international_staff_category",
+            "help_text": "<p>All cost items associated with international staff members, e.g. salary, benefits, housing, home leave, professional development.</p>",
+            "link": null,
+            "source_id": 35
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Materials & Activities category",
+            "identifier": "set_contribution__materials_&_interventions_category",
+            "help_text": "<p>All non-personnel cost items specifically used or procured specifically for the implementation of program interventions, e.g. NFI kits, food transportation, cold chain services, warehousing, logistics, cash transfers, training materials, behavior change incentives, surveys.</p>",
+            "link": null,
+            "source_id": 51
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / National Staff category",
+            "identifier": "set_contribution__national_staff_category",
+            "help_text": "<p>All cost items associated with national staff members, e.g. salary, benefits, insurance, severance, vacation, professional development, hazard pay.</p>",
+            "link": null,
+            "source_id": 39
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Non-Staff Personnel category",
+            "identifier": "set_contribution__non-staff_personnel_category",
+            "help_text": "<p>All cost items associated with important personnel who may not be official staff members but play a major role in the intervention, e.g. community health workers, teachers, case workers, protection monitors, latrine builders, training facilitators.</p>",
+            "link": null,
+            "source_id": 43
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Office Expenses category",
+            "identifier": "set_contribution__office_expenses_category",
+            "help_text": "<p>All non-personnel items associated with having offices, e.g. rent, utilities, stationery, office supplies, generators, legal fees, software licenses.</p>",
+            "link": null,
+            "source_id": 59
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Protection cost_type",
+            "identifier": "set_contribution__protection_cost_type",
+            "help_text": "<p>Includes Women&#39;s Protection &amp; Empowerment, Child Protection, and Protection &amp; Rule of Law.</p>",
+            "link": null,
+            "source_id": 87
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Sub-Grants category",
+            "identifier": "set_contribution__sub-grants_category",
+            "help_text": "<p>All cost items for goods, services, or interventions that are outsourced to and delivered by a partner, civil society organization, government agency, or contracting agency to provide services to clients on behalf of the lead organization.</p>",
+            "link": null,
+            "source_id": 63
+        },
+        {
+            "type": "cost_type",
+            "title": "Set Contribution / Technical cost_type",
+            "identifier": "set_contribution__technical_cost_type",
+            "help_text": "",
+            "link": null,
+            "source_id": 112
+        },
+        {
+            "type": "category",
+            "title": "Set Contribution / Travel & Transport category",
+            "identifier": "set_contribution__travel_&_transport_category",
+            "help_text": "<p>All cost items associated with work-related travel, e.g. flights, taxi, accommodation, per diem, visa. This includes vehicle pool expenses such as car rental, motorcycles, fuel, and maintenance.</p>",
+            "link": null,
+            "source_id": 47
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Allocate Costs",
+            "identifier": "step_guidance__allocate_costs",
+            "help_text": "<p>This step allows you to indicate how much each cost item charged to the project was used for the&nbsp;intervention being analyzed, compared to the other interventions it may also support in the same project (eg. a Health Manager may work on both malnutrition treatment and family planning in a project).</p>\r\n\r\n<p><strong>What % of each cost item&nbsp;amount charged to this project was used for&nbsp;the intervention being analyzed?</strong></p>",
+            "link": [
+                "help.helppage",
+                8
+            ],
+            "source_id": 17
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Assign Cost Type & Category",
+            "identifier": "step_guidance__assign_cost_type_category",
+            "help_text": "<p>Dioptra automatically assigned your data into the following &quot;groups&quot; based on finance codes.</p>\r\n\r\n<ul>\r\n\t<li><strong>Cost Types:</strong>\r\n\r\n\t<ol>\r\n\t\t<li>Program Costs (by Cost Type)</li>\r\n\t\t<li>Support Costs</li>\r\n\t\t<li>Indirect Costs</li>\r\n\t</ol>\r\n\t</li>\r\n\t<li><strong>Cost Categories</strong></li>\r\n</ul>\r\n\r\n<p>Some of these information may not be available from finance codes alone, so you will need to exercise your judgment to assign the relevant &quot;Cost Type&quot; and &quot;Category&quot; to each cost item.</p>",
+            "link": [
+                "help.helppage",
+                5
+            ],
+            "source_id": 12
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Confirm Categories",
+            "identifier": "step_guidance__confirm_categories",
+            "help_text": "<p>Dioptra automatically assigned your data into the following &quot;groups&quot; based on finance codes.</p>\r\n\r\n<ul>\r\n\t<li><strong>Cost Types: </strong>\r\n\r\n\t<ol>\r\n\t\t<li>Program Costs (by Cost Type)</li>\r\n\t\t<li>Support Costs</li>\r\n\t\t<li>Indirect Costs</li>\r\n\t</ol>\r\n\t</li>\r\n\t<li><strong>Cost Categories</strong></li>\r\n</ul>\r\n\r\n<p>Because there can be coding errors in finance data, please review the list and click Confirm for each category if their cost items are correctly grouped.&nbsp;Click Edit to make any changes if necessary.</p>",
+            "link": [
+                "help.helppage",
+                6
+            ],
+            "source_id": 15
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Define Analysis",
+            "identifier": "step_guidance__define_analysis",
+            "help_text": "<p>In order to do a cost analysis, you need to have the following in place:</p>\r\n\r\n<ol>\r\n\t<li><strong>Definition of the intervention being analyzed. </strong></li>\r\n\t<li><strong>Cost data of that intervention. </strong></li>\r\n\t<li><strong>Monitoring data of that intervention. </strong></li>\r\n\t<li><strong>Log frame of the project(s) you will analyze. </strong></li>\r\n</ol>\r\n\r\n<p><u>Tip: Double check that all parameters have no errors&nbsp;before you save the analysis!</u></p>",
+            "link": [
+                "help.helppage",
+                4
+            ],
+            "source_id": 1
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Identify Output Value",
+            "identifier": "step_guidance__identify_output_value",
+            "help_text": "<p>This step allows you to identify the total value of cash distributed to clients by selecting the <strong>cost items that correspond to the cash transfers</strong>, excluding admin costs such as bank/hawala fees or voucher printing fees etc. This will help Dioptra calculate the Cost Transfer Ratio (CTR) of the intervention accurately.</p>",
+            "link": [
+                "help.helppage",
+                11
+            ],
+            "source_id": 22
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Load Data",
+            "identifier": "step_guidance__load_data",
+            "help_text": "<p><strong>If you are analyzing an intervention that has been implemented:</strong> Load the transactions that match the corresponding dates and project code(s) you provided.</p>\r\n\r\n<p><strong>If you are analyzing an intervention that has not yet been implemented:</strong> Upload budget data from a spreadsheet, using the Dioptra template. <u><em>Tip: Make sure to <strong>paste as values</strong> only.\u200b</em></u><u> </u></p>",
+            "link": [
+                "help.helppage",
+                10
+            ],
+            "source_id": 8
+        },
+        {
+            "type": "step",
+            "title": "Step Guidance / Set Contribution",
+            "identifier": "step_guidance__set_contribution",
+            "help_text": "<p>Thanks to the categorization you did in the previous steps, this step allows you to <strong>select only the relevant Cost Types and Categories for the intervention being analyzed</strong>.</p>\r\n\r\n<p>If a particular category is relevant and contributed to the intervention, select &#39;Yes&#39; for that category.</p>\r\n\r\n<p><u>Tip: Remember to click Save before proceeding to the next Cost Type.</u></p>",
+            "link": [
+                "help.helppage",
+                7
+            ],
+            "source_id": 11
+        }
+    ],
+    "topics": [
+        {
+            "title": "Accounts and Permissions",
+            "source_id": 5
+        },
+        {
+            "title": "Analysis",
+            "source_id": 2
+        },
+        {
+            "title": "Dioptra in Action",
+            "source_id": 7
+        },
+        {
+            "title": "General",
+            "source_id": 1
+        },
+        {
+            "title": "Using Dioptra results",
+            "source_id": 6
+        }
+    ],
+    "pages": [
+        {
+            "identifier": null,
+            "title": "1. How to define the intervention, outputs, and time frame to analyze",
+            "body": "<p><strong>Defining an Intervention to Analyze</strong></p>\r\n\r\n<p>You may start out by asking questions about the efficiency of a particular program or project&mdash;e.g. &ldquo;Are we delivering WASH services efficiently?&rdquo; or &ldquo;How cost-efficient is that ECHO project?&rdquo;</p>\r\n\r\n<p>But because cost analysis helps us learn by comparing across interventions, we need to analyze something that is meaningfully comparable. If we looked at all WASH services our team was delivering, it is very likely that they are not the same set of WASH services provided by the team in the neighboring country. Maybe it cost us more per person for WASH services because my team provided handwashing stations as well as latrines, while that other team provided only latrines.</p>\r\n\r\n<p>For this reason, we narrow down to one specific intervention when doing cost-efficiency analysis&mdash;this way we can guarantee that we are holding &lsquo;the thing delivered&rsquo; constant across different programs. Rather than looking at the cost-efficiency of all WASH services, we could look at the cost-efficiency of latrine construction, and compare that to the other programs&rsquo; latrine construction. Of course, when doing such comparisons, we should always consider the different humanitarian or development contexts of the countries.</p>\r\n\r\n<ul>\r\n\t<li><strong>Do we need to analyze every intervention on a particular project?</strong> No! Just because we have decided to analyze one specific intervention from a grant, it does not mean that we have to also analyze all other interventions that were funded by that project.&nbsp;</li>\r\n\t<li><strong>How do we narrow down which intervention to analyze?</strong> A good rule of thumb is to choose flagship or strategic interventions (1) for which we have existing cost-efficiency data from other programs, and (2) where there is opportunity to adapt that program based on the analysis results in the near future. If you don&rsquo;t have an opportunity to adapt your program in the near future (e.g. a new proposal round, or a budget realignment) then you may not be able to apply your learning to make improvements.</li>\r\n</ul>\r\n\r\n<p>Dioptra has comparison data from some programs for the following interventions. If you select one of these interventions to analyze, your results will automatically be compared alongside the comparison data.</p>\r\n\r\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\">\r\n\t<thead>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"col\">Safety</th>\r\n\t\t\t<th scope=\"col\">Health</th>\r\n\t\t\t<th scope=\"col\">Education</th>\r\n\t\t\t<th scope=\"col\">Economic Wellbeing</th>\r\n\t\t\t<th scope=\"col\">Power</th>\r\n\t\t</tr>\r\n\t</thead>\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<td>Case Management for At-Risk Children</td>\r\n\t\t\t<td>Access to Latrines</td>\r\n\t\t\t<td>Teacher Development: Face-to-Face Training</td>\r\n\t\t\t<td>Unconditional Cash Transfer</td>\r\n\t\t\t<td>Legal Aid Case Management</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>Supporting GBV Survivors at Women&rsquo;s Centers</td>\r\n\t\t\t<td>Distribution of Family Planning Supplies</td>\r\n\t\t\t<td>Teacher Development: Ongoing Professional Support</td>\r\n\t\t\t<td>Non-Food-Item (NFI) Distribution</td>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t\t<td>Treatment for Severe Acute Malnutrition</td>\r\n\t\t\t<td>Conditional Cash for Education</td>\r\n\t\t\t<td>Providing Business Grants</td>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t\t<td>Parental Coaching Programs</td>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t\t<td>&nbsp;</td>\r\n\t\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:4,&quot;title&quot;:&quot;Defining your intervention&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/4/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/4/preview/&quot;,&quot;width&quot;:&quot;1364&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Defining_your_intervention/4e05d0188eed8dc0b77b7e7139159aa1.png&quot;},&quot;caption&quot;:&quot;Example: You can select from a list of interventions, or choose \\&quot;Generic Program\\&quot; if your intervention is not listed in Dioptra.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Defining_your_intervention/4e05d0188eed8dc0b77b7e7139159aa1.png\" /><span class=\"caption\" style=\"display:block\">Example: You can select from a list of interventions, or choose &quot;Generic Program&quot; if your intervention is not listed in Dioptra.</span></div>\r\n\r\n<hr />\r\n<p><strong>Defining the Outputs of the Intervention Being Analyzed</strong></p>\r\n\r\n<p>In addition to defining our intervention clearly enough to ensure that it is comparable across programs, we also ensure that we count the outputs of that intervention the same way. If I measured cost-efficiency for latrine provision using &lsquo;cost per latrine, while the WASH team in the neighboring country measured &lsquo;cost per person per year&rsquo;, then our results still would not be comparable. In Dioptra, once you select the intervention to analyze, the tool will automatically ask you to enter the outputs of that intervention.&nbsp;</p>\r\n\r\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\">\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\">Program/Project</th>\r\n\t\t\t<td>Narrow down the project(s) that funded the intervention during a specific time frame you want to analyze.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\">Intervention</th>\r\n\t\t\t<td>Choose one specific intervention from that program/project to focus on.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\">Output</th>\r\n\t\t\t<td>Dioptra will show you the standardized output metric based on the intervention selected and ask you for the monitoring data.</td>\r\n\t\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:5,&quot;title&quot;:&quot;Defining your outputs&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/5/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/5/preview/&quot;,&quot;width&quot;:&quot;1364&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Defining_your_outputs/faca785376b284286ab72d333c19287a.png&quot;},&quot;caption&quot;:&quot;Example: If you choose the \\&quot;Access to Latrines\\&quot; intervention, Dioptra will prompt you to enter the number of outputs delivered specific to that intervention, i.e. number of people served and number of years each latrine can last.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Defining_your_outputs/faca785376b284286ab72d333c19287a.png\" /><span class=\"caption\" style=\"display:block\">Example: If you choose the &quot;Access to Latrines&quot; intervention, Dioptra will prompt you to enter the number of outputs delivered specific to that intervention, i.e. number of people served and number of years each latrine can last.</span></div>\r\n\r\n<hr />\r\n<p><strong>Defining the Time Frame to Analyze</strong></p>\r\n\r\n<p>In addition to selecting one particular intervention to analyze, you will also need to choose the time frame over which to analyze the costs and outputs of your intervention. This can be tricky&mdash;for example, if you pulled cost data from the entire length of a fifteen-month grant, but then pulled your output count from an annual program report that covered only twelve months, then your cost-efficiency results would not be accurate.</p>\r\n\r\n<p>The most important thing is to ensure that the time frame over which spending occurs matches the time frame over which the output data was collected. To do this, choose a specific date range when the intervention was implemented, then ensure that the output count reflects the number of outputs delivered during that time period. E.g. If you are analyzing finance data from 01-Jan-2018 to 31-Dec-2018, make sure that the monitoring data corresponds to the same period (01-Jan-2018 to 31-Dec-2018).</p>\r\n\r\n<p><strong>General Rules of Thumb</strong></p>\r\n\r\n<ul>\r\n\t<li>The default length of time to analyze an intervention should be 12 months.</li>\r\n\t<li>If an intervention lasted less than 12 months, you should analyze it over its entire implementation period.</li>\r\n\t<li>Don&rsquo;t analyze interventions for periods less than 6 months. Over such short periods of time, big start-up costs and &ldquo;lumpy&rdquo; procurement can distort your results.</li>\r\n\t<li>Make sure that all of the significant expenses from your program&#39;s time frame have already hit the accounting books when you conduct an analysis. If your &ldquo;Analysis End Date&rdquo; is today and you still have pending payments that have not yet been recorded, your analysis will probably miss some costs and your results will be less meaningful.</li>\r\n</ul>\r\n\r\n<p><strong>Tips for Continuous Service Programs (e.g. Clinical Services, Case Management) Funded by Multiple Projects</strong></p>\r\n\r\n<ul>\r\n\t<li>Instead of thinking about the time frame of one particular project, it could make more sense to start by defining the time frame of services you will analyze and then identify all of the projects that funded those services during that time.</li>\r\n\t<li>Analyzing multiple funding sources over a fixed period of time is easy in Dioptra. Instead of just indicating a single project code, you will indicate all the relevant project codes that funded those services, and Dioptra will pull in spending data from all of those projects over that time period.</li>\r\n</ul>\r\n\r\n<hr />\r\n<p>Once you have defined your analysis, you can save the details, and move on to the next step: <a href=\"https://dioptra.rescue.org/help/load-data/\">Load Data</a>.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "define-analysis",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 4
+        },
+        {
+            "identifier": null,
+            "title": "1. How to interpret analysis results and insights",
+            "body": "<p>If you managed to complete your cost analysis, well done and congratulations! What can you learn from the results you see on the View Insights page? How can you interpret your intervention&rsquo;s cost-efficiency? How can you compare it with results from other programs?</p>\r\n\r\n<p>Clicking on the &lsquo;Download PDF&rsquo; button at the top left corner of the View Insights page will generate a PDF report that will be downloaded to your local drive.</p>\r\n\r\n<p>If you need to make any changes to the previous steps of the analysis, click &lsquo;Edit&rsquo; on the top right corner of the View Insights page.</p>\r\n\r\n<hr />\r\n<p><strong>Cost-Efficiency Results</strong></p>\r\n\r\n<p>This section shows the cost-efficiency results and how it compares with other similar programs. Dioptra typically calculates cost-efficiency in two ways:</p>\r\n\r\n<ol>\r\n\t<li><strong>Cost per output with Program Costs only:</strong> This includes the programmatic costs of staff, materials, travel, etc. that were directly linked to the intervention you analyzed. These are usually the costs that a program coordinator/manager can control directly.</li>\r\n\t<li><strong>Cost per output including Program Costs, Support Costs, and Indirect Costs:</strong>&nbsp;This includes the &ldquo;fully loaded&rdquo; costs of implementing an intervention, and keeps us grounded in the reality that support costs and indirect costs will always be needed to support an intervention, operate an organization, and &quot;keep the lights on&quot;.</li>\r\n</ol>\r\n\r\n<p>If cost-efficiency data from other similar programs exists, Dioptra will graph the cost-efficiency of your program alongside these other programs and show the comparative magnitude of cost-efficiencies across contexts. Each data point represents a single program; it is not a country average. Hovering over the data points will display the project names.</p>\r\n\r\n<p>As you compare your results with programs from other countries or other periods of time, you shouldn&rsquo;t expect that they will all cost the same or that a lower cost is somehow &lsquo;the best&rsquo;.</p>\r\n\r\n<p><strong>The purpose of comparison is to think about why specifically the costs of implementing the intervention might vary.</strong> Sometimes, costs vary because of contextual constraints (e.g. in Country X, there is no mobile money infrastructure and so you have to manually distribute cash transfers). But in other cases, costs may vary because of design decisions you can learn from (e.g. this program gave larger one-time cash transfers, to minimize the costs of travel for in-person distributions).&nbsp;</p>\r\n\r\n<p>As you review the results, feel free to enter any lessons and takeaways from the analysis results in the View Insights page.</p>\r\n\r\n<ul>\r\n\t<li>Are you surprised by the magnitude of cost per output for your program compared to other countries? What did we learn about the cost-efficiency of this intervention?</li>\r\n\t<li>How might a different reach or modality affect this intervention&rsquo;s cost-efficiency? What might be preventing a higher reach or a different modality?</li>\r\n\t<li>Why might the cost-efficiency for this intervention be different from other programs in other countries (within the same region)&mdash;is it because of the program design or context? How can we improve reach and impact to achieve greater &lsquo;value for money&rsquo;?</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:26,&quot;title&quot;:&quot;View Insights 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/26/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/26/preview/&quot;,&quot;width&quot;:&quot;1318&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/View_Insights_2/3fd33063cf43d02e91ee18337e1dd44b.png&quot;},&quot;caption&quot;:&quot;Example: Cost-efficiency results for an Unconditional Cash Transfer program.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/View_Insights_2/3fd33063cf43d02e91ee18337e1dd44b.png\" /><span class=\"caption\" style=\"display:block\">Example: Cost-efficiency results for an Unconditional Cash Transfer program.</span></div>\r\n\r\n<hr />\r\n<p><strong>Strategies to Improve Cost-Efficiency</strong></p>\r\n\r\n<p>If &lsquo;value for money&rsquo; evidence for the intervention exists, Dioptra will show some of the factors or &lsquo;efficiency drivers&rsquo; that most significantly affect the cost-efficiency of this intervention, and provide ideas or &lsquo;strategies&rsquo; on how to improve cost-efficiency. These drivers and strategies are based on best available findings about this intervention through past analyses and evaluations, as well as best practices in wider literature.</p>\r\n\r\n<p>As you review these efficiency drivers and strategies, consider:</p>\r\n\r\n<ul>\r\n\t<li>Do they resonate with your program?</li>\r\n\t<li>Are any of these strategies immediately actionable for your program to ensure the maximum reach and impact?</li>\r\n\t<li>What other possible strategies can you think of, to continuously improve the &lsquo;value for money&rsquo; of your program?</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:27,&quot;title&quot;:&quot;View Insights 3&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/27/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/27/preview/&quot;,&quot;width&quot;:&quot;1313&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/View_Insights_3/6f124a2f518ffc00ee683530097ab1f6.png&quot;},&quot;caption&quot;:&quot;Example: Strategies to improve cost-efficiency of an Unconditional Cash Transfer program.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/View_Insights_3/6f124a2f518ffc00ee683530097ab1f6.png\" /><span class=\"caption\" style=\"display:block\">Example: Strategies to improve cost-efficiency of an Unconditional Cash Transfer program.</span></div>\r\n\r\n<hr />\r\n<p><strong>Cost Breakdown</strong></p>\r\n\r\n<p>This section shows the breakdown of costs by cost_types and categories. The top cost categories chart shows the most significant spending areas for this intervention. Note that ICR is always included in &lsquo;All other costs&rsquo;. Focus on the largest cost categories and think about improvements that can be made there, rather than the small cost categories that may not affect the overall costs too much.</p>\r\n\r\n<ul>\r\n\t<li>Are you surprised by&nbsp;the magnitude&nbsp;of any cost category?</li>\r\n\t<li>Do the proportion of these cost categories look reasonable? Why are some categories larger than others? What do they contain? Do they bring more value to clients?</li>\r\n\t<li>Are any costs missing or included that may have affected program quality or reach?</li>\r\n\t<li>Were any costs realigned to provide more benefit to more clients? Is there potential for cost savings and cost avoidance in the top cost categories to channel back to clients? (Provide some examples)</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:28,&quot;title&quot;:&quot;View Insights 4&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/28/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/28/preview/&quot;,&quot;width&quot;:&quot;1305&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/View_Insights_4/e7944c59dcda5956fabac6f7bfeed0fc.png&quot;},&quot;caption&quot;:&quot;Example: Cost breakdown and top cost categories of an Unconditional Cash Transfer program.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/View_Insights_4/e7944c59dcda5956fabac6f7bfeed0fc.png\" /><span class=\"caption\" style=\"display:block\">Example: Cost breakdown and top cost categories of an Unconditional Cash Transfer program.</span></div>\r\n\r\n<hr />\r\n<p><strong>Full Cost Model</strong></p>\r\n\r\n<p>This section shows the Full Cost Model of the intervention: what inputs were needed at what prices, and how much of each input was used for the intervention being analyzed compared to the other interventions within the same project.</p>\r\n\r\n<ul>\r\n\t<li><strong>Total Cost:</strong> This is the cost that was paid for each cost item in this project.</li>\r\n\t<li><strong>% to Intervention:</strong> This is the percentage that each cost item&nbsp;contributed to the intervention being analyzed&nbsp;(you had indicated this in the Allocate Costs step).</li>\r\n\t<li><strong>Item Total:</strong> This is the cost that each cost item contributed to the intervention being analyzed. Dioptra has calculated this by multiplying the &#39;Total Cost&#39; with the &#39;% to Intervention&#39;.</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:29,&quot;title&quot;:&quot;View Insights 5&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/29/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/29/preview/&quot;,&quot;width&quot;:&quot;1315&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/View_Insights_5/3077371861e4360b15ceabcc2ab46aba.png&quot;},&quot;caption&quot;:&quot;Example: Full Cost Model of an Unconditional Cash Transfer program. Click on \\&quot;Next\\&quot; to see the subsequent pages of cost items in the Full Cost Model.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/View_Insights_5/3077371861e4360b15ceabcc2ab46aba.png\" /><span class=\"caption\" style=\"display:block\">Example: Full Cost Model of an Unconditional Cash Transfer program. Click on &quot;Next&quot; to see the subsequent pages of cost items in the Full Cost Model.</span></div>\r\n\r\n<p>A good way to explore what is driving the cost-efficiency of the intervention is to arrange the cost items from highest to lowest value, in order to see which ones accounted for most of the cost of the intervention.</p>\r\n\r\n<ul>\r\n\t<li>Are the cost items (i.e. inputs) which we spend the most money on also those which provide the most value to our clients?</li>\r\n\t<li>If spending on a particular cost item (i.e. input) seems disproportionately high, can you figure out why it is higher than in other programs? Did we use more of that input for this program, versus others? Did that input cost more for this program than it did in other programs or contexts? (e.g. incentive payments may cost more in the Middle East than in West Africa)</li>\r\n</ul>\r\n\r\n<p>Clicking on the &lsquo;Download full cost model&rsquo; button will generate an Excel spreadsheet of the Full Cost Model that will be downloaded to your local drive. Feel free to download it and conduct more in-depth sensitivity analyses in Excel, for example by tweaking the percentage contribution of certain cost items, adding or removing certain cost items, or changing the number of outputs to view the potential differences in cost-efficiency results.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "view-insights",
+            "topic_id": 6,
+            "published": true,
+            "source_id": 12
+        },
+        {
+            "identifier": null,
+            "title": "1. What is cost analysis",
+            "body": "<p>Humanitarian and development needs are growing at a time when financial resources are increasingly constrained. Within constrained budgets, it is crucial to understand which program interventions and approaches make the most progress per dollar spent.</p>\r\n\r\n<p>However, the task of figuring out the expenditures of particular interventions is not an easy one. This is because existing methods to calculate cost-efficiency are inconsistent, time-consuming, and error-prone. Data currently available cannot be meaningfully compared to inform action, missing opportunities for learning and improvement.</p>\r\n\r\n<p><strong>The&nbsp;Dioptra tool for systematic cost analysis can help analyze what interventions and approaches&nbsp;provide the most &#39;value for money&#39; and deliver the greatest impact to the most people per dollar spent. </strong></p>\r\n\r\n<p>Dioptra will walk you through a step-by-step process of entering monitoring and finance data, and breaking down both program and shared costs, so you can see how much it costs to deliver services to your clients. It calculates the full cost per output for an individual intervention and facilitates comparisons to other projects to identify opportunities for improvement. It also provides guidance on strategies to improve cost-efficiency based on existing studies. These insights help humanitarian and development actors make use of limited resources in a transparent and effective way.</p>\r\n\r\n<hr />\r\n<p><strong>Cost-Efficiency Analysis: </strong>This is the type of cost analysis that Dioptra typically facilitates, which&nbsp;calculates the cost per output of an intervention to understand how well we are converting inputs into outputs (&lsquo;spending well&rsquo;).</p>\r\n\r\n<ul>\r\n\t<li>For example, consider the intervention of treatment for severe acute malnutrition:&nbsp;cost-efficiency analysis would measure the costs of providing treatment&nbsp;and pair it with the number of children who received treatment to calculate the average &#39;<em>cost per child treated</em>&#39;. This metric can be compared across projects with the same output metric&nbsp;to see how factors such as the delivery model or local context affect cost-efficiency.</li>\r\n</ul>\r\n\r\n<p><strong>Cost-Effectiveness Analysis:</strong>&nbsp;This type of cost analysis calculates the cost per outcome of an intervention to understand how well we are achieving intended outcomes (&lsquo;spending wisely&rsquo;). Dioptra may help facilitate this analysis&nbsp;if accurate quantitative outcome data is available.</p>\r\n\r\n<ul>\r\n\t<li>For example, rather than examining the &#39;<em>cost per child treated</em>&#39;, cost-effectiveness analysis would tell you the &#39;<em>cost per malnutrition death averted through treatment</em>&#39;. This metric would tell you how much it costs per unit of progress made towards outcomes in health, economic well-being, etc., and can be compared across different interventions to see which approaches make the most progress towards that outcome for a given cost.</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:34,&quot;title&quot;:&quot;Cost Efficiency and Cost Effectiveness Analysis&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/34/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/34/preview/&quot;,&quot;width&quot;:&quot;483&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_cost_analysis/cfb5812f07d062cf9f6c83e7cccd776b.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_cost_analysis/cfb5812f07d062cf9f6c83e7cccd776b.png\" /></div>\r\n\r\n<p><a href=\"https://www.rescue.org/report/cost-analysis-methodology-irc\">See this page for more info on the cost analysis methodology at the IRC.</a></p>\r\n\r\n<hr />\r\n<p>Besides Efficiency and Effectiveness, two other measures of &lsquo;value for money&rsquo; that you may have heard of are Economy and Equity.</p>\r\n\r\n<p><strong>Economy:</strong> Are we buying inputs of the appropriate quality at the right price? For interventions with large scale procurement, this will be based on the unit cost of procured goods: what were the quality and price of procured goods, compared to standard best practice? For other interventions, this will be based on the percentage breakdown of major cost categories (staff, travel, materials, etc.): what were the biggest spending areas and how did they provide value to the intervention?</p>\r\n\r\n<p><strong>Equity:</strong> How fairly are the intervention benefits distributed? To what extent will we reach marginalized groups (&lsquo;spending fairly&rsquo;)? This will be based on the disaggregated data about the clients of the intervention.</p>\r\n\r\n<p>It is important to remember that cost is only one of several criteria to assess interventions. Make sure that any cost savings do not compromise on clients&rsquo; actual needs, program effectiveness, equity, and quality.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "what-is-cost-analysis",
+            "topic_id": 1,
+            "published": true,
+            "source_id": 2
+        },
+        {
+            "identifier": null,
+            "title": "2. How to load cost data",
+            "body": "<p>Dioptra can pull existing transactions from your organization&#39;s financial database, or allow you to upload a spreadsheet with budget line information if expense data is not available (e.g. because the program is still in the proposal phase).</p>\r\n\r\n<p><strong>Analyzing actual spending data after program implementation: </strong>Dioptra will pull existing transactions that match the dates and project code(s) that you previously entered. Please double check that these details are correct, then click the &quot;Import Data&quot; button.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:19,&quot;title&quot;:&quot;Load Data 1&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/19/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/19/preview/&quot;,&quot;width&quot;:&quot;1229&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_load_cost_data1/fced202b643b44337a3230ab64515205.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_load_cost_data1/fced202b643b44337a3230ab64515205.png\" /></div>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<p><strong>Analyzing budget projection data before program implementation: </strong>If there is no expense data in your financial database, you can upload budget line data from a spreadsheet. Select the correct currency for your budget data, then click the &lsquo;Download Template&rsquo; link to download the Dioptra spreadsheet template, which is an Excel file compatible with Dioptra.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:20,&quot;title&quot;:&quot;Load Data 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/20/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/20/preview/&quot;,&quot;width&quot;:&quot;1229&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_load_cost_data2/e6932a585c7658b9d792eac61b070509.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_load_cost_data2/e6932a585c7658b9d792eac61b070509.png\" /></div>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:21,&quot;title&quot;:&quot;Load Data 3&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/21/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/21/preview/&quot;,&quot;width&quot;:&quot;1366&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Load_Data_3/c4b01a5c751eb2ad438c66014080021d.JPG&quot;},&quot;caption&quot;:&quot;Dioptra template: Fields marked with (*) are required. Copy data from a budget document...&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Load_Data_3/c4b01a5c751eb2ad438c66014080021d.JPG\" /><span class=\"caption\" style=\"display:block\">Dioptra template: Fields marked with (*) are required. Copy data from a budget document...</span></div>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:22,&quot;title&quot;:&quot;Load Data 4&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/22/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/22/preview/&quot;,&quot;width&quot;:&quot;1366&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Load_Data_5/fce1f0a00ec7ff667a4fe44757b80bf2.JPG&quot;},&quot;caption&quot;:&quot;...and paste that data as values (without any formatting) in the Dioptra template.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Load_Data_5/fce1f0a00ec7ff667a4fe44757b80bf2.JPG\" /><span class=\"caption\" style=\"display:block\">...and paste that data as values (without any formatting) in the Dioptra template.</span></div>\r\n\r\n<p>Copy data from a budget document and paste as values (without any formatting) into the Dioptra template. The fields marked with asterisk (*) are required. If you do not have sufficient information for some of the required fields (e.g. Grant Code or Budget Line Code) at the time of analysis because the program is still at the budgeting phase, you can indicate &quot;Unknown&quot; for those fields.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:23,&quot;title&quot;:&quot;Load Data 5&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/23/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/23/preview/&quot;,&quot;width&quot;:&quot;1366&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Load_Data_4/0bee6f05863945b3e17f39c64b70082b.JPG&quot;},&quot;caption&quot;:&quot;Example: Dioptra template with data pasted as values from a separate budget document. Since the Grant Code and Budget Line Codes were not yet available at the time of analysis, we indicated \\&quot;Unknown\\&quot; for those fields. Don't forget the ICR (Indirect Costs) amount, if applicable.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Load_Data_4/0bee6f05863945b3e17f39c64b70082b.JPG\" /><span class=\"caption\" style=\"display:block\">Example: Dioptra template with data pasted as values from a separate budget document. Since the Grant Code and Budget Line Codes were not yet available at the time of analysis, we indicated &quot;Unknown&quot; for those fields. Don&#39;t forget the ICR (Indirect Costs) amount, if applicable.</span></div>\r\n\r\n<p>Save the template spreadsheet in your local drive, then click the &quot;Choose File&quot; button to locate it. Click the &quot;Upload&quot; button to upload the file to Dioptra.</p>\r\n\r\n<p>After the file is uploaded successfully, you can proceed to the next step: <a href=\"https://dioptra.rescue.org/help/assign-cost_types-and-categories/\">Assign Cost Type &amp; Category</a>.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "load-data",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 10
+        },
+        {
+            "identifier": null,
+            "title": "2. How to prepare for a cost analysis",
+            "body": "<p><strong>Understand the purpose of the analysis</strong></p>\r\n\r\n<p>Cost-efficiency analysis in Dioptra generates results of <em>cost per output</em>, such as the cost per child treated for Severe Acute Malnutrition, or the cost per person per year of access to latrines. Before starting an analysis in Dioptra, make sure you have an end goal for using the data you will generate:&nbsp;</p>\r\n\r\n<ul>\r\n\t<li>You might be using it to report to your donor, who is asking for cost-efficiency information</li>\r\n\t<li>You might use it to identify whether efficiency-improving changes are needed the next time you re-design this program</li>\r\n\t<li>You might use it to compare the cost-efficiency of different delivery approaches that achieve the same outcome</li>\r\n\t<li>You might use it to compare with other countries where cost-efficiency data exists</li>\r\n</ul>\r\n\r\n<p>If you have trouble identifying the use of such analysis, it is better to wait until you have clarity or consult the Dioptra Administrator for assistance&mdash;we want you to make best use of your time, and only conduct analyses that help you improve your programs and serve your clients better.</p>\r\n\r\n<hr />\r\n<p><strong>What to prepare before doing a cost analysis</strong></p>\r\n\r\n<p><strong>1. Definition of the intervention you want to analyze.</strong></p>\r\n\r\n<p>Dioptra will ask you to analyze one particular intervention&mdash;such as latrine construction, GBV case management, or teacher professional development. Which intervention you choose to analyze should be based on learning goals: focus on flagship or strategic interventions that you are most interested in generating lessons and where there is opportunity to make program adaptations.</p>\r\n\r\n<p>It may be quite straightforward to define the intervention for analysis if your team is implementing interventions that are clearly distinct from one another.&nbsp;However,&nbsp;if you have several overlapping and interconnected interventions, it would be good to map out whether they should be split from one another or grouped together for analysis. It may be helpful to refer to the project log frame when deciding on the specific intervention you want to analyze.</p>\r\n\r\n<p><strong>2. Cost data of that intervention.</strong></p>\r\n\r\n<p>When you know which intervention you will analyze, you will need information about the costs to deliver its outputs.</p>\r\n\r\n<p>You will need either budget information or, preferably, spending information in your finance system for the project(s) that funded that intervention. Be sure to include all resources used to implement that intervention. Dioptra will ask you to either provide the project codes so that it can automatically pull the expenditures from the finance system, or upload a spreadsheet.</p>\r\n\r\n<p><strong>3. Monitoring data of that intervention.</strong></p>\r\n\r\n<p>Since Dioptra generates results of cost per output, you will need information about the number of outputs delivered during&nbsp;the same time frame as the cost data.&nbsp;</p>\r\n\r\n<p>Dioptra will not automatically pull output data from external sources, but will ask you to manually enter the output counts when you create an analysis. This information can come from target numbers&nbsp;in a log frame or actual monitoring data&mdash;you need to be sure that such data is available, accurate, and reliable in order to conduct an analysis. If you are still waiting for a round of monitoring to be completed, you won&rsquo;t be able to conduct your analysis just yet.&nbsp;</p>\r\n\r\n<p><strong>4. The log frame of the project(s) you will analyze.</strong></p>\r\n\r\n<p>Project log frames are key to understanding all the different interventions and outputs funded by the project(s): What is the intervention (and associated output) being analyzed? What are the other interventions (and associated outputs) funded by the same project(s) at the same time?</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "how-to-prepare-for-a-cost-analysis",
+            "topic_id": 1,
+            "published": true,
+            "source_id": 1
+        },
+        {
+            "identifier": null,
+            "title": "3. How to assign cost items to cost_types and categories",
+            "body": "<p><strong>Why do I need to assign cost items to cost_types and categories?</strong></p>\r\n\r\n<p>In the Assign Cost Type &amp; Category step, Dioptra automatically groups the data that it pulls from the finance system or budget spreadsheet into different Cost Types and Categories. This is done based on finance codes: All cost items (i.e. budget lines) with the same Cost Type Code (if it exists) will be grouped into a corresponding Cost Type, and those with the same Account Code will be grouped into a corresponding Category.</p>\r\n\r\n<p>By grouping cost items into intuitive Cost Types and Categories, it will make it easier for you to select which inputs were relevant for your intervention in a later step.</p>\r\n\r\n<hr />\r\n<p><strong>How do I assign cost items to cost_types and categories?</strong></p>\r\n\r\n<p>Depending on the available data in the finance system, Dioptra will automatically assign cost items to Cost Types and Categories. If more information is required from you, Dioptra will show you the cost items that need to be assigned to the below cost types and/or cost categories:</p>\r\n\r\n<p><strong>Cost Types:</strong></p>\r\n\r\n<ol>\r\n\t<li>Program Costs (by Cost Type): Programmatic costs that are closely linked to program interventions in one or several projects, e.g. Health staff salary, WASH supplies.</li>\r\n\t<li>Support Costs: Support costs that are linked to program interventions that cannot be easily related to specific projects or cost_typeal/thematic areas. These costs are shared among all projects in a specific office, usually for the running and management of operations, e.g. country office expenses.</li>\r\n\t<li>Indirect Costs: Costs that support HQ operations and management, e.g. Indirect Cost Recovery (ICR).</li>\r\n</ol>\r\n\r\n<p><strong>Cost Categories:</strong> International Staff, National Staff, Non-Staff Personnel, Travel &amp; Transport, Materials &amp; Interventions, Sub-Grants, Assets &amp; Equipment, Office Expenses.</p>\r\n\r\n<p>If these information are not available from finance codes alone, you will need to exercise your judgment to select&nbsp;the relevant Cost Type and Category for each cost item. To understand how exactly each cost item was spent, and which Cost Type/Category it belongs to, it is important to check:&nbsp;</p>\r\n\r\n<ul>\r\n\t<li>The name of the cost item (i.e. the budget line description)</li>\r\n\t<li>The sub-office or site it was spent on (T6)</li>\r\n\t<li>The account code description</li>\r\n\t<li>The underlying transactions, if available (click on the cost item to show the underlying transactions)</li>\r\n</ul>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:35,&quot;title&quot;:&quot;Dioptra Assign 1&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/35/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/35/preview/&quot;,&quot;width&quot;:&quot;1153&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_Assign1/654fbbe7eda40c3f2b016e0c6acb0337.png&quot;},&quot;caption&quot;:&quot;Example: If there is one or more cost item(s) that requires a Cost Type or Category assignment, click on the relevant dropdown menu that indicates \\&quot;Choose...\\&quot;. In this example, the Category for a cost item requires assignment, so select the most appropriate Category; since this cost item is for community hygiene promotion, we can assign it to \\&quot;Materials &amp; Interventions\\&quot;.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_Assign1/654fbbe7eda40c3f2b016e0c6acb0337.png\" /><span class=\"caption\" style=\"display:block\">Example: If there is one or more cost item(s) that requires a Cost Type or Category assignment, click on the relevant dropdown menu that indicates &quot;Choose...&quot;. In this example, the Category for a cost item requires assignment, so select the most appropriate Category; since this cost item is for community hygiene promotion, we can assign it to &quot;Materials &amp; Interventions&quot;.</span></div>\r\n\r\n<p>You can assign multiple cost items at the same time by clicking on the checkboxes beside those cost items and clicking on the &#39;Assign Selected Items&#39; button.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:36,&quot;title&quot;:&quot;Dioptra Assign 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/36/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/36/preview/&quot;,&quot;width&quot;:&quot;1155&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_Assign2/31b556234c0bd0d83663e2ebe68f645b.png&quot;},&quot;caption&quot;:&quot;Example: To assign multiple cost items to the same Cost Type or Category, click on the checkbox in front of the cost item(s), and click on the green \\&quot;Assign Selected Items\\&quot; button to display a popup panel...&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_Assign2/31b556234c0bd0d83663e2ebe68f645b.png\" /><span class=\"caption\" style=\"display:block\">Example: To assign multiple cost items to the same Cost Type or Category, click on the checkbox in front of the cost item(s), and click on the green &quot;Assign Selected Items&quot; button to display a popup panel...</span></div>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:37,&quot;title&quot;:&quot;Dioptra Assign 3&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/37/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/37/preview/&quot;,&quot;width&quot;:&quot;1271&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_Assign3/aea0cd3fa14b577d7d619b8995b29cdb.png&quot;},&quot;caption&quot;:&quot;...the popup panel will allow you to assign the selected cost items to the same Category (e.g. \\&quot;Materials &amp; Interventions\\&quot;). Leave the Cost Type field blank if it does not need to be changed. &quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_Assign3/aea0cd3fa14b577d7d619b8995b29cdb.png\" /><span class=\"caption\" style=\"display:block\">...the popup panel will allow you to assign the selected cost items to the same Category (e.g. &quot;Materials &amp; Interventions&quot;). Leave the Cost Type field blank if it does not need to be changed. </span></div>\r\n\r\n<p>You will notice that familiarity with the program and budget lines&mdash;e.g. how specific staff spent their time, or what travel was used for&mdash;is necessary to complete this step well.</p>\r\n\r\n<p><strong>This is why it is recommended that the in-country Technical Coordinator/Manager for the relevant cost_type always take the lead when conducting a cost analysis in Dioptra</strong><strong>, rather than a Finance person or an HQ staff. The goal is not to apply rules perfectly, but to use your own knowledge of the program to fit cost items&nbsp;into the correct Cost Types and&nbsp;Categories.</strong></p>\r\n\r\n<p>You may be required to assign cost items that were not a part of the intervention you are analyzing&mdash;that is okay. In the subsequent step, you&rsquo;ll have the opportunity to remove entire Cost Types or Categories from the final cost model (e.g. you could remove all Health cost items from a cost analysis on the Cash intervention of the project), or to allocate only a certain percentage of a cost item to the intervention being analyzed (e.g. for Support Costs which were spread across all the different interventions of the project).</p>\r\n\r\n<p>If no further information is required from you, Dioptra will inform you that all cost items have been completed, and you can then proceed to the next step: <a href=\"https://dioptra.rescue.org/help/confirm-categories/\">Confirm Categories</a>.&nbsp;</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "assign-cost_types-and-categories",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 5
+        },
+        {
+            "identifier": null,
+            "title": "3. What are the steps of a cost analysis",
+            "body": "<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\">\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/define-analysis/\">1. Define Analysis</a></th>\r\n\t\t\t<td>\r\n\t\t\t<p>Describe the intervention, time frame, and outputs of the analysis.</p>\r\n\r\n\t\t\t<ul>\r\n\t\t\t\t<li>What is the intervention being analyzed?</li>\r\n\t\t\t\t<li>What is the associated output of that intervention?</li>\r\n\t\t\t\t<li>Who are the recipient clients?</li>\r\n\t\t\t\t<li>Location(s) of implementation</li>\r\n\t\t\t\t<li>Start and end dates of implementation</li>\r\n\t\t\t\t<li>Project code(s) that funded the intervention</li>\r\n\t\t\t\t<li>What are the other interventions (and associated outputs) funded by the same project(s) at the same time?</li>\r\n\t\t\t</ul>\r\n\t\t\t</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/load-data/\">2. Load Data</a></th>\r\n\t\t\t<td>Import existing financial transactions from your finance system according to your analysis parameters, or upload a spreadsheet.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/assign-cost_types-and-categories/\">3. Assign Cost Type &amp; Category</a></th>\r\n\t\t\t<td>\r\n\t\t\t<p>Assign a cost_type and category to each cost item.</p>\r\n\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Is it a Program Cost (cost_type programmatic cost), or a Support Cost (support function cost), or an Indirect Cost (ICR)?</li>\r\n\t\t\t\t<li>What was the nature of the expense (e.g. staff, travel, materials, etc)?</li>\r\n\t\t\t</ul>\r\n\t\t\t</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/confirm-categories/\">4. Confirm Categories</a></th>\r\n\t\t\t<td>\r\n\t\t\t<p>Review and confirm that all cost items are categorized correctly.</p>\r\n\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Is it a Program Cost (cost_type programmatic cost), or a Support Cost (support function cost), or an Indirect Cost (ICR)?</li>\r\n\t\t\t\t<li>What was the nature of the expense (e.g. staff, travel, materials, etc)?</li>\r\n\t\t\t</ul>\r\n\t\t\t</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/set-contribution/\">5. Set Contribution</a></th>\r\n\t\t\t<td>Select the relevant categories that contributed to the intervention being analyzed.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/allocate-costs/\">6. Allocate Costs</a></th>\r\n\t\t\t<td>Indicate the percentage that each cost item charged to that project was used for the intervention being analyzed, compared to the other interventions it may also support in that project.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/identify-output-value/\">7. Identify Output Value</a></th>\r\n\t\t\t<td>[For cash programs only] Select the cost items that corresponded to the value of cash distributed to clients.</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th scope=\"row\"><a href=\"https://dioptra.rescue.org/help/view-insights/\">8. View Insights</a></th>\r\n\t\t\t<td>\r\n\t\t\t<p>View the results of the analysis.</p>\r\n\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Cost per output</li>\r\n\t\t\t\t<li>Cost breakdown</li>\r\n\t\t\t\t<li>Strategies to improve cost-efficiency</li>\r\n\t\t\t\t<li>Downloadable full cost model</li>\r\n\t\t\t</ul>\r\n\t\t\t</td>\r\n\t\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<p>The cost analysis methodology in Dioptra is based on the <a href=\"https://interagencystandingcommittee.org/system/files/cost_efficiency_analysis_of_basic_needs_programs.pdf\">Grand Bargain Cash workstream guidance on cost-efficiency analysis of basic needs programs</a>&nbsp;and the <a href=\"https://www.edu-links.org/sites/default/files/media/file/BE2%20cost%20measurement%20guidance%20note%20final.pdf\">Building Evidence in Education Cost Measurement Guidance Note</a>.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "what-are-the-steps-of-a-cost-analysis",
+            "topic_id": 1,
+            "published": true,
+            "source_id": 13
+        },
+        {
+            "identifier": null,
+            "title": "4. How to review and confirm all cost items in each category",
+            "body": "<p><strong>Why do I need to assign cost items to cost_types and categories?</strong></p>\r\n\r\n<p>In the Confirm Categories step, Dioptra automatically groups the data that it pulls from the finance system or uploaded spreadsheet into different Cost Types and Categories. This is done based on finance codes: All cost items (i.e. budget lines) with the same Cost Type Code (if it exists) will be grouped into a corresponding Cost Type, and those with the same Account Code will be grouped into a corresponding Category.</p>\r\n\r\n<p>By grouping cost items into intuitive Cost Types and Categories, it will make it easier for you to select which inputs were relevant for your intervention in a later step.</p>\r\n\r\n<hr />\r\n<p><strong>How do I review and confirm cost items in each category?</strong></p>\r\n\r\n<p>Dioptra will automatically assign cost items according to the below cost types and/or cost categories:</p>\r\n\r\n<p><strong>Cost Types:</strong></p>\r\n\r\n<ol>\r\n\t<li>Program Costs (by Cost Type): Programmatic costs that are closely linked to program interventions in one or several projects, e.g. Health staff salary, WASH supplies.</li>\r\n\t<li>Support Costs: Support costs that are linked to program interventions that cannot be easily related to specific projects or cost_typeal/thematic areas. These costs are shared among all projects in a specific office, usually for the running and management of operations, e.g. country office expenses.</li>\r\n\t<li>Indirect Costs: Costs that support HQ operations and management, e.g. Indirect Cost Recovery (ICR).</li>\r\n</ol>\r\n\r\n<p><strong>Cost Categories:</strong>&nbsp;International Staff, National Staff, Non-Staff Personnel, Travel &amp; Transport, Materials &amp; Interventions, Sub-Grants, Assets &amp; Equipment, Office Expenses.</p>\r\n\r\n<p>In the Confirm Categories step, all cost items belonging to the same Cost Type, Support Costs, or ICR, are grouped on the same page (see left sidebar). Within each Cost Type page, cost items are further grouped into Categories.&nbsp;</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:9,&quot;title&quot;:&quot;Confirm Categories 1&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/9/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/9/preview/&quot;,&quot;width&quot;:&quot;1318&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Confirm_Categories1/4f64167e08e045aed2b299dd3b0a0cf6.png&quot;},&quot;caption&quot;:&quot;Example: All cost items belonging to the same Cost Type are grouped on the same page; there can be more than one Cost Type page, including Support Cost and ICR (see left sidebar). If transactions data are available, clicking on the cost item description will display a list of the transactions that were charged to that cost item. If a certain cost item does not belong to the correct Cost Type and/or Category, click on the \\&quot;Edit\\&quot; button to change the Cost Type and/or Category.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Confirm_Categories1/4f64167e08e045aed2b299dd3b0a0cf6.png\" /><span class=\"caption\" style=\"display:block\">Example: All cost items belonging to the same Cost Type are grouped on the same page; there can be more than one Cost Type page, including Support Cost and ICR (see left sidebar). If transactions data are available, clicking on the cost item description will display a list of the transactions that were charged to that cost item. If a certain cost item does not belong to the correct Cost Type and/or Category, click on the &quot;Edit&quot; button to change the Cost Type and/or Category.</span></div>\r\n\r\n<p>Because there can be coding errors in financial data, please review that all cost items have been assigned to the correct categories. To understand how exactly each cost item was spent, and which Cost Type/Category it belongs to, it is important to check:&nbsp;</p>\r\n\r\n<ul>\r\n\t<li>The name of the cost item (i.e. the budget line description)</li>\r\n\t<li>The sub-office or site it was spent on (T6)</li>\r\n\t<li>The cost_type it was spent on (T3)</li>\r\n\t<li>The account code description</li>\r\n\t<li>The underlying transactions, if available (click on the cost item to show the underlying transactions)</li>\r\n</ul>\r\n\r\n<p>If a certain cost item does not belong to the category in which it was placed, click the &lsquo;Edit&rsquo; button for that cost item, and select the correct Cost Type and/or Category.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:10,&quot;title&quot;:&quot;Confirm categories 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/10/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/10/preview/&quot;,&quot;width&quot;:&quot;1349&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Confirm_Categories2/51c22915001cc78c181468953e641584.png&quot;},&quot;caption&quot;:&quot;Example: Clicking the \\&quot;Edit\\&quot; button for a cost item allows you to select a different Cost Type and/or Category for it.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Confirm_Categories2/51c22915001cc78c181468953e641584.png\" /><span class=\"caption\" style=\"display:block\">Example: Clicking the &quot;Edit&quot; button for a cost item allows you to select a different Cost Type and/or Category for it.</span></div>\r\n\r\n<p>You can edit multiple cost items at the same time by clicking on the checkboxes beside those cost items and clicking on the &lsquo;Assign Selected Items&rsquo; button.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:11,&quot;title&quot;:&quot;Confirm categories 3&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/11/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/11/preview/&quot;,&quot;width&quot;:&quot;1317&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Confirm_Categories3/b24c20a2fc31c70ddd6abda5cb5a5f73.png&quot;},&quot;caption&quot;:&quot;Example: To edit multiple cost items to the same Cost Type or Category, click on the checkbox in front of the cost item(s), and click on the green \\&quot;Assign Selected Items\\&quot; button to display a popup panel...&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Confirm_Categories3/b24c20a2fc31c70ddd6abda5cb5a5f73.png\" /><span class=\"caption\" style=\"display:block\">Example: To edit multiple cost items to the same Cost Type or Category, click on the checkbox in front of the cost item(s), and click on the green &quot;Assign Selected Items&quot; button to display a popup panel...</span></div>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:12,&quot;title&quot;:&quot;Confirm categories 4&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/12/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/12/preview/&quot;,&quot;width&quot;:&quot;1363&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Confirm_Categories4/c4ea29d827ee0c09242153582ba413ec.png&quot;},&quot;caption&quot;:&quot;...the popup panel will allow you to edit the selected cost items to the same Cost Type (e.g. \\&quot;Support Cost\\&quot;). Leave the Category field blank if it does not need to be changed.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Confirm_Categories4/c4ea29d827ee0c09242153582ba413ec.png\" /><span class=\"caption\" style=\"display:block\">...the popup panel will allow you to edit the selected cost items to the same Cost Type (e.g. &quot;Support Cost&quot;). Leave the Category field blank if it does not need to be changed.</span></div>\r\n\r\n<p>You will notice that familiarity with the program and budget lines&mdash;e.g. how specific staff spent their time, or what travel was used for&mdash;is necessary to complete this step well.</p>\r\n\r\n<p><strong>This is why it is recommended that the in-country Technical Coordinator/Manager&nbsp;for the relevant cost_type always take the lead when conducting a cost analysis in Dioptra, rather than a Finance person or an HQ staff. The goal is not to apply rules perfectly, but to use your own knowledge of the program to fit cost items&nbsp;into the correct Cost Types and&nbsp;Categories.</strong></p>\r\n\r\n<p>You may be required to assign cost items that were not a part of the intervention you are analyzing&mdash;that is okay. In the subsequent step, you&rsquo;ll have the opportunity to remove entire Cost Types or Categories from the final cost model (e.g. you could remove all Health cost items from a cost analysis on the Cash intervention of the project), or to allocate only a certain percentage of a cost item to the intervention being analyzed (e.g. for Support Costs which were spread across all the different interventions of the project).</p>\r\n\r\n<p>Once you confirm that all the cost items in each Category are correct, you can click the &lsquo;Confirm Items&rsquo; button to confirm each Category. Once all Categories within a Cost Type page are confirmed, you can proceed to confirm the Categories in the remaining Cost Type pages.</p>\r\n\r\n<p>After all Cost Type pages have been completed, you can proceed to the next step: <a href=\"https://dioptra.rescue.org/help/set-contribution/\">Set Contribution</a>.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "confirm-categories",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 6
+        },
+        {
+            "identifier": null,
+            "title": "4. Who to contact for any questions or issues",
+            "body": "<p>For questions or support in creating and conducting a cost&nbsp;analysis, please contact the Dioptra Administrators:</p>\r\n\r\n<p><strong>Lucian Lee</strong>: lucian.lee@rescue.org</p>",
+            "path": "contact",
+            "topic_id": 1,
+            "published": true,
+            "source_id": 3
+        },
+        {
+            "identifier": null,
+            "title": "5. How to select the cost_types/categories that contributed to the intervention",
+            "body": "<p>The Set Contribution step allows you to select only the relevant Cost Types and Categories that contributed to the intervention being analyzed. If a particular category is relevant and contributed to the intervention, select &lsquo;Yes&rsquo; for that category.&nbsp;</p>\r\n\r\n<p>This is important because some projects are multi-cost_typeal, whereas the intervention analyzed may only be in one cost_type. For example, if the intervention analyzed is Business Skills Training, all categories in the ERD&nbsp;cost_type should be selected, while all categories in the Health and Protection cost_types&nbsp;should not be selected, unless you have reason to believe they also contributed towards the Business Skills Training intervention.&nbsp;</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:13,&quot;title&quot;:&quot;Set Contribution 1&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/13/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/13/preview/&quot;,&quot;width&quot;:&quot;1250&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Set_Contribution1/5772c85e76110131d1c69a516f618cb3.png&quot;},&quot;caption&quot;:&quot;Example: If the intervention being analyzed is Business Skills Training, all categories in the ERD cost_type should be selected as \\&quot;Yes\\&quot;...&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Set_Contribution1/5772c85e76110131d1c69a516f618cb3.png\" /><span class=\"caption\" style=\"display:block\">Example: If the intervention being analyzed is Business Skills Training, all categories in the ERD cost_type should be selected as &quot;Yes&quot;...</span></div>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:14,&quot;title&quot;:&quot;Set Contribution 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/14/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/14/preview/&quot;,&quot;width&quot;:&quot;1245&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Set_Contribution2/6ea1367bde697186f6d666b790f0ecfb.png&quot;},&quot;caption&quot;:&quot;... while all categories in the Protection cost_type should be selected as \\&quot;No\\&quot;, unless you have reason to believe they also contributed towards the Business Skills Training intervention.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Set_Contribution2/6ea1367bde697186f6d666b790f0ecfb.png\" /><span class=\"caption\" style=\"display:block\">... while all categories in the Protection cost_type should be selected as &quot;No&quot;, unless you have reason to believe they also contributed towards the Business Skills Training intervention.</span></div>\r\n\r\n<p>In subsequent steps, you will no longer need to deal with Cost Types or Categories that are not relevant to the intervention being analyzed.&nbsp;</p>\r\n\r\n<p>Once you have selected the relevant Categories in each Cost Type page, click&nbsp;Save before proceeding to the next Cost Type page.</p>\r\n\r\n<p>After all Categories in every Cost Type page have been determined, you can proceed to the next step: <a href=\"https://dioptra.rescue.org/help/allocate-costs/\">Allocate Costs</a>.&nbsp;</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "set-contribution",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 7
+        },
+        {
+            "identifier": null,
+            "title": "6. How to allocate the percentage of cost items to the intervention",
+            "body": "<p>The Allocate Costs step allows you to indicate <strong>what percentage of a particular cost item charged to the project being analyzed was used for the intervention being analyzed</strong> in comparison to other interventions that item may also support in the same project, since multiple interventions are often funded within a project.</p>\r\n\r\n<p><strong>IMPORTANT: This is different from the percentage of each cost item allocated to the project being analyzed.</strong> For example: if 10% of a staff member&rsquo;s salary was allocated to the project being analyzed and the remaining 90% was allocated to other projects, DO NOT INDICATE 10%. Instead: out of the staff member&rsquo;s salary that was charged to the project being analyzed, indicate the percentage of time that was actually dedicated to the intervention being analyzed, compared to the other interventions they may have supported in that project.</p>\r\n\r\n<hr />\r\n<p><strong>For cost items that fully contributed to the intervention being analyzed only: Indicate 100% for these items.</strong></p>\r\n\r\n<p>E.g. If you are analyzing&nbsp;Treatment for Severe Acute Malnutrition, indicate &quot;100&quot; in the percentage boxes of all&nbsp;<strong><em>Nutrition Manager&nbsp;</em></strong>cost items&nbsp;if they fully worked on this intervention and nothing else in this project.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:15,&quot;title&quot;:&quot;Allocate Costs 1&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/15/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/15/preview/&quot;,&quot;width&quot;:&quot;1287&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Allocate1/54814b764ada22772a7a7a9b102269bf.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Allocate1/54814b764ada22772a7a7a9b102269bf.png\" /></div>\r\n\r\n<hr />\r\n<p><strong>For cost items that contributed to several interventions: Indicate the proportion of that cost item that was necessary for the intervention being analyzed.</strong></p>\r\n\r\n<p>Consider how that particular cost item was used for different interventions in that project. For cost items that are relatively more complex, the following suggestions can be helpful in estimating its contribution to the intervention being analyzed:</p>\r\n\r\n<ul>\r\n\t<li>Number of clients for that intervention / total number of clients in the project</li>\r\n\t<li>Number of staff for that intervention / total number of staff in the project</li>\r\n\t<li>Amount (units or dollars) of materials procured for that intervention / total amount of materials procured in the project</li>\r\n\t<li>Amount of time spent on that intervention by the staff member / total amount of time spent on the project by the staff member</li>\r\n</ul>\r\n\r\n<p>E.g. if you are analyzing Treatment for Severe Acute Malnutrition within a project that also funded Latrine Building, and the Health Manager spent a third of their time on malnutrition work and two thirds of their&nbsp;time on latrine building work, you could indicate &quot;33&quot; in the percentage boxes of <em><strong>Health Manager</strong></em> salary cost items.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:16,&quot;title&quot;:&quot;Allocate Costs 2&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/16/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/16/preview/&quot;,&quot;width&quot;:&quot;1288&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Allocate2/759bde00a5739e8038d902d57ee660e7.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Allocate2/759bde00a5739e8038d902d57ee660e7.png\" /></div>\r\n\r\n<p>E.g. if you are&nbsp;analyzing Treatment for Severe Acute Malnutrition within a project that also funded Latrine Building, and 400 clients (out of total 1,000 clients) were treated for malnutrition while 600 clients (out of total 1,000 clients) were served with latrines, you could indicate &quot;40&quot; in the percentage boxes of&nbsp;<em><strong>Program outreach interventions</strong></em> cost items.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:17,&quot;title&quot;:&quot;Allocate Costs 3&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/17/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/17/preview/&quot;,&quot;width&quot;:&quot;1290&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Allocate3/c8b2fef6b40dabf3a5c9791b71501510.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Allocate3/c8b2fef6b40dabf3a5c9791b71501510.png\" /></div>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<p><strong>There is not one perfect allocation method&mdash;use your best&nbsp;judgment based on your knowledge of how the intervention was implemented. </strong>The goal of cost analysis is to generate a rough estimate of costs that is reasonably reliable for the intervention being analyzed. The percentage allocation does not need to be perfect down to the last decimal point. Small differences (e.g. an allocation percentage of 5% vs 8%) will not skew your results significantly enough to affect the lessons that can be drawn from them.</p>\r\n\r\n<hr />\r\n<p><strong>For cost items that&nbsp;were not used for the intervention being analyzed: Indicate 0% for these items.</strong></p>\r\n\r\n<p>E.g. If you are analyzing Treatment for Severe Acute Malnutrition within a project that also funded Latrine Building, you should indicate &quot;0&quot; in the percentage boxes of <em><strong>WASH Officer</strong></em>&nbsp;cost items.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:18,&quot;title&quot;:&quot;Allocate Costs 4&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/18/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/18/preview/&quot;,&quot;width&quot;:&quot;1287&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Allocate4/96ac07d37137af0ebb4dbeee056d4523.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Allocate4/96ac07d37137af0ebb4dbeee056d4523.png\" /></div>\r\n\r\n<hr />\r\n<p><strong>For Support Cost items:</strong></p>\r\n\r\n<p>Support Costs are support costs that are linked to program interventions that cannot be easily related to specific projects or cost_typeal/thematic areas. These costs would be needed regardless of which programs are implemented, and are shared among all projects in a specific office, usually for the running and management of operations, e.g. country office expenses.</p>\r\n\r\n<p>Dioptra calculates a suggested percentage for Support Cost items for the intervention being analyzed, based on the proportion of Program Costs of this intervention in this project out of all the Program Costs of all interventions in this project. Go ahead and save the suggested percentage unless you have good reason to change it.</p>\r\n\r\n<p>E.g. If you are analyzing Treatment for Severe Acute Malnutrition where no procurement was done because all the materials such as Ready-to-use therapeutic food (RUTF) were already donated, you could indicate &quot;0&quot; in the percentage boxes of&nbsp;<em><strong>Supply Chain staff</strong></em>&nbsp;cost items.</p>\r\n\r\n<p>You can also make different allocations if a particular staff member spent a disproportionate amount of their time on the intervention being analyzed (e.g. a <em><strong>Finance Officer</strong></em> who spent a disproportionate amount of time processing cash transfers on a multi-cost_type project).</p>\r\n\r\n<p><strong>Important:</strong> If you have initially completed an analysis and went back to edit&nbsp;some percentages in the cost_type sub-steps (i.e. Program Costs), please remember to also update the percentages for the Support Cost items. Dioptra&nbsp;will recalculate and suggest a new percentage for you.</p>\r\n\r\n<p><a href=\"https://dioptra.rescue.org/help/direct-shared-indirect-costs/\">See this page for more info on how Dioptra estimates the percentage allocation of Support Costs.</a></p>\r\n\r\n<hr />\r\n<p><strong>For Indirect Cost (ICR) items:</strong></p>\r\n\r\n<p>Indirect Costs are costs that support HQ operations and management, e.g. Indirect Cost Recovery (ICR).</p>\r\n\r\n<p>Dioptra calculates a suggested percentage for Indirect Costs (ICR) for the intervention being analyzed, based on the proportion of Program and Shared Costs of this intervention in this project out of all the Program and Shared Costs of all interventions in this project. Go ahead and save the suggested percentage.</p>\r\n\r\n<p><strong>Important:</strong> If you have initially completed an analysis and went back to edit&nbsp;some percentages in the cost_type sub-steps (i.e. Program Costs), please remember to also update the percentages&nbsp;for the Indirect Costs. Dioptra will recalculate and suggest a new percentage for you.</p>\r\n\r\n<p><a href=\"https://dioptra.rescue.org/help/direct-shared-indirect-costs/\">See this page for more info on how Dioptra estimates the percentage allocation of ICR.</a></p>\r\n\r\n<hr />\r\n<p><strong>General Tips</strong></p>\r\n\r\n<p>1. If you want to apply the same percentage of the first cost item to the rest of the items within that&nbsp;category, click &#39;Apply to all&#39; beside the percentage box of the first cost item.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:33,&quot;title&quot;:&quot;Allocate Costs 5&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/33/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/33/preview/&quot;,&quot;width&quot;:&quot;1288&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Allocate5/8919d400d2871396be1d56f019e5193b.png&quot;},&quot;caption&quot;:&quot;&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Allocate5/8919d400d2871396be1d56f019e5193b.png\" /></div>\r\n\r\n<p>2. To help you remember how you determined the percentage allocated to certain cost items, you can add an optional note for any cost item by clicking the &#39;Add note&#39; button beside the percentage box. Once saved, your notes can&nbsp;be viewed in the Full Cost Model on the View Insights page, next to the &#39;% to Intervention&#39; of each cost item. They can also be viewed in the&nbsp;Full Cost Model Download Excel spreadsheet.</p>\r\n\r\n<p>3. If you need help for a particular cost item and have no clue what percentage to allocate for that item, you could indicate &ldquo;?&rdquo; in the percentage box of that item. When you have finished allocating percentages to the rest of the cost items in that category, click the &lsquo;Save&rsquo; button of that category. Dioptra will understand that you need help for that particular cost item and suggest a percentage based on the weighted average of all other cost items in that category. If you are satisfied with Dioptra&rsquo;s suggestion, click on &lsquo;Accept suggestion&rsquo; and then click &lsquo;Save&rsquo;; if you are not satisfied with Dioptra&rsquo;s suggestion, click on &lsquo;More help&rsquo; to view more guidance on how to estimate a percentage for that item.</p>\r\n\r\n<p>4. Always remember to click the &#39;Save&#39; button after allocating percentages to all cost items in each category. If you need to pause the analysis and attend to other matters, you can save the percentages for cost items that you have already allocated, even if the remaining cost items in the same category have not yet been allocated percentages. Simply click the &#39;Save&#39;&nbsp;button for the category you were working on, and Dioptra will save the percentages that you have already allocated. You may now close the browser if you wish to&nbsp;and return to the analysis later to continue working on the remaining cost items.</p>\r\n\r\n<p>5. You will notice that familiarity with the program and budget lines&mdash;e.g. how specific staff spent their time, or what travel was used for&mdash;is necessary to complete this step well. Instead of trying to allocate percentages to cost items based on how they were charged to the project (e.g. 25% of the Health Manager&#39;s FTE was charged to the project), we want to capture how much each cost item was actually&nbsp;used&nbsp;in implementing the intervention being analyzed <strong>(e.g. out of the Health Manager&#39;s salary amount that was charged to this project, how much time was actually dedicated to this particular intervention?)</strong>.</p>\r\n\r\n<p><strong>Due to the level of program expertise required to complete percentage allocations, it is recommended that the in-country Technical Coordinator/Manager for the relevant cost_type lead cost analyses&nbsp;in Dioptra, rather than a Finance person or an HQ staff. The goal is not to apply rules perfectly, but to use your own knowledge of the program to estimate percentages for cost items as accurately as possible.</strong></p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "allocate-costs",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 8
+        },
+        {
+            "identifier": null,
+            "title": "7. How does Dioptra estimate the percentage of Support Costs and Indirect Costs?",
+            "body": "<p><strong>What are Support Costs?</strong></p>\r\n\r\n<p>Support Costs are support costs that are linked to program interventions that cannot be easily related to specific projects or cost_typeal/thematic areas. These costs would be needed regardless of which programs are implemented, and are shared among all projects in a specific office, usually for the running and management of operations, e.g. country office expenses.</p>\r\n\r\n<p>This can include general administration and management expenses (e.g. salaries and benefits for Finance, Supply Chains, HR, IT and country leaders), infrastructure costs (e.g. rent and utilities, transportation, equipment depreciation, software licenses), and other costs that are incurred for the benefit of all the programs within the country office (e.g. partnership, advocacy expenses).</p>\r\n\r\n<hr />\r\n<p><strong>How can we allocate the percentage for Support Costs accurately?</strong></p>\r\n\r\n<p>Sometimes a particular cost item such as administration, HR, and finance does not seem tied directly to any one intervention. On the other hand, we know we definitely need HR and finance capacity in order to implement programs. How can we determine the proportion of HR and finance within the project that contributed specifically to the intervention being analyzed?</p>\r\n\r\n<p>Dioptra will help calculate a suggested percentage for Support Cost items for this intervention, using the proxy percentage of Program Costs of this intervention in this project out of all Program Costs of all interventions in this project. This methodology is based on the <a href=\"https://interagencystandingcommittee.org/system/files/cost_efficiency_analysis_of_basic_needs_programs.pdf\">Grand Bargain Cash workstream guidance on cost-efficiency analysis</a>. If you are interested, here are the steps for the calculation:</p>\r\n\r\n<ol>\r\n\t<li>In the <a href=\"https://dioptra.rescue.org/help/allocate-costs/\">Allocate Costs step</a>, you would have indicated the percentage of each cost item in each cost_type (i.e. Program Costs) that contributed to the intervention being analyzed. Dioptra will multiply the percentage of each cost item with the total value of that cost item.</li>\r\n\t<li>Dioptra will then add all the totals&nbsp;to get the <strong>Program Costs of the intervention being analyzed</strong>.</li>\r\n\t<li>Separately, Dioptra will calculate&nbsp;<strong>All</strong>&nbsp;<strong>Program Costs of the project</strong>.</li>\r\n\t<li>Dividing the <strong>Program Costs of the intervention being analyzed</strong> by <strong>All</strong>&nbsp;<strong>Program Costs of the project</strong>&nbsp;will result in the&nbsp;proxy percentage for&nbsp;Support Costs that is attributable&nbsp;to this intervention.</li>\r\n</ol>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:24,&quot;title&quot;:&quot;Support Costs Suggested Allocation&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/24/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/24/preview/&quot;,&quot;width&quot;:&quot;1357&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/Dioptra_-_Direct_Shared_Costs/be7a5883ef5a6cb3f7371693df20cc07.png&quot;},&quot;caption&quot;:&quot;Example: The Program Costs of the Malnutrition Treatment intervention being analyzed is $127,645.53. All Program Costs of grant DF203 is $1,780,696.79. As such, the Support Costs Suggested Allocation is 127,645.53 / 1,780,696.79 = 7.17%.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/Dioptra_-_Direct_Shared_Costs/be7a5883ef5a6cb3f7371693df20cc07.png\" /><span class=\"caption\" style=\"display:block\">Example: The Program Costs of the Malnutrition Treatment intervention being analyzed is $127,645.53. All Program Costs of grant DF203 is $1,780,696.79. As such, the Support Costs Suggested Allocation is 127,645.53 / 1,780,696.79 = 7.17%.</span></div>\r\n\r\n<p>If the intervention is funded by multiple projects, Dioptra will separate the costs incurred in each project, and calculate the suggested percentage for Support Cost items in each project separately.</p>\r\n\r\n<hr />\r\n<p><strong>How should I interpret the suggestion percentage calculated by Dioptra for Support Costs?</strong></p>\r\n\r\n<p>E.g. If Dioptra suggests 7.17% to be used for allocating Support Costs for Treatment for Severe Acute Malnutrition, it means 7.17% of Support Costs within this project was used to support Treatment for Severe Acute Malnutrition. The remaining 92.83% of Support Costs was used to support other interventions funded by this project.</p>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<hr />\r\n<p>&nbsp;</p>\r\n\r\n<p><strong>What are Indirect Costs?</strong></p>\r\n\r\n<p>Indirect Costs are costs that support HQ operations and management, e.g. Indirect Cost Recovery (ICR).</p>\r\n\r\n<p>This can encompass HQ administration and management costs for cross-cutting functions at the global level that are incurred for the benefit of the entire organization (e.g. grant management, legal, fundraising, communications, advocacy, executive leaders).</p>\r\n\r\n<hr />\r\n<p><strong>How does Dioptra allocate the percentage for Indirect Costs?</strong></p>\r\n\r\n<p>ICR cannot reasonably be identified directly with any one intervention but are necessary to operate the organization overall. How can we estimate the proportion of ICR within the project that contributed specifically to the intervention being analyzed?</p>\r\n\r\n<p>Dioptra calculates a suggested percentage for ICR for the intervention being analyzed, based on the proxy percentage of Program Costs and Support Costs of this intervention in this project out of all the Program Costs and Support Costs of all interventions in this project. This methodology is based on the <a href=\"https://interagencystandingcommittee.org/system/files/cost_efficiency_analysis_of_basic_needs_programs.pdf\">Grand Bargain Cash workstream guidance on cost-efficiency analysis</a>. If you are interested, here are the steps for the calculation:</p>\r\n\r\n<ol>\r\n\t<li>In the <a href=\"https://dioptra.rescue.org/help/allocate-costs/\">Allocate Costs step</a>, you would have indicated the percentage of each programmatic cost item in each cost_type (i.e. Program Costs) that contributed to the intervention being analyzed. You would also have indicated or accepted the suggested percentage of Support Costs that contributed to the intervention. Dioptra will multiply the percentage of each cost item with the total value of that cost item.</li>\r\n\t<li>Dioptra will then add all the totals to get the <strong>Program Costs and Support Costs of the intervention being analyzed</strong>.</li>\r\n\t<li>Separately, Dioptra will calculate <strong>All Program Costs and All Support Costs of the project</strong>.</li>\r\n\t<li>Dividing the <strong>Program Costs and Support Costs of the intervention being analyzed</strong> by <strong>All Program Costs and All Support Costs of the project</strong>&nbsp;will result in the proxy percentage for ICR that is attributable to this intervention.</li>\r\n</ol>\r\n\r\n<p>If the intervention is funded by multiple projects, Dioptra will separate the costs incurred in each project, and calculate the suggested percentage for ICR in each project separately.</p>\r\n\r\n<hr />\r\n<p><strong>How should I interpret the suggestion percentage calculated by Dioptra for Indirect Costs?</strong></p>\r\n\r\n<p>E.g. If Dioptra suggests 11.16% as a proxy percentage for allocating ICR for Treatment for Severe Acute Malnutrition, it actually means 11.16% of the overall project funding was used to support Treatment for Severe Acute Malnutrition (therefore the same proportion of ICR will be included in the full cost per output analyzed). The remaining 88.84% of overall project funding was used to support other interventions in this project.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "direct-shared-indirect-costs",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 9
+        },
+        {
+            "identifier": null,
+            "title": "8. How to identify the value of outputs delivered",
+            "body": "<p>If you are analyzing interventions that involve the distribution of monetary assets to clients (e.g. cash transfers, vouchers, cash for work, cash grants etc), the cost-efficiency is typically measured by the <strong>Cost Transfer Ratio (CTR)</strong>. This is the ratio of all non-transfer costs (staffing, transport, money agent fees, etc.) to the total value of cash (i.e. program outputs) delivered&nbsp;to clients.</p>\r\n\r\n<table align=\"center\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<td style=\"text-align:center; vertical-align:middle\">CTR =&nbsp;[Non-transfer costs] / [Value of cash distributed]</td>\r\n\t\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n<p>In other words, this is the <strong>delivery cost per dollar transferred</strong>. The CTR is an intuitive measure of cost-efficiency, because it&nbsp;shows how much we have to spend on non-transfer costs for every dollar/pound/euro transferred to clients.</p>\r\n\r\n<p>The Identify Output Value&nbsp;step allows you to identify the total value of cash distributed to clients. Find and select&nbsp;the <strong>budget lines that correspond to the cash transferred</strong>. Do not select administrative costs such as service charges for financial service providers, bank/hawala fees, voucher printing fees, etc. This will help Dioptra calculate the CTR accurately.</p>\r\n\r\n<div data-ombuimage=\"{&quot;objInfo&quot;:{&quot;id&quot;:25,&quot;title&quot;:&quot;Identify Output Value&quot;,&quot;ctype_id&quot;:39,&quot;verbose_name&quot;:&quot;Image&quot;,&quot;verbose_name_plural&quot;:&quot;Images&quot;,&quot;change_url&quot;:&quot;/panels/assets/imageasset/25/change/&quot;,&quot;preview_url&quot;:&quot;/panels/assets/imageasset/25/preview/&quot;,&quot;width&quot;:&quot;1126&quot;,&quot;image_url&quot;:&quot;/media/CACHE/images/img/IOV_step/35345deddcad81182e7b5bd055d6c62d.png&quot;},&quot;caption&quot;:&quot;Select the cost items that correspond to the value of cash (i.e. outputs) delivered to clients. You may select multiple items.&quot;,&quot;align&quot;:&quot;center&quot;}\"><img src=\"/media/CACHE/images/img/IOV_step/35345deddcad81182e7b5bd055d6c62d.png\" /><span class=\"caption\" style=\"display:block\">Select the cost items that correspond to the value of cash (i.e. outputs) delivered to clients. You may select multiple items.</span></div>\r\n\r\n<p>Once you have selected the right cost items, click the &#39;Save&#39; button, and you will be ready to view the results of your analysis.</p>\r\n\r\n<p>&nbsp;</p>",
+            "path": "identify-output-value",
+            "topic_id": 2,
+            "published": true,
+            "source_id": 11
+        }
+    ],
+    "images": [
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Dioptra Assign 3",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 37,
+            "image": "/media/img/Dioptra_Assign3.png",
+            "width": "1271",
+            "height": "653",
+            "source_id": 37
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Dioptra Assign 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 36,
+            "image": "/media/img/Dioptra_Assign2.png",
+            "width": "1155",
+            "height": "595",
+            "source_id": 36
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Dioptra Assign 1",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 35,
+            "image": "/media/img/Dioptra_Assign1.png",
+            "width": "1153",
+            "height": "608",
+            "source_id": 35
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Cost Efficiency and Cost Effectiveness Analysis",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 34,
+            "image": "/media/img/Dioptra_-_cost_analysis.png",
+            "width": "483",
+            "height": "226",
+            "source_id": 34
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Allocate Costs 5",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 33,
+            "image": "/media/img/Dioptra_-_Allocate5.png",
+            "width": "1288",
+            "height": "615",
+            "source_id": 33
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "View Insights 5",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 29,
+            "image": "/media/img/View_Insights_5.png",
+            "width": "1315",
+            "height": "1446",
+            "source_id": 29
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "View Insights 4",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 28,
+            "image": "/media/img/View_Insights_4.png",
+            "width": "1305",
+            "height": "1032",
+            "source_id": 28
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "View Insights 3",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 27,
+            "image": "/media/img/View_Insights_3.png",
+            "width": "1313",
+            "height": "781",
+            "source_id": 27
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "View Insights 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 26,
+            "image": "/media/img/View_Insights_2.png",
+            "width": "1318",
+            "height": "811",
+            "source_id": 26
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Identify Output Value",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 25,
+            "image": "/media/img/IOV_step.png",
+            "width": "1126",
+            "height": "613",
+            "source_id": 25
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Support Costs Suggested Allocation",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 24,
+            "image": "/media/img/Dioptra_-_Direct_Shared_Costs.png",
+            "width": "1357",
+            "height": "665",
+            "source_id": 24
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Load Data 5",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 23,
+            "image": "/media/img/Load_Data_4.JPG",
+            "width": "1366",
+            "height": "729",
+            "source_id": 23
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Load Data 4",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 22,
+            "image": "/media/img/Load_Data_5.JPG",
+            "width": "1366",
+            "height": "729",
+            "source_id": 22
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Load Data 3",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 21,
+            "image": "/media/img/Load_Data_3.JPG",
+            "width": "1366",
+            "height": "729",
+            "source_id": 21
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Load Data 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 20,
+            "image": "/media/img/Dioptra_-_load_cost_data2.png",
+            "width": "1229",
+            "height": "618",
+            "source_id": 20
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Load Data 1",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 19,
+            "image": "/media/img/Dioptra_-_load_cost_data1.png",
+            "width": "1229",
+            "height": "618",
+            "source_id": 19
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Allocate Costs 4",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 18,
+            "image": "/media/img/Dioptra_-_Allocate4.png",
+            "width": "1287",
+            "height": "623",
+            "source_id": 18
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Allocate Costs 3",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 17,
+            "image": "/media/img/Dioptra_-_Allocate3.png",
+            "width": "1290",
+            "height": "625",
+            "source_id": 17
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Allocate Costs 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 16,
+            "image": "/media/img/Dioptra_-_Allocate2.png",
+            "width": "1288",
+            "height": "665",
+            "source_id": 16
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Allocate Costs 1",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 15,
+            "image": "/media/img/Dioptra_-_Allocate1.png",
+            "width": "1287",
+            "height": "665",
+            "source_id": 15
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Set Contribution 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 14,
+            "image": "/media/img/Dioptra_-_Set_Contribution2.png",
+            "width": "1245",
+            "height": "662",
+            "source_id": 14
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Set Contribution 1",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 13,
+            "image": "/media/img/Dioptra_-_Set_Contribution1.png",
+            "width": "1250",
+            "height": "663",
+            "source_id": 13
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Confirm categories 4",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 12,
+            "image": "/media/img/Dioptra_-_Confirm_Categories4.png",
+            "width": "1363",
+            "height": "665",
+            "source_id": 12
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Confirm categories 3",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 11,
+            "image": "/media/img/Dioptra_-_Confirm_Categories3.png",
+            "width": "1317",
+            "height": "665",
+            "source_id": 11
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Confirm categories 2",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 10,
+            "image": "/media/img/Dioptra_-_Confirm_Categories2.png",
+            "width": "1349",
+            "height": "665",
+            "source_id": 10
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Confirm Categories 1",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 9,
+            "image": "/media/img/Dioptra_-_Confirm_Categories1.png",
+            "width": "1318",
+            "height": "664",
+            "source_id": 9
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Defining your outputs",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 5,
+            "image": "/media/img/Defining_your_outputs_aqtILYp.png",
+            "width": "1179",
+            "height": "618",
+            "source_id": 5
+        },
+        {
+            "polymorphic_ctype_id": 39,
+            "title": "Defining your intervention",
+            "folder_id": null,
+            "caption": "",
+            "hide_caption": false,
+            "asset_ptr_id": 4,
+            "image": "/media/img/Defining_your_intervention_DctRLsr.png",
+            "width": "1163",
+            "height": "627",
+            "source_id": 4
+        }
+    ]
+}

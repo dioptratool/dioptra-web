@@ -1,0 +1,38 @@
+.ombuimage-wrapper {}
+.ombuimage-wrapper [data-widget="ombuimage"] {
+  display: block;
+}
+.ombuimage-wrapper [data-widget="ombuimage"] img {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+.ombuimage-wrapper .caption {
+  display: block;
+}
+
+/** Center **/
+.ombuimage-wrapper[data-ombuimage-align="center"] {
+  display: block;
+}
+.ombuimage-wrapper[data-ombuimage-align="center"] [data-widget="ombuimage"] {
+  text-align: center;
+}
+
+/** Floated **/
+.ombuimage-wrapper[data-ombuimage-align="left"],
+.ombuimage-wrapper[data-ombuimage-align="right"] {
+}
+
+/** Left **/
+.ombuimage-wrapper[data-ombuimage-align="left"] {
+  float: left;
+  margin: 0 1em 1em 0;
+}
+
+/** Right **/
+.ombuimage-wrapper[data-ombuimage-align="right"] {
+  float: right;
+  margin: 0 0 1em 1em;
+}

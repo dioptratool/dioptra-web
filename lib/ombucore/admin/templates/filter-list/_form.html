@@ -1,0 +1,60 @@
+{% load panels_extras panels_form_extras %}
+<form action="#" method="GET" class="filter-list-form" accept-charset="utf-8">
+
+    <div class="form-inline">
+        {% if form.search %}
+            {% with field=form.search|add_input_classes %}
+                <div class="form-group form-group-search">
+                    <label class="icon-label" for="id_search">{% include "svg/ombu-icon-magnifying-glass.svg" %}</label>
+                    {{ field }}
+                    {% if form.search.value %}
+                      <a href="#" class="clear-search-phrase">{% include "svg/ombu-icon-circle-x.svg" %}</a>
+                    {% endif %}
+                </div>
+            {% endwith %}
+        {% endif %}
+
+        {% if form.fields|length > 1 %}
+
+            <div class="form-group dropdown add-filter-dropdown">
+                <a href="#" class="btn btn-default" data-toggle="dropdown">Add filter</a>
+                <div class="dropdown-menu">
+                    <ul class="dropdown-menu-items">
+                      {% for field in form %}
+                          {% if field.name != 'search' and field.name != 'order_by' %}
+                            <li><a href="#" data-filter-target="{{ field.name }}">{{ field.label }}</a></li>
+                          {% endif %}
+                      {% endfor %}
+                    </ul>
+                    {% for field in form %}
+                        {% if field.name != 'search' and field.name != 'order_by' %}
+                        <div class="hidden" data-filter="{{ field.name }}">
+                          {% include 'bootstrap/field.html' with field=field|add_input_classes hide_help=True %}
+                          {% if field|filter_field_should_use_button %}
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                          {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if form.order_by %}
+                {% with field=form.order_by|add_input_classes %}
+                    <div class="form-group form-group-order-by">
+                        {{ field }}
+                    </div>
+                {% endwith %}
+            {% endif %}
+
+        {% endif %}
+
+        <input type="submit" value="{{ submit_text }}" class="btn btn-primary {% if not submit_text %}hidden{% endif %}" />
+
+    </div>
+
+    <div class="filter-results">
+        <a href="#" class="clear-all hidden">{% include "svg/ombu-icon-circle-x.svg" %} Clear all</a>
+    </div>
+
+</form>

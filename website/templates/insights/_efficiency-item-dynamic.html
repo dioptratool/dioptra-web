@@ -1,0 +1,46 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="{{ class }}">
+  <div>
+    <div {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_dynamic-efficiency-card"{% endif %} class="efficiency-items-insights__group efficiency-item__group--{{ cost_type }}">
+      <div class="efficiency-item__group-primary">
+        <div class="efficiency-item__group-primary-holder">
+          <div class="efficiency-item__group-label">
+            <span class="efficiency-item__title-label">
+              {% translate title %}
+            </span>
+          </div>
+          <div {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_efficiency-item__cost"{% endif %} class="efficiency-item__cost">
+            {{ cost_value }}
+          </div>
+          <div class="efficiency-item__group-label">
+            <span {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_efficiency-item__group-label"{% endif %}>
+              {{ label }}
+            </span>
+
+            {# In order to toggle the Django help template via a .js file, we render all on the page to start, and use display: none to hide the extras #}
+            {% if show_help %}
+              <span {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_efficiency-item__direct-help"{% endif %} {% if cost_type != 'direct' %}style="display: none"{% endif %}>
+                {% help 'insights__cost_per_metric_direct' %}
+              </span>
+              <span {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_efficiency-item__total-help"{% endif %} {% if cost_type != 'total' %}style="display: none"{% endif %}>
+                {% help 'insights__cost_per_metric_shared' %}
+              </span>
+              <span {% if output_metric_ids %}id="{{ metric.output_metric_slug }}_efficiency-item__in_kind-help"{% endif %} {% if cost_type != 'in_kind' %}style="display: none"{% endif %}>
+                {% help 'insights__cost_per_metric_in_kind' %}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="efficiency-item__icon-container {% if icon_class %}{{ icon_class }}{% else %}efficiency-item__icon{% endif %}">{% include 'icons/insights/'|add:icon|add:'.svg' %}</div>
+    </div>
+  </div>
+
+  {% if include_bar %}
+    <div>
+      <div class="efficiency-item__bar {% if show_client and analysis.client_time %}efficiency-item__bar-padding{% endif %}">
+        {% include 'insights/_efficiency-cost-bar.html' %}
+      </div>
+    </div>
+  {% endif %}
+</div>

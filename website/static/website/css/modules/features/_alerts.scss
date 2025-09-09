@@ -1,0 +1,11 @@
+#root-alerts-container {
+
+  .alert-success {
+    background-color: $color-alert-success-background;
+    color: $color-alert-success-color;
+
+    .close {
+      color: $color-alert-success-color;
+    }    
+  }
+}

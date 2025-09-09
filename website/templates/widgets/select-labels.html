@@ -1,0 +1,40 @@
+{% load website_tags %}
+
+{% if messages %}
+<ul class="message message--success">
+    {% for message in messages %}
+        <p class="{{ message.tags }}">{{ message }}</p>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div id="subcomponent-label-type-fields">
+    {% if not widget.attrs.prevent_add_remove %}
+
+        <p class="help_text">The following are suggested labels for the sub-components to be analyzed. You may edit,
+            re-order, or add to them.</p>
+    {% else %}
+        <p class="help_text"> The following are confirmed labels for the sub-components to be analyzed.
+            You may edit or re-order them. To change label quantity, the sub-component analysis must be reset.</p>
+    {% endif %}
+    <div id="subcomponent-labels-container">
+        <input type="hidden" name="subcomponent_labels" id="subcomponent_labels" value="{{ subcomponent_labels|dict_to_json }}" class="panels--store">
+        <input type="hidden" name="subcomponent_labels_old" id="subcomponent_labels_old" value="{{ subcomponent_labels|dict_to_json }}">
+
+        {% include "widgets/sortable-select-multiple.html" with choices=choices list_id="subcomponent-labels-added" autosort="false" %}
+
+        {% if not widget.attrs.prevent_add_remove %}
+            <a href="#" id="add-label-link" class="btn btn-primary">Add a label</a>
+        <p class="help_text">Maximum of 8</p>
+        <div id="add-label-widget" hidden="hidden">
+            <div style="margin-bottom: 0.25rem;">
+                <input type="text" id="add-label-input" class="form-control notrackchange" placeholder="Add new label">
+            </div>
+            <div>
+                <button type="button" id="add-label-btn" class="btn btn-sm btn-primary" disabled>Add</button>
+                <a class="btn btn-sm btn-cancel" href="#" id="cancel-add-label-btn">Cancel</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>

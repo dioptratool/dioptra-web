@@ -1,0 +1,53 @@
+{% extends 'html-panel.html' %}
+{% load mptt_tags panels_extras panels_form_extras static website_tags %}{% get_base_url as base_url %}
+
+{% block extrahead %}
+  <link href="{{ base_url }}{% static "panels/lib/jquery-ui/jquery-ui.sortable.min.css" %}" rel="stylesheet" type="text/css" />
+{% endblock extrahead %}
+
+{% block panel-body %}
+  <div class="nested-reorder">
+    <p>Drag items to sort. They will be saved automatically when dropped.</p>
+    <ol data-href="{{ request.path }}" data-csrf-token="{{ csrf_token }}">
+      {% for topic_node in menu_root.get_children %}
+        <li class="" data-pk="{{ topic_node.pk }}" data-item-type="topic">
+          <div>
+            <span class="handle">☰</span>
+            <span class="title" title="{{ topic_node.topic.title }}">{{ topic_node.topic.title }}</span>
+            <span class="operations">
+            {{ topic_node.add_action.render }}
+            </span>
+          </div>
+          <ol>
+          {% for link in topic_node.get_children %}
+             <li class="" data-pk="{{ link.pk }}" data-item-type="link">
+               <div>
+              {% with info=link|related_info %}
+                  <span class="handle">☰</span>
+                <span class="title" title="{{ info.title }}">{{ info.title }}{% if link.url.url_type.prefix == 'http' %}: <a target="_blank" href="{{ link.url }}">{{ link.url }}</a>{% else %}: <a target="_blank" href="{{ link.url }}">{{ link.url }}</a>{% endif %}</span>
+                  <span class="operations">
+                    {% if obj_actions|get_field:info.id %}
+                      {% for action_link in obj_actions|get_field:info.id %}
+                        {{ action_link.render }}
+                      {% endfor %}
+                    {% endif %}
+                  </span>
+                {% endwith %}
+               </div>
+             </li>
+            {% endfor %}
+            </ol>
+          </li>
+        {% endfor %}
+    </ol>
+  </div>
+{% endblock panel-body %}
+
+{% block panel-foot-wrapper %}{% endblock %}
+
+{% block extrascript %}
+  <script type="text/javascript" src="{% static 'panels/lib/jquery-ui/jquery-ui.sortable.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'panels/lib/jquery.mjs.nestedSortable.js' %}"></script>
+  <script type="text/javascript" src="{% static 'website/js/admin/panel-help-menu-nested-reorder.js' %}"></script>
+
+{% endblock extrascript %}

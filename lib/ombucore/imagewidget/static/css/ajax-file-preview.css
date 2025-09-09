@@ -1,0 +1,105 @@
+.previewable-file-widget {
+    display: block;;
+    position: relative;
+}
+
+.previewable-file-widget input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.previewable-file-widget input.clear-checkbox {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity 0;
+    overflow: hidden;
+    z-index: -1;
+    margin: 0;
+    padding: 0;
+    border: none;
+    visibility: hidden;
+}
+
+
+.previewable-file-widget label {
+    margin-bottom: 0;
+}
+
+.previewable-file-widget[data-mode="value"] .mode-value {
+    display: flex;
+    align-items: center;
+}
+.previewable-file-widget[data-mode="value"] .mode-empty {
+    display: none;
+}
+.previewable-file-widget[data-mode="value"] input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.previewable-file-widget .preview {
+    display: inline-block;
+}
+.previewable-file-widget .preview img {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.previewable-file-widget .mode-value .change,
+.previewable-file-widget .mode-value .remove {
+    display: inline;
+    margin-right: 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+
+.previewable-file-widget[data-mode="empty"] .mode-value {
+    display: none;
+}
+
+.previewable-file-widget[data-mode="empty"] {
+    background-color: lightgray;
+    padding: 20px;
+}
+.previewable-file-widget[data-mode="empty"] .mode-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    text-align: center;
+    border: 1px dashed gray;
+}
+.previewable-file-widget .mode-empty .drag-text,
+.previewable-file-widget .mode-empty .change {
+    display: inline-block;;
+    cursor: pointer;
+}
+.previewable-file-widget .mode-empty .drag-text {
+    padding-right: 20px;
+    position: relative;
+    font-style: italic;
+}
+.previewable-file-widget .mode-empty .drag-text:after {
+    content: "";
+    width: 1px;
+    background-color: gray;
+    position: absolute;
+    top: -1em;
+    bottom: -1em;
+    right: -0;
+}
+.previewable-file-widget .mode-empty .change {
+    padding-left: 20px;
+}

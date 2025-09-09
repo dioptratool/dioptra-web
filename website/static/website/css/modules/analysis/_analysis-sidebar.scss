@@ -1,0 +1,265 @@
+.analysis-sidebar {
+  background-color: $color-light-black;
+  color: $color-white;
+  min-height: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 1.5em;
+}
+
+.analysis-sidebar__exit {
+  margin-bottom: 0.5rem;
+}
+
+.analysis-sidebar__logo-link {
+  display: block;
+  text-decoration: none;
+
+  text,tspan {
+    text-decoration: none;
+  }
+}
+
+.analysis-sidebar__logo {
+  display: block;
+  margin-bottom: 3.8rem;
+  text-align: center;
+
+  svg {
+    vertical-align: top;
+  }
+}
+
+// Links
+.analysis-sidebar__navigation {
+  list-style: none;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+
+  &.analysis-sidebar__navigation--subnav {
+    background-color: $color-dark-black;
+    padding-left: 1.4rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.2rem;
+  }
+}
+
+.analysis-sidebar__navigation-item {
+  margin: 0;
+  padding: 0;
+
+  &.analysis-sidebar__navigation-item--subnav {
+    margin-bottom: 0.9rem;
+  }
+}
+
+.analysis-sidebar__navigation-link {
+  color: $color-white;
+  display: block;
+  font-weight: $font-weight-bold;
+  padding: 1.5rem 0.5rem 1.5rem 3.4rem;
+  position: relative;
+  text-decoration: none;
+  @include font-size(13, 1.1538);
+
+  svg {
+    left: 1.2rem;
+    position: absolute;
+    top: 1.8rem;
+  }
+
+  &.analysis-sidebar__navigation-link--locked {
+    color: $color-smoke;
+  }
+
+  &.analysis-sidebar__navigation-link {
+    svg * {
+      stroke: $color-moss;
+    }
+  }
+
+  &.analysis-sidebar__navigation-link--exit {
+    svg {
+      top: 1.5rem;
+
+      * {
+        stroke: $color-white;
+      }
+    }
+  }  
+
+  &.analysis-sidebar__navigation-link--active {
+    background-color: $color-dark-black;
+    color: $color-light-blue;
+
+    svg {
+      * {
+        stroke: $color-white;
+      }
+    }
+  }  
+
+  &.analysis-sidebar__navigation-link--with-substeps {
+    svg {
+      display: none;
+    }
+  }
+
+  .analysis-sidebar__navigation--primary > .analysis-sidebar__navigation-item:last-child > & {
+    background-color: $color-moss;
+    border-radius: 2px;
+    color: $color-mineshaft;
+    margin-left: 1.2rem;
+    margin-right: 1.2rem;
+    margin-top: 0.5rem;
+    padding: 0.7rem 0;
+    text-align: center;
+    @include font-size(14, 1.14286);
+
+    &:hover,
+    &:focus {
+      background-color: $color-moss;
+      color: $color-mineshaft;
+    }
+
+    svg {
+      display: none;
+    }
+
+    &.analysis-sidebar__navigation-link--locked {
+      background-color: $color-mineshaft;
+      color: $color-smoke;
+
+      &:hover,
+      &:focus {
+        background-color: $color-mineshaft;
+        color: $color-smoke;
+      }      
+    }
+  }
+}
+
+a.analysis-sidebar__navigation-link {
+  &:hover,
+  &:focus {
+    color: $color-white;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &.analysis-sidebar__navigation-link--active {
+    &:hover,
+    &:focus {
+      color: $color-light-blue;
+    }
+  }  
+}
+
+.analysis-sidebar__navigation-subnav-link {
+  color: $color-white;
+  display: block;
+  font-weight: $font-weight-bold;
+  padding: 0.8rem 0.5rem 0.8rem 3.4rem;
+  position: relative;
+  text-decoration: none;
+  @include font-size(13, 1.1538);
+
+  > svg {
+    left: 1.2rem;
+    position: absolute;
+    top: 1.1rem;
+
+    * {
+      stroke: $color-moss;
+    }
+  } 
+
+  &.analysis-sidebar__navigation-subnav-link--locked {
+    color: $color-smoke;
+  } 
+
+  &.analysis-sidebar__navigation-subnav-link--active {
+    background-color: $color-blue;
+    color: $color-white;
+
+    .analysis-sidebar__navigation-subnav-link-active-icon svg {
+      height: 100%;
+      width: 7px;
+      left: 100%;
+      position: absolute;
+      top: 0;
+    }
+  }
+
+  &.analysis-sidebar__navigation-subnav-link--complete {
+    color: $color-white;
+  }
+}
+
+a.analysis-sidebar__navigation-subnav-link {
+  &:hover,
+  &:focus {
+    color: $color-smoke;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &.analysis-sidebar__navigation-subnav-link--complete  {
+    &:hover,
+    &:focus {
+      color: $color-white;
+    }
+  }
+
+  &.analysis-sidebar__navigation-subnav-link--active {
+    &:hover,
+    &:focus {
+      color: $color-white;
+    }
+  }  
+}
+
+.analysis-sidebar__navigation.analysis-sidebar__navigation--subcomponent {
+  background: transparent;
+  padding-left: 0;
+
+  li:last-child > .analysis-sidebar__navigation-link {
+    background-color: rgb(105, 191, 121);
+    border-radius: 2px;
+    color: rgb(51, 51, 51);
+    margin-left: 1.2rem;
+    margin-right: 1.2rem;
+    margin-top: 0.5rem;
+    padding: 0.7rem 0;
+    text-align: center;
+    font-size: 14px;
+    font-size: 1.4rem;
+    line-height: 1.14286;
+
+    &.analysis-sidebar__navigation-link--locked {
+      background-color: $color-mineshaft;
+      color: $color-smoke;
+    }
+  }
+}
+.analysis-sidebar__navigation-item--subcomponent {
+  .analysis-sidebar__navigation-subnav-link {
+    color: $color-white;
+
+    &.analysis-sidebar__navigation-subnav-link--locked {
+      color: $color-smoke;
+    }
+    &.analysis-sidebar__navigation-subnav-link--complete {
+      background-color: transparent;
+      color: $color-white;
+    }
+    &.analysis-sidebar__navigation-subnav-link--active {
+      background-color: transparent;
+      color: $color-light-blue;
+    }
+  }
+}

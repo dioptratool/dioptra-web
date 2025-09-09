@@ -1,0 +1,16 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="efficiency-item">
+    <div class="insights-card-and-bar-combo">
+        {% include 'insights/_efficiency-item-dynamic.html' with output_metric_ids=True cost_type='total' title=metric.output_metric.metric_name cost_value=metric.output_cost_all|format_currency:analysis.currency_code label=metric.initial_card_label icon=icon %}
+        <div class="efficiency-item__bar">
+            {% include 'insights/_efficiency-cost-bar.html' %}
+        </div>
+    </div>
+    {% include 'insights/_efficiency-item-dynamic.html' with output_metric_ids=True cost_type='direct' title=metric.output_metric.metric_name cost_value=metric.output_cost_direct_only|format_currency:analysis.currency_code label='Program Costs Only' icon=icon %}
+    {% if analysis.in_kind_contributions and metric.efficiency_bar_chart_data.in_kind %}
+        {% include 'insights/_efficiency-item-dynamic.html' with output_metric_ids=True cost_type='in_kind' title=metric.output_metric.metric_name cost_value=metric.efficiency_bar_chart_data.in_kind.aggregate|format_currency:analysis.currency_code label=metric.efficiency_bar_chart_data.in_kind.label icon=icon %}
+    {% endif %}
+    {% if show_client and analysis.client_time %}
+        {% include 'insights/_efficiency-item-dynamic.html' with output_metric_ids=False cost_type='client' title='Total Cost of Client Time' cost_value=cost_total_client_time|dict_get:intervention_instance.display_name|format_currency:analysis.currency_code label=label_total_client_time icon_class='waiting-item__icon' icon='waiting' %}
+    {% endif %}
+</div>

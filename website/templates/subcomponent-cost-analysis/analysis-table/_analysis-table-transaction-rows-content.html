@@ -1,0 +1,12 @@
+{% load analysis help humanize website_tags %}
+{% for transaction in transactions %}
+    <tr>
+    {% with sensitive_data=account_code_descriptions|dict_get:transaction.account_code|attr:'sensitive_data' %}
+        <td class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">{{ transaction.transaction_description }}</td>
+        <td class="analysis-table__site-cell">{{ transaction.site_code }}</td>
+        <td class="analysis-table__description-cell">{{ transaction.date }}</td>
+        <td class="analysis-table__amount-cell">{% if not sensitive_data %}{{ transaction.amount_in_instance_currency|format_currency:transaction.analysis.currency_code }}{% endif %}</td>
+        <td {% if type == 'fixData' %}colspan="3"{% endif %} class="analysis-table__edit-cell"></td>
+    {% endwith %}
+    </tr>
+{% endfor %}

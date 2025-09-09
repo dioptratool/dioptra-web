@@ -1,0 +1,152 @@
+{% extends "subcomponent-cost-analysis/subcomponent_base.html" %}
+{% load analysis help humanize i18n panels_form_extras website_tags %}
+
+{% block analysis_header %}
+    <h1 class="analysis__subcomponent__title">{{ title }}</h1>
+    <div class="analysis__subcomponent__help_text">
+        <em>{{ step.get_help_text }}</em>
+    </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+    <div class="analysis-table analysis-categories">
+
+        {% if step.cost_type.type_obj.shared %}
+            {% include step.cost_type.type_obj.allocation_estimation_template %}
+        {% endif %}
+
+        {% include 'features/_filters.html' with filterset=filter has_search=False request=request only %}
+
+        <div class="analysis-table__header">
+            <h2 class="analysis-table__subtitle">
+                {{ step.get_nav_title }}{% help_cost_type step.cost_type.name 'allocate_costs' %}</h2>
+            <div class="analysis-table__summary">
+                {% blocktranslate %}{{ cost_line_items_count }} Cost Items to allocate{% endblocktranslate %}</div>
+        </div>
+
+        <div class="analysis-table__categories">
+            {% for cost_type_category_grant in cost_type_category_grants %}
+
+                <div class="analysis-table__category{% if not cost_type_category_grant.subcomponent_allocation_complete %} analysis-table__category--unconfirmed{% endif %} {% if cost_type_category_grant.show_allocation_calculator or errors|error_in_category:cost_type_category_grant.cost_type_category.category %}analysis-table__category--active{% endif %}">
+                    <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+                          method="POST" novalidate data-show-loading-on-submit class="warn-unsaved-changes">
+                        {% csrf_token %}
+                        {% with cost_line_items=object_list|cost_line_items_by_category:cost_type_category_grant.cost_type_category.category %}
+
+                            <div class="analysis-table__category-header">
+                                <h3 class="analysis-table__category-name">
+                                    {{ cost_type_category_grant.cost_type_category.category.name }}{% help_category cost_type_category_grant.cost_type_category.category.name 'allocate_costs' %}</h3>
+                                <div class="analysis-table__category-header-supplement">
+                                    <div class="analysis-table__cost-items{% if cost_type_category_grant.subcomponent_allocation_complete %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }}
+                                        {% translate 'Cost Items' %}{% if cost_type_category_grant.subcomponent_allocation_complete %}
+                                            {% translate 'Allocated' %}{% endif %}</div>
+                                    <div class="analysis-table__category-header-total">
+                                        <strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong>
+                                    </div>
+                                    {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-header-toggle.html' %}
+                                </div>
+                            </div>
+
+                            <div class="analysis-table__category-content">
+                                {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-table-base.html' with allocateEdit='true' showSectorCode='true' %}
+                                <div class="analysis-table__category-footer">
+                                    <button class="analysis-table__category-footer-action analysis-table__category-footer-action--allocate"
+                                            type="submit" name="submit">
+                                        {% if step.cost_type.type_obj.allocation_editable %}
+                                            {% translate "Save" %}
+                                        {% elif step.cost_type.type_obj|get_class_name != "Indirect" %}
+                                            {% translate "Confirm" %}
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    </form>
+                </div>
+            {% endfor %}
+
+            {% if special_cost_line_items %}
+                {% with cost_line_items=special_cost_line_items %}
+                    <div class="analysis-table__category{% if not cost_line_items|lines_subcomponent_allocation_complete %} analysis-table__category--unconfirmed{% endif %} {% if show_special_calculator or errors|error_in_lump_sums %}analysis-table__category--active{% endif %}">
+                        <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+                              method="POST" novalidate data-show-loading-on-submit class="warn-unsaved-changes">
+                            {% csrf_token %}
+                            <div class="analysis-table__category-header">
+                                <h3 class="analysis-table__category-name">Other Supporting Costs</h3>
+                                <div class="analysis-table__category-header-supplement">
+                                    <div class="analysis-table__cost-items{% if cost_line_items|lines_subcomponent_allocation_complete %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }}
+                                        {% translate 'Cost Items' %}{% if cost_line_items|lines_subcomponent_allocation_complete %}
+                                            {% translate 'Allocated' %}{% endif %}</div>
+                                    <div class="analysis-table__category-header-total">
+                                        <strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong>
+                                    </div>
+                                    {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-header-toggle.html' %}
+                                </div>
+                            </div>
+                            <div class="analysis-table__category-content">
+                                {% include 'subcomponent-cost-analysis/analysis-table/_analysis-table-table-base.html' with allocateEdit='true' lumpSumTable='true' %}
+                                <div class="analysis-table__category-footer">
+                                    <button class="analysis-table__category-footer-action analysis-table__category-footer-action--allocate"
+                                            type="submit" name="submit">
+                                        {% translate "Save" %}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% endwith %}
+            {% endif %}
+        </div>
+        <div class="analysis-table__actions">
+            <div class="analysis-table__actions-inner">
+                {% if step.cost_type.type_obj|get_class_name == "Support" %}
+                    <a class="analysis-table__category-footer-action" data-panels-trigger data-panels-reload-on="saved"
+                       href="{% url 'analysis-allocate-cost_type-grant--save-suggested' pk=analysis.pk cost_type_pk=step.cost_type.id grant=step.grant %}">Save
+                        Suggested % to All Items</a>
+                {% endif %}
+                {% with next=step.get_next %}
+                    {% if next and next.dependencies_met %}
+                        <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next"
+                           href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}
+                        </a>
+                    {% else %}
+                        <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled"
+                              disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% if next_message %}
+                <div class="analysis-table__summary">{{ next_message }}</div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock analysis_content %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        $(function () {
+            $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
+                e.preventDefault();
+                var $link = $(e.currentTarget);
+                var inputName = $link.data('apply-to-all');
+                var value = $('[name="' + inputName + '"]').val();
+                $link
+                    .parents('form')
+                    .find('input[name^="cost_line_item_allocation_"]')
+                    .val(value);
+            });
+
+            $('.analysis-table').on('click', 'a[data-allocation]', function (e) {
+                e.preventDefault();
+                var $link = $(e.currentTarget);
+                form = $link.parents('form');
+                var errorFields = form.find('.form__errors--allocated').parent('div').find('input');
+                errorFields.each(function () {
+                    allocation = $link.data()?.allocation || '';
+                    $(this).val(allocation.replace('%', ''));
+                });
+            });
+        });
+    </script>
+{% endblock extrascript %}

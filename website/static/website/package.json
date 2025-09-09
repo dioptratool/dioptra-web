@@ -1,0 +1,23 @@
+{
+  "name": "dioptra-theme",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "start": "gulp watch",
+    "sass": "gulp sass",
+    "js": "gulp js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bootstrap-sass": "^3.4.3",
+    "gulp": "^5.0.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-livereload": "^4.0.2",
+    "gulp-sass": "^6.0.1",
+    "gulp-uglify": "^3.0.2",
+    "sass": "^1.89.2"
+  }
+}

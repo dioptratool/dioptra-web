@@ -1,0 +1,64 @@
+.bulk-subcomponent-allocate-form__total-value {
+  display: inline-block;
+  min-width: 3.8rem;
+  padding: 1em 1.5em 1em 0.5em; 
+  border-radius: 3px;
+  background: #CCC;
+  font-size: 1.2em;
+  font-weight: 700 !important;
+}
+
+.bulk-subcomponent-allocate-form__exceed-warning {
+  display: none;
+  color: rgba(183, 87, 87, 1);
+  font-size: 1.2em;
+}
+
+.bulk-subcomponent-allocate-form label[for^="id_subcomponent_allocation"] + div {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+.bulk-subcomponent-allocate-form label[for^="id_subcomponent_allocation"] + div:after {
+  content: "%";
+  display: inline-block;
+  padding: 6px 12px;
+  color: rgba(155, 155, 155, 1);
+  background: rgba(241, 244, 248, 1);
+  border: 1px solid #ccc;
+  border-left-width: 0;
+  border-radius: 3px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin: 0;
+}
+.bulk-subcomponent-allocate-form .form-group.changed::after {
+  display: none;
+}
+.bulk-subcomponent-allocation-input {
+  display: inline-block;
+  background: #fff;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  user-select: all;
+}
+.form-group .bulk-subcomponent-allocation-input + .help-block.errors {
+  order: 3;
+  margin-block: 0;
+  margin-inline: 0.5rem;
+}
+.form-group .bulk-subcomponent-allocation-input + .help-block.errors li {
+  margin: 0;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

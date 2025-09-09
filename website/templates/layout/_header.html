@@ -1,0 +1,62 @@
+{% load help i18n website_tags %}
+<header class="header">
+    <div class="container">
+        <div class="header__inner">
+            <div class="header__primary">
+                <a href="/" class="header__logo-link">{% include 'icons/logo.svg' %}</a>
+                {% if user.is_authenticated %}
+                    {% with url_name=request.resolver_match.url_name %}
+                        <ul class="header__navigation">
+                            <li class="header__navigation-item">
+                                <a href="{% url 'dashboard' %}" class="header__navigation-link {% if url_name == 'dashboard' %}header__navigation-link--active{% endif %}">{% translate 'Dashboard' %}</a>
+                            </li>
+                            <li class="header__navigation-item dropdown">
+                                <a href="#intervention-insights" class="header__navigation-link header__navigation-link--dropdown dropdown-toggle {% if url_name == 'intervention-insights' %}header__navigation-link--active{% endif %}" id="intervention-insights-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% translate 'Program Design Lessons' %}{% include 'icons/caret-down.svg' %}</a>
+                                <div class="dropdown-menu header__insights-dropdown" aria-labelledby="intervention-insights-toggle">
+                                    {% get_intervention_groups as intervention_groups %}
+                                    {% for group in intervention_groups %}
+                                        {% if group.interventions_for_menu|length > 0 %}
+                                            <div class="header__insights-group">
+                                                <h2 class="header__insights-group-title">{{ group.name }}</h2>
+                                                <ul class="header__insights-list">
+                                                    {% for intervention in group.interventions_for_menu %}
+                                                    <li class="header__insights-list-item"><a href="{% url 'intervention-insights' intervention.pk %}" class="header__insights-link">{{ intervention.name }}</a></li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </li>
+                            {% if user.role == "ADMIN" %}
+                                <li class="header__navigation-item">
+                                    <a href="{% url 'ombucore.admin:admin_central' %}" data-panels-trigger class="header__navigation-link">{% translate 'Administration' %}</a>
+                                </li>
+                            {% endif %}
+                            <li class="header__navigation-item">
+                                <a href="{% url 'help-menu' %}" class="header__navigation-link">{% translate 'Help' %}</a>
+                            </li>
+                        </ul>
+                    {% endwith %}
+                {% endif %}
+            </div>
+            <div class="header__secondary">
+                {% if user.is_authenticated %}
+                    <div class="header__navigation-item header__navigation-item--user">
+                        <a class="header__navigation-link" href="{% url 'ombucore.admin:users_user_change' user.pk %}" data-panels-trigger data-panels-reload-on="saved">{{ user.name }}</a>
+                    </div>
+                    <form method="post" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+                        {% endif %}
+                        <button type="submit" class="header__navigation-link">{% translate 'Logout' %}</button>
+                    </form>
+                {% else %}
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</header>

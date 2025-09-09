@@ -1,0 +1,37 @@
+{% load help humanize i18n panels_form_extras %}
+<tr class="analysis-table__edit-row confirm-categories">
+      <td colspan="{% if showSectorCode == 'true' %}7{% elif type == 'categorizeCostType' %}8{% else %}6{% endif %}" class="analysis-table__edit-row-cell">
+            <form action="{{ request.path }}" method="POST" novalidate data-show-loading-on-submit
+                  data-initial-category_id="{{ cost_line_item.config.category_id }}"
+                  data-initial-cost_type_id="{{ cost_line_item.config.cost_type_id }}" >
+              {% csrf_token %}
+                  <input type="hidden" name="config_id" value="{{ cost_line_item.config.id }}" /> 
+                  <table class="analysis-table__edit-table">
+                    <tbody>
+                        <tr>
+                            <td class="analysis-table__edit-cost_type-cell">
+                                <label for="id_cost_type-{{ cost_line_item.config.id }}" class="analysis-table__edit-row-label">{% translate 'Cost Type' %}</label>
+                                <select name="cost_type_id" id="id_cost_type-{{ cost_line_item.config.id }}" class="analysis-table__edit-row-select">
+                                    {% for cost_type_id, cost_type_name in cost_type_choices %}
+                                        <option value="{{ cost_type_id }}" {% if cost_type_id == cost_line_item.config.cost_type_id %}selected{% endif %}>{{ cost_type_name }}</option>
+                                    {% endfor %}
+                                </select>                              
+                            </td>
+                            <td class="analysis-table__edit-category-cell">
+                                <label for="id_category-{{ cost_line_item.config.id }}" class="analysis-table__edit-row-label">{% translate 'Category' %}</label>
+                                <select name="category_id" id="id_category-{{ cost_line_item.config.id }}" class="analysis-table__edit-row-select">
+                                    {% for category_id, category_name in category_choices %}
+                                        <option value="{{ category_id }}" {% if category_id == cost_line_item.config.category_id %}selected{% endif %}>{{ category_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="analysis-table__edit-actions-cell">
+                                <button class="analysis-table__edit-action analysis-table__edit-action--save" data-object-id="{{ cost_line_item.id }}" data-endpoint="{% url 'api--costlineitem--edit-cost_type-category' pk=cost_line_item.id %}" type="submit" name="action" value="save_cost_line_item_config">{% translate 'Save' %}</button>
+                                <button class="analysis-table__edit-action analysis-table__edit-action--cancel" type="submit" name="action" value="cancel">{% translate 'Cancel' %}</button>
+                            </td>
+                        </tr>
+                    </tbody>
+              </table>
+            </form>
+      </td>
+</tr>

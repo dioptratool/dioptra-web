@@ -1,0 +1,28 @@
+FROM python:3.13-alpine3.22
+
+LABEL maintainer="OMBU"
+
+WORKDIR /var/www
+
+COPY requirements requirements
+
+# postgresql-client is used by the wait-for-postgres.sh script
+# setuptools is an unpinned declared requirement of django-polymorphic that we can't pin in the requirements.txt
+
+RUN apk add --no-cache  \
+    postgresql-client \
+    chromium \
+    && apk upgrade \
+    && apk upgrade sqlite cargo \
+    && pip install --no-cache-dir -r requirements/development.txt \
+    && pip install --no-cache-dir setuptools
+
+COPY . .
+
+ENV DJANGO_SETTINGS_MODULE=website.settings.docker
+
+EXPOSE 8000
+
+ENTRYPOINT  ["sh", "./docker/wait-for-postgres.sh"]
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

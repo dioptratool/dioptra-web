@@ -1,0 +1,55 @@
+$socialaccount-login-width: 31.6rem;
+.socialaccount_providers {
+  list-style: none;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  li {
+    margin-bottom: 1.5rem;
+    padding-left: 0;
+  }
+}
+
+.socialaccount_provider {
+  @include button-submit();
+  text-align: center;
+  min-width: $socialaccount-login-width;
+
+  &.okta {
+    background-color: $color-okta-blue;
+
+    &:hover,
+    &:focus {
+      background-color: darken($color-okta-blue, 10%);
+    }
+  }
+
+  &.onelogin {
+    background-color: $color-onelogin-teal;
+
+    &:hover,
+    &:focus {
+      background-color: darken($color-onelogin-teal, 10%);
+    }
+  }
+}
+
+.socialaccount__message {
+  color: $color-boulder;
+  text-align: center;
+  width: $socialaccount-login-width;
+  @include font-size(14, 1.1428);
+
+  img {
+  }
+}
+
+.socialaccount__img {
+  display: inline;
+  height: 16px;
+  width: auto;
+}
+
+.socialaccount__img--okta {
+  margin-top: -6px;
+}

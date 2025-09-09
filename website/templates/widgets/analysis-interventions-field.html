@@ -1,0 +1,38 @@
+{% load analysis humanize panels_extras website_tags %}
+
+<div>
+    <div style="display:none">
+        <textarea id="{{ widget.attrs.id }}" name="intervention_data">{{ widget.value }}</textarea>
+    </div>
+
+    <ul class="analysis-interventions">
+        {% for obj_info in widget.value|get_json %}
+            <li class='analysis-intervention' data-obj-info='{{ obj_info|jsonattr }}'>
+                <h4>{{ obj_info.title }}</h4>
+                <p class="intervention-subtitle">
+                    {{ obj_info.intervention_name }} /
+                {% spaceless %}
+                    {% for param in obj_info.params %}
+                        {% if forloop.counter != 1 %}<span>, </span>{% endif %}
+                        {% if param.label == "Value of Cash Distributed" or param.label == "Value of Business Grant Amount" %}
+                            <span class="parameter">{{ param.label }}: {{ param.value|format_currency:obj_info.currency }}</span>
+                        {% else %}
+                            <span class="parameter">{{ param.label }}: {{ param.value|floatformat:2|intcomma }} </span>
+                        {% endif %}
+                    {% endfor %}
+                {% endspaceless %}
+                </p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <button type="button" class="set-interventions" data-href="{% url 'analysis-define-interventions' %}">
+        <span>
+            {% if widget.value|get_json|length == 0 %}
+                Add Interventions
+            {% else %}
+                Manage Interventions
+            {% endif %}
+        </span>
+    </button>
+</div>

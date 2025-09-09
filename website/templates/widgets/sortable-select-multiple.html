@@ -1,0 +1,10 @@
+{% load panels_extras %}
+
+<div class="panels-relation-widget--multiple panels--reorder autosort={{ autosort|default:"true" }} {% if sortable %}sortable{% endif %}">
+    <ul class="panels-relation-widget--results panels--reorder--results" id="{{ list_id }}">
+        {% for choice in choices %}
+            <li class="panels-relation-widget--result" data-id="{{ choice.id }}" data-ctype-id="undefined"
+                data-obj-info="{{ choice|jsonattr }}" {% if widget.attrs.prevent_add_remove %} data-prevent-add-remove="true"{% endif %}>
+        {% endfor %}
+    </ul>
+</div>

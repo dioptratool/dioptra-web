@@ -1,0 +1,19 @@
+{% load analysis help humanize i18n panels_extras panels_form_extras rules static website_tags %}
+
+{% if chart_data %}
+    <div class="insights__subcomponent-chart col-md-6">
+        <ol class="subcomponent-chart__progress-bar">
+            {% for label, percentage in chart_data.items %}
+                <li style="flex-grow: {{ percentage }};"></li>
+            {% endfor %}
+        </ol>
+        {{ item }}
+        <ol class="subcomponent-chart__breakdown-list">
+            {% for label, percentage in chart_data.items %}
+                <li><strong>{{ label }} {{ percentage|floatformat:"0"|intcomma }}%</strong>
+                    ({% calculate_subcomponent_cost total_cost percentage analysis.currency_code %})
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+{% endif %}

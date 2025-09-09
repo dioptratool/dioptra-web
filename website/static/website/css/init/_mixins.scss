@@ -1,0 +1,59 @@
+// Mixins
+
+@mixin clearfix() {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin font-size($font-size: $font-size-base, $line-height: $line-height-base) {
+  font-size: $font-size * calc($font-size-root-px / 10);
+
+  // Restore rem font-size rule once Chrome fixes sizing bug.
+  // https://code.google.com/p/chromium/issues/detail?id=319623
+  font-size: calc($font-size / 10) + rem;
+  line-height: $line-height;
+}
+
+@mixin element-invisible {
+  position: absolute !important;
+  height: 1px; width: 1px; 
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+@mixin default-focus() {
+  outline: 1px dotted #212121;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+@mixin default-focus-dark() {
+  outline: 1px dotted #ffffff;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+@mixin button-submit() {
+  background-color: $color-green;
+  border: none;
+  border-radius: 2px;
+  color: $color-white;
+  display: inline-block;
+  font-weight: $font-weight-bold;
+  padding: 1.6rem;
+  text-decoration: none;
+  transition: all $transition-duration-default;
+  @include font-size(16, 1.125);
+
+  &:focus {
+    color: $color-white;
+  }
+
+  &:hover {
+    background-color: darken($color-green, 10%);
+    color: $color-white;
+    text-decoration: none;
+  } 
+}

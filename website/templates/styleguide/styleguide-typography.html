@@ -1,0 +1,32 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+
+{% block content %}
+  <h1 class="styleguide__title"><a href="{% url 'styleguidetoc' %}">Styleguide</a> / Base Styles</h1>
+  <div class="styleguide__typography">
+    <div class="styleguide__typography-typefaces">
+      {% for typeface in typefaces %}
+        <div class="styleguide__typography-typeface">
+          <div class="stylguide__tyopgraphy-typeface-example" style="font-family: {{ typeface.machineFamily }}; font-weight: {{ typeface.machineWeight }}; font-style: {{ typeface.machineStyle }};">
+            <div class="styleguide__typography-typeface-label">{{ typeface.label }}</div>
+            <div class="styleguide__typography-typeface-example-alphabet">AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPp</br>QqRrSsTtUuVvWwXxYyZz1234567890</div>
+          </div>
+          <small><ul class="styleguide__typography-typeface-usage-list">
+            {% for usage in typeface.usage %}
+              <li class="styleguide__typography-typeface-usage">{{ usage }}</li>
+            {% endfor %}
+          </ul></small>
+        </div>
+      {% endfor %}
+    </div>    
+    <div class="styleguide__typography-headings">
+      {% if headings.h1Label %}<h1 class="styleguide__typography-heading">{{ headings.h1Label }}</h1>{% endif %}
+      {% if headings.h2Label %}<h2 class="styleguide__typography-heading">{{ headings.h2Label }}</h2>{% endif %}
+      {% if headings.h3Label %}<h3 class="styleguide__typography-heading">{{ headings.h3Label }}</h3>{% endif %}
+      {% if headings.h4Label %}<h4 class="styleguide__typography-heading">{{ headings.h4Label }}</h4>{% endif %}
+      {% if headings.h5Label %}<h5 class="styleguide__typography-heading">{{ headings.h5Label }}</h5>{% endif %}
+      {% if headings.h5Label %}<h6 class="styleguide__typography-heading">{{ headings.h6Label }}</h6>{% endif %}
+      {% if headings.pLabel %}<p class="styleguide__typography-heading">{{ headings.pLabel }}</p>{% endif %}  
+      {% if headings.notes %}<div class="styleguide__typography-heading-notes">{{ headings.notes|safe }}</div>{% endif %}
+    </div>
+  </div>
+{% endblock content %}

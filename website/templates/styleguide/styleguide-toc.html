@@ -1,0 +1,18 @@
+{% extends 'styleguide/theme_base-styleguide.html' %}
+
+{% block content %}
+  <div class="styleguide__toc">
+    <h1 class="styleguide__title">Styleguide</h1>
+    <h2>{{ title }}</h2>
+    <h3><a href="{% url 'styleguidecolors' %}">Colors</a></h3>
+    <p>Overview of the color palette.</p>  
+    <h3><a href="{% url 'styleguidetypography' %}">Typography</a></h3>
+    <p>Typography and heading styles.</p>
+    <h3><a href="{% url 'styleguidebuttons' %}">Buttons and Links</a></h3>
+    <p>Interactive button and link elements.</p>
+    <h3><a href="{% url 'styleguideforms' %}">Form Elements</a></h3>
+    <p>Form elements such as text inputs, checkboxes, and dropdowns.</p>     
+    <h3><a href="{% url 'styleguiderte' %}">Rich Text Styles</a></h3>
+    <p>A rich text example of the base styles in context.</p> 
+  </div>
+{% endblock content %}

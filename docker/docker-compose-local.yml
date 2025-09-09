@@ -1,0 +1,26 @@
+name: "dioptra-local"
+
+services:
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: dioptra
+      POSTGRES_USER: dioptra
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:12432:5432'
+    expose:
+      - '12432'
+
+  # There is no 'transaction_db' here, because it's run in transactions-data-pipeline
+  transaction_testdb:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: dioptra_transactions
+      POSTGRES_USER: dioptra
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '127.0.0.1:9005:5432'
+    expose:
+      - '9005'
