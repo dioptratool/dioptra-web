@@ -127,15 +127,3 @@ jobs:
             --tag "$ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}" .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image_tag=$IMAGE_TAG" >> GITHUB_ENV
-
-      - name: Notify in Slack
-        id: slack
-        if: ${{ env.is_build_candidate }}
-        uses: slackapi/slack-github-action@v2
-        with:
-          errors: true
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-             image_tag: ${{ env.release_version }}
-
