@@ -10,6 +10,7 @@ ENVIRONMENT_TYPE = os.environ.get("ENVIRONMENT_TYPE", "remote")
 INSTANCE_NAME = os.environ.get("INSTANCE_NAME")
 
 
+# AWS Metadata retrieval code.
 def get_local_ip():
     try:
         get_token_headers = {"X-aws-ec2-metadata-token-ttl-seconds": 21600}
