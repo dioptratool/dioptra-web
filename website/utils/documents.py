@@ -71,6 +71,7 @@ def _write_metadata_table(
     an_analysis: Analysis,
     intervention_instance: InterventionInstance,
     parameter_metadata: dict,
+    analysis_url: str,
     starting_row: int = 1,
 ) -> int:
     """
@@ -119,10 +120,6 @@ def _write_metadata_table(
     author = ""
     if an_analysis.owner:
         author = an_analysis.owner.get_full_name()
-
-    workflow = AnalysisWorkflow(an_analysis)
-    step = workflow.get_last_incomplete_or_last()
-    analysis_url = f"{settings.BASE_URL}{step.get_href()}"
 
     metadata += [
         ("Currency", f"{currency_name(analysis=an_analysis)}"),
@@ -558,6 +555,12 @@ def _write_full_cost_model_table(
     cost_line_items = (
         an_analysis.cost_line_items.all()
         .exclude(config__analysis_cost_type__in=[AnalysisCostType.IN_KIND, AnalysisCostType.CLIENT_TIME])
+        .prefetch_related(
+            "config",
+            "config__cost_type",
+            "config__category",
+            "config__allocations",
+        )
         .annotate(
             allocated_cost=F("total_cost")
             * (
@@ -586,12 +589,12 @@ def _write_full_cost_model_table(
         elif each_cost_line_item.config.analysis_cost_type:
             category_name = each_cost_line_item.config.get_pretty_analysis_cost_type
 
-        try:
-            cli_allocation = each_cost_line_item.config.allocations.get(
-                intervention_instance=intervention_instance
-            ).allocation
-        except CostLineItemInterventionAllocation.DoesNotExist:
-            cli_allocation = 0
+        # Use prefetch cache by iterating instead of .get() which bypasses cache
+        cli_allocation = 0
+        for allocation in each_cost_line_item.config.allocations.all():
+            if allocation.intervention_instance_id == intervention_instance.id:
+                cli_allocation = allocation.allocation
+                break
 
         row_data = [
             cost_type_name,
