@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from io import BytesIO
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.shortcuts import redirect
@@ -28,7 +29,29 @@ from website.workflows import AnalysisWorkflow
 
 @login_required
 def full_cost_model_spreadsheet(request, pk):
-    analysis = Analysis.objects.get(pk=pk)
+
+    # Optimized analysis prefetch to prevent a large number of queries
+    analysis = (
+        Analysis.objects.select_related(
+            "country",
+            "owner",
+            "analysis_type",
+        )
+        .prefetch_related(
+            "cost_type_categories",
+            "cost_type_categories__cost_type",
+            "interventioninstance_set",
+            "interventioninstance_set__intervention",
+            "unfiltered_cost_line_items",
+            "unfiltered_cost_line_items__config",
+            "unfiltered_cost_line_items__config__cost_type",
+            "unfiltered_cost_line_items__config__category",
+            "unfiltered_cost_line_items__config__allocations",
+            "subcomponent_cost_analysis",
+        )
+        .get(pk=pk)
+    )
+
     analysis_wf = AnalysisWorkflow(analysis)
 
     # If we aren't to the insights step we need to just redirect to the last valid step in the
@@ -38,6 +61,10 @@ def full_cost_model_spreadsheet(request, pk):
         return redirect(reverse("analysis", kwargs={"pk": analysis.pk}))
 
     app_loggers.log_analysis_cost_model_download(analysis, analysis.cost_line_items.count(), request.user)
+
+    # Calculate analysis URL once instead of recreating workflow for each intervention
+    analysis_step = analysis_wf.get_last_incomplete_or_last()
+    analysis_url = f"{settings.BASE_URL}{analysis_step.get_href()}"
 
     workbook = Workbook()
 
@@ -57,6 +84,7 @@ def full_cost_model_spreadsheet(request, pk):
             an_analysis=analysis,
             parameter_metadata=parameter_metadata,
             intervention_instance=each_intervention_instance,
+            analysis_url=analysis_url,
         )
 
         row = last_metadata_row
