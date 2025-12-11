@@ -192,7 +192,7 @@ def _chunked(it, size):
 
 def execute_values_with_template(
     cur,
-    base_query: str,
+    base_query: str | Composed,
     argslist: list[tuple],
     *,
     template: str | None = None,
@@ -203,8 +203,8 @@ def execute_values_with_template(
 
     - `base_query` should be the SQL up to the VALUES, e.g.
         "UPDATE my_table AS t SET col1 = v.col1, col2 = v.col2
-         FROM (VALUES {}) AS v(col1, col2) WHERE v.pk = t.pk"
-      where the `{}` is the placeholder for your VALUES list.
+         FROM (VALUES %s) AS v(col1, col2) WHERE v.pk = t.pk"
+      where the `%s` is the placeholder for your VALUES list.
 
     - `value_template` is a string like "(%s,CAST(%s AS jsonb),%s)" or "(%s, %s, NOW())".
     - `argslist` is a list of tuples, one tuple per row.
@@ -212,6 +212,10 @@ def execute_values_with_template(
 
     if not argslist:
         return
+
+    # Convert Composed to string if needed
+    if isinstance(base_query, Composed):
+        base_query = base_query.as_string(unwrap_cursor(cur))
 
     # Generate default placeholder-template if none provided
     if template is None:
@@ -221,8 +225,8 @@ def execute_values_with_template(
     for chunk in _chunked(argslist, page_size):
         # build "(%s,%s),(%s,%s),…"
         values_sql = ",".join(template for _ in chunk)
-        # plug it into the query
-        sql = base_query.format(values_sql)
+        # plug it into the query (replace first %s with VALUES list)
+        sql = base_query.replace("%s", values_sql, 1)
         # flatten arguments
         flat_args = [elem for row in chunk for elem in row]
         cur.execute(sql, flat_args)

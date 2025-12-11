@@ -298,6 +298,9 @@ class TestSubscriptionSendEmailNotifier:
                 "app_log.notifiers.SendEmailNotifier",
             ],
         }
+        # Reload notifiers after changing settings
+        app_config = apps.get_app_config("app_log")
+        app_config.load_notifiers()
 
         obj1 = ExampleObject1.objects.create(name="Object 1")
         user = UserFactory(name="steve")
