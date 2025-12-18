@@ -61,6 +61,9 @@ jobs:
       - name: Run Security tests
         run: make security/bandit-baseline
 
+      - name: Run nginx test
+        run: make security/nginx
+
       - name: Run Django deploy check
         run: |
           pip install sentry-sdk
