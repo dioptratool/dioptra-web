@@ -269,5 +269,10 @@ security/docker-scout:
 		docker rmi $$name:latest &> /dev/null || true; \
 	done
 
+## security/nginx: : Run nginx lint
+.PHONY: security/nginx
+security/nginx:
+	docker run --rm -v ./docker/nginx.conf:/etc/nginx/conf/nginx.conf getpagespeed/gixy /etc/nginx/conf/nginx.conf
+
 enable-admin:
 	$(LOCALVARS) python ./manage.py enable_admin_user
