@@ -849,8 +849,9 @@ class Analysis(models.Model):
         }
         """
         relevant_configs: set[int] = set(self.cost_line_items.values_list("config__id", flat=True))
+        intervention_instances = list(self.interventioninstance_set.all())
         allocation_sums_by_intervention = {}
-        for each_intervention_instance in self.interventioninstance_set.all():
+        for each_intervention_instance in intervention_instances:
             allocations_sums = dict(
                 CostLineItemInterventionAllocation.objects.filter(
                     cli_config__id__in=relevant_configs,
@@ -867,17 +868,21 @@ class Analysis(models.Model):
             )
             allocation_sums_by_intervention[each_intervention_instance] = allocations_sums
 
+        # Cache the queryset once before the loop to avoid N+1 queries
+        cost_line_items_list = list(
+            self.cost_line_items.all()
+            .exclude(config__analysis_cost_type=AnalysisCostType.CLIENT_TIME)
+            .exclude(config__analysis_cost_type=AnalysisCostType.IN_KIND)
+            .select_related("config")
+        )
+
         cost_output_sum_all = {}
         for (
             each_intervention_instance,
             allocations_sums,
         ) in allocation_sums_by_intervention.items():
             cost_output_sum_all[each_intervention_instance.id] = 0
-            for each_cli in (
-                self.cost_line_items.all()
-                .exclude(config__analysis_cost_type=AnalysisCostType.CLIENT_TIME)
-                .exclude(config__analysis_cost_type=AnalysisCostType.IN_KIND)
-            ):
+            for each_cli in cost_line_items_list:
                 cost_output_sum_all[
                     each_intervention_instance.id
                 ] += each_cli.total_cost * allocations_sums.get(each_cli.config.id, 0)
@@ -904,8 +909,9 @@ class Analysis(models.Model):
                 config__cost_type__type=ProgramCost.id,
             ).values_list("config__id", flat=True)
         )
+        intervention_instances = list(self.interventioninstance_set.all())
         allocation_sums_by_intervention = {}
-        for each_intervention_instance in self.interventioninstance_set.all():
+        for each_intervention_instance in intervention_instances:
             allocations_sums = dict(
                 CostLineItemInterventionAllocation.objects.filter(
                     cli_config__id__in=relevant_configs,
@@ -918,6 +924,14 @@ class Analysis(models.Model):
             )
             allocation_sums_by_intervention[each_intervention_instance] = allocations_sums
 
+        # Cache the queryset once before the loop to avoid N+1 queries
+        cost_line_items_list = list(
+            self.cost_line_items.all()
+            .exclude(config__analysis_cost_type=AnalysisCostType.CLIENT_TIME)
+            .exclude(config__analysis_cost_type=AnalysisCostType.IN_KIND)
+            .select_related("config")
+        )
+
         cost_output_sums_direct_only = {}
         for (
             each_intervention_instance,
@@ -925,11 +939,7 @@ class Analysis(models.Model):
         ) in allocation_sums_by_intervention.items():
             cost_output_sums_direct_only[each_intervention_instance.id] = 0
 
-            for each_cli in (
-                self.cost_line_items.all()
-                .exclude(config__analysis_cost_type=AnalysisCostType.CLIENT_TIME)
-                .exclude(config__analysis_cost_type=AnalysisCostType.IN_KIND)
-            ):
+            for each_cli in cost_line_items_list:
                 cost_output_sums_direct_only[
                     each_intervention_instance.id
                 ] += each_cli.total_cost * allocations_sums.get(each_cli.config.id, 0)
@@ -955,15 +965,14 @@ class Analysis(models.Model):
         if not self.client_time:
             return {}
 
-        relevant_configs: set[int] = set(
-            self.client_time_cost_line_items.values_list(
-                "config__id",
-                flat=True,
-            )
-        )
+        # Cache the queryset once before the loop to avoid N+1 queries
+        client_time_items = list(self.client_time_cost_line_items.select_related("config"))
 
+        relevant_configs: set[int] = {cli.config.id for cli in client_time_items}
+
+        intervention_instances = list(self.interventioninstance_set.all())
         allocation_sums_by_intervention = {}
-        for each_intervention_instance in self.interventioninstance_set.all():
+        for each_intervention_instance in intervention_instances:
             allocations_sums = dict(
                 CostLineItemInterventionAllocation.objects.filter(
                     cli_config__id__in=relevant_configs,
@@ -981,7 +990,7 @@ class Analysis(models.Model):
         ) in allocation_sums_by_intervention.items():
             cost_output_sums_client_time[each_intervention_instance.id] = 0
 
-            for each_cli in self.client_time_cost_line_items:
+            for each_cli in client_time_items:
                 cost_output_sums_client_time[
                     each_intervention_instance.id
                 ] += each_cli.total_cost * allocations_sums.get(each_cli.config.id, 0)
@@ -1016,15 +1025,16 @@ class Analysis(models.Model):
 
         if not self.in_kind_contributions:
             return {}
-        relevant_configs: set[int] = set(
-            self.in_kind_contributions_cost_line_items.values_list(
-                "config__id",
-                flat=True,
-            )
-        )
+
+        # Cache the queryset once before the loop to avoid N+1 queries
+        in_kind_items = list(self.in_kind_contributions_cost_line_items.select_related("config"))
+
+        relevant_configs: set[int] = {cli.config.id for cli in in_kind_items}
+
+        intervention_instances = list(self.interventioninstance_set.all())
         allocation_sums_by_intervention = {}
 
-        for each_intervention_instance in self.interventioninstance_set.all():
+        for each_intervention_instance in intervention_instances:
             allocations_sums = dict(
                 CostLineItemInterventionAllocation.objects.filter(
                     cli_config__id__in=relevant_configs,
@@ -1043,7 +1053,7 @@ class Analysis(models.Model):
         ) in allocation_sums_by_intervention.items():
             cost_output_sums_in_kind[each_intervention_instance.id] = 0
 
-            for each_cli in self.in_kind_contributions_cost_line_items:
+            for each_cli in in_kind_items:
                 cost_output_sums_in_kind[
                     each_intervention_instance.id
                 ] += each_cli.total_cost * allocations_sums.get(each_cli.config.id, 0)

@@ -51,10 +51,15 @@ class AllocateCostTypeGrant(SubStep):
 
         cost_type_categories = require_prefetch(self.analysis, "cost_type_categories")
         cost_type_categories = [c for c in cost_type_categories if c.cost_type_id == self.cost_type.id]
-        cost_line_items = self.analysis.cost_line_items.prefetch_related(
-            "config",
-            "config__allocations",
-        ).all()
+        cost_line_items = (
+            self.analysis.cost_line_items.select_related(
+                "config",
+            )
+            .prefetch_related(
+                "config__allocations",
+            )
+            .all()
+        )
         intervention_instances = require_prefetch(self.analysis, "interventioninstance_set")
 
         for each_ctc in cost_type_categories:

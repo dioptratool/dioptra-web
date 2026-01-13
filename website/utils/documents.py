@@ -555,12 +555,8 @@ def _write_full_cost_model_table(
     cost_line_items = (
         an_analysis.cost_line_items.all()
         .exclude(config__analysis_cost_type__in=[AnalysisCostType.IN_KIND, AnalysisCostType.CLIENT_TIME])
-        .prefetch_related(
-            "config",
-            "config__cost_type",
-            "config__category",
-            "config__allocations",
-        )
+        .select_related("config", "config__cost_type", "config__category")
+        .prefetch_related("config__allocations")
         .annotate(
             allocated_cost=F("total_cost")
             * (
