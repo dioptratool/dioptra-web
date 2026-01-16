@@ -311,15 +311,36 @@ class SubcomponentsAllocatebyCostTypeGrant(
         return redirect(self.request.path + query)
 
     def _save_data(self, data):
+        if not data:
+            return
+
+        # Fetch all cost line items in one query with their configs
+        cost_line_items = self.analysis.cost_line_items.filter(pk__in=data.keys()).select_related("config")
+
+        # Build a dict for quick lookup
+        cli_by_id = {cli.pk: cli for cli in cost_line_items}
+
+        # Collect configs to bulk update
+        configs_to_update = []
         for cost_line_item_id, allocation in data.items():
-            cost_line_item = self.analysis.cost_line_items.get(pk=cost_line_item_id)
+            cost_line_item = cli_by_id.get(cost_line_item_id)
+            if not cost_line_item:
+                continue
+
             if allocation.get("skipped"):
                 cost_line_item.config.subcomponent_analysis_allocations_skipped = True
                 cost_line_item.config.subcomponent_analysis_allocations = {}
             else:
                 cost_line_item.config.subcomponent_analysis_allocations_skipped = False
                 cost_line_item.config.subcomponent_analysis_allocations = allocation["allocations"]
-            cost_line_item.config.save()
+            configs_to_update.append(cost_line_item.config)
+
+        # Bulk update all configs at once
+        if configs_to_update:
+            CostLineItemConfig.objects.bulk_update(
+                configs_to_update,
+                ["subcomponent_analysis_allocations", "subcomponent_analysis_allocations_skipped"],
+            )
 
 
 class SubcomponentsAllocateBulk(
