@@ -133,6 +133,7 @@ class SubcomponentsAllocatebyCostTypeGrant(
             if substep.get_href() == encoded_request_path:
                 self.step = substep
                 break
+
         if self.step is None:
             self.cost_type_category_grants = AnalysisCostTypeCategoryGrant.objects.none()
         else:
@@ -156,7 +157,11 @@ class SubcomponentsAllocatebyCostTypeGrant(
                 config__cost_type=self.step.cost_type,
                 grant_code=self.step.grant,
             )
-            .select_related("config", "config__cost_type")
+            .select_related(
+                "config",
+                "config__cost_type",
+                "analysis__subcomponent_cost_analysis",
+            )
             .prefetch_related(
                 "transactions",
                 "config",
