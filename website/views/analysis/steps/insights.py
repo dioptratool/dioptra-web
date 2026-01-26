@@ -550,9 +550,8 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             .exclude(config__analysis_cost_type__in=[AnalysisCostType.IN_KIND, AnalysisCostType.CLIENT_TIME])
             .annotate(allocated_cost=F("total_cost") * (F("config__allocations__allocation") / Value(100)))
             .order_by(order_by)
+            .select_related("config", "config__cost_type", "config__category")
             .prefetch_related(
-                "config__cost_type",
-                "config__category",
                 "config__allocations",
                 "config__allocations__intervention_instance",
             )
@@ -585,6 +584,11 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             .annotate(coalesced_allocation=Coalesce(F("config__allocations__allocation"), Decimal("100.00")))
             .annotate(allocated_cost=F("total_cost") * (F("coalesced_allocation") / Value(100)))
             .order_by(*ordering)
+            .select_related("config", "config__cost_type", "config__category")
+            .prefetch_related(
+                "config__allocations",
+                "config__allocations__intervention_instance",
+            )
         )
 
         paginator = Paginator(cost_line_items, self.dioptra_settings.paginate_by)

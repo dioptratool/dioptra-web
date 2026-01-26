@@ -36,8 +36,8 @@ class AnalysisCostTypeCategoryGrant(models.Model):
             grant_code=self.grant,
         )
         return (
-            qs.select_related("config")
-            .prefetch_related("transactions")
+            qs.select_related("config", "config__cost_type", "config__category")
+            .prefetch_related("transactions", "config__allocations")
             .order_by(
                 "grant_code",
                 "budget_line_description",

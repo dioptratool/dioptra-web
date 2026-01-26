@@ -17,6 +17,24 @@ from website.models.query_utils import require_prefetch
 
 
 class CostLineItemQuerySet(models.QuerySet):
+    def with_config_and_allocations(self):
+        """
+        Returns a queryset with standard prefetches for config and allocations.
+
+        Use this when you need to access:
+        - item.config (and its fields like cost_type, category)
+        - item.config.allocations (e.g., via allocated_cost_on_model property)
+
+        This avoids N+1 queries when iterating over cost line items.
+        """
+        return self.select_related(
+            "config",
+            "config__cost_type",
+            "config__category",
+        ).prefetch_related(
+            "config__allocations",
+        )
+
     def cost_type_category_items(self):
         """
         Returns a queryset excluding non-categorized Line Items
@@ -264,9 +282,14 @@ class CostLineItem(models.Model):
         I need/want it here, so I'll set it and possibly refactor in the future.
 
         ~RJ 09/15/2023
+
+        IMPORTANT: This property accesses config.allocations. To avoid N+1 queries when
+        iterating over multiple CostLineItems, use .with_config_and_allocations() on the queryset.
         """
         if hasattr(self, "config"):
-            return self.total_cost * Decimal(sum(a.allocation for a in self.config.allocations.all()) / 100)
+            # Use require_prefetch to warn if allocations weren't prefetched (causes N+1 queries)
+            allocations = require_prefetch(self.config, "allocations")
+            return self.total_cost * Decimal(sum(a.allocation for a in allocations) / 100)
         else:
             return Decimal("0")
 

@@ -54,7 +54,8 @@ class SubcomponentCostAnalysis(models.Model):
 
     def allocated_totals(self):
         subcomponent_allocations = []
-        for each_cost_item in self.analysis.cost_line_items.all():
+        cost_items = self.analysis.cost_line_items.all().with_config_and_allocations()
+        for each_cost_item in cost_items:
             if not each_cost_item.config.subcomponent_analysis_allocations:
                 continue
             if each_cost_item.config.subcomponent_analysis_allocations_skipped:
@@ -90,7 +91,8 @@ class SubcomponentCostAnalysis(models.Model):
         subcomponent_allocations = []
         total_cost_for_clis_with_subcomponent_value = 0
         each_cost_item: CostLineItem
-        for each_cost_item in self.analysis.cost_line_items.cost_type_category_items():
+        cost_items = self.analysis.cost_line_items.cost_type_category_items().with_config_and_allocations()
+        for each_cost_item in cost_items:
             if not each_cost_item.config.subcomponent_analysis_allocations:
                 continue
             if cost_type is not None and each_cost_item.config.cost_type != cost_type:

@@ -49,12 +49,12 @@ $(function() {
 
         function selectAll() {
             $bulkCheckboxes.prop('checked', true);
-            $bulkCheckboxes.trigger('change');
+            $bulkAssignItems.prop('disabled', false);
         }
 
         function selectNone() {
             $bulkCheckboxes.prop('checked', false);
-            $bulkCheckboxes.trigger('change');
+            $bulkAssignItems.prop('disabled', true);
         }
 
         function assignCheckedItems() {

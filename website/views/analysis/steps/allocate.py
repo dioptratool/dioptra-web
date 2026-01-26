@@ -146,6 +146,7 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
             )
             .filter(Q(config__cost_type__type=ProgramCost.id) | Q(config__cost_type__type=Support.id))
             .cost_type_category_items()
+            .with_config_and_allocations()
         ):
             for each_allocation in line_item.config.allocations.all():
                 if each_allocation.allocation:
