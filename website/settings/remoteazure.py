@@ -5,7 +5,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from website.settings.base import *
 
-ENVIRONMENT_TYPE = os.environ.get("ENVIRONMENT_TYPE", "remote")
+ENVIRONMENT_TYPE = os.environ.get("ENVIRONMENT_TYPE", "azure")
 
 INSTANCE_NAME = os.environ.get("INSTANCE_NAME")
 
@@ -31,7 +31,10 @@ def get_local_ip():
 # BASE_URL = os.environ.get('BASE_URL')
 BASE_URL = f"https://{DOMAIN}"
 
-ALLOWED_HOSTS = ["", "localhost", get_local_ip(), DOMAIN]
+# ABC 12/11/2023 - Need to fix get_local_ip and remove the wildcard IP option below.
+# BH 09/18/2025 - Using * for now because azure contianers don't use the metadata retrieval for AWS load balancers.
+# ALLOWED_HOSTS = ["", "localhost", get_local_ip(), DOMAIN]
+ALLOWED_HOSTS = ["*"]
 STATIC_ROOT = "/var/www/static/"
 STATIC_URL = "/static/"
 MEDIA_ROOT = "/var/www/media/"

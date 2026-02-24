@@ -21,7 +21,8 @@ TESTVARS=$(LOCALVARS) LOG_LEVEL=$(TEST_LOG_LEVEL) DJANGO_SETTINGS_MODULE=website
 # Each line is "NAME DOCKERFILE CONTEXT"
 IMAGES = \
 	"dioptra-local docker/Dockerfile.web ." \
-	"dioptra-remote docker/Dockerfile.web.remote ."
+	"dioptra-remote docker/Dockerfile.web.remote ." \
+	"dioptra-azure docker/Dockerfile.web.azure.remote ."
 
 up:
 	docker compose -p dioptra-web -f docker/docker-compose-local.yml up -d --build
