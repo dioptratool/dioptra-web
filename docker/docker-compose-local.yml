@@ -3,7 +3,7 @@ name: "dioptra-local"
 services:
 
   db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra
       POSTGRES_USER: dioptra
@@ -15,7 +15,7 @@ services:
 
   # There is no 'transaction_db' here, because it's run in transactions-data-pipeline
   transaction_testdb:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra_transactions
       POSTGRES_USER: dioptra
