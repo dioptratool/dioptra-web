@@ -3,7 +3,7 @@ name: "dioptra-all"
 services:
 
   db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra
       POSTGRES_USER: dioptra
@@ -12,7 +12,7 @@ services:
       - '127.0.0.1:5432:5432'
 
   transaction_db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra_transactions
       POSTGRES_USER: dioptra

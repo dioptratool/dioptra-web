@@ -4,7 +4,7 @@ name: "dioptra-github"
 services:
 
   db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra
       POSTGRES_USER: dioptra
@@ -19,7 +19,7 @@ services:
       - '12432'
 
   transaction_db:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_DB: dioptra_transactions
       POSTGRES_USER: dioptra
