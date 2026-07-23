@@ -7,17 +7,20 @@ from ombucore.admin.modeladmin.base import ModelAdmin
 from ombucore.admin.sites import site
 from ombucore.admin.views import ChangeView
 from ombucore.imagewidget.fields import PreviewableImageInput
+from website.data_loading.transaction_templates import get_transaction_template_choices
 from website import models as website_models
 
 
 class SettingsForm(ModelFormBase):
     iso_currency_code = forms.CharField(required=False, disabled=True, initial=settings.ISO_CURRENCY_CODE)
+    transaction_data_template = forms.ChoiceField(choices=get_transaction_template_choices)
 
     class Meta:
         fields = [
             "google_analytics_code",
             "show_transactions",
             "budget_upload_template",
+            "transaction_data_template",
             "instance_logo",
             "paginate_by",
             "transaction_country_filter",
@@ -40,6 +43,7 @@ class SettingsForm(ModelFormBase):
                     "fields": (
                         "show_transactions",
                         "budget_upload_template",
+                        "transaction_data_template",
                     ),
                 },
             ),
@@ -63,6 +67,9 @@ class SettingsForm(ModelFormBase):
             "paginate_by": _(
                 "Pagination setting affects the list of analyses on the dashboard, "
                 "Assign Cost Type & Category step, and the full cost model table."
+            ),
+            "transaction_data_template": _(
+                "Select the transaction upload template available on the Load Data step."
             ),
         }
 

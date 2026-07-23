@@ -19,8 +19,17 @@ jobs:
     steps:
       - name: Save default env
         run: |
-          echo "DATABASE_PASSWORD=$(openssl rand -base64 18)" >> "$GITHUB_ENV"
-          echo "DJANGO_SECRET_KEY=$(openssl rand -base64 18)" >> "$GITHUB_ENV"
+          DATABASE_PASSWORD="$(openssl rand -base64 18)"
+          DJANGO_SECRET_KEY="$(openssl rand -base64 18)"
+          echo "::add-mask::${DATABASE_PASSWORD}"
+          echo "::add-mask::${DJANGO_SECRET_KEY}"
+          echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> "$GITHUB_ENV"
+          echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> "$GITHUB_ENV"
+          echo "TRANSACTION_STORE_DATABASE_NAME=dioptra_transactions" >> "$GITHUB_ENV"
+          echo "TRANSACTION_STORE_USER=dioptra" >> "$GITHUB_ENV"
+          echo "TRANSACTION_STORE_PASSWORD=${DATABASE_PASSWORD}" >> "$GITHUB_ENV"
+          echo "TRANSACTION_STORE_HOST=127.0.0.1" >> "$GITHUB_ENV"
+          echo "TRANSACTION_STORE_PORT=9005" >> "$GITHUB_ENV"
 
       - name: Checkout files
         uses: actions/checkout@v6
@@ -71,6 +80,9 @@ jobs:
 
       - name: Ensure build works
         run: make bootstrap-db
+
+      - name: Load transaction store fixture
+        run: make restore-transactions-db BACKUP=website/tests/test_data/dioptra__testing-transaction-store__20200331-1656PM_test_transaction_loading.sql
 
       - name: Verify all Steps of the Demo data
         run: make validate-analysis-endpoints

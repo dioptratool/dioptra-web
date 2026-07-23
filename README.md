@@ -142,6 +142,30 @@ OK
 Go that service directory: `../../transaction-data-pipeline/` and follow the
 steps in the README.
 
+## Transaction import templates
+
+The transaction upload step uses one active transaction import template at a
+time. Configure the active template in the admin panel under
+`Settings > Analysis > Transaction Import Template`. The dropdown displays the
+organization name; the stored value is the template ID.
+
+If the setting is not changed, Dioptra uses the canonical upload format:
+`dioptra_default`.
+
+Current templates:
+
+| Admin label              | Template ID                  |
+|--------------------------|------------------------------|
+| Dioptra default          | `dioptra_default`            |
+| Save the Children        | `save_the_children`          |
+| Catholic Relief Services | `catholic_relief_services`   |
+| Accion Contra el Hambre  | `accion_contra_el_hambre`    |
+| Danish Refugee Council   | `danish_refugee_council`     |
+| Mercy Corps              | `mercy_corps`                |
+
+Template IDs are implemented under
+`website/data_loading/transaction_templates/<template_id>/`.
+
 ## OAuth Support
 
 By default, Dioptra runs with regular Django authentication.

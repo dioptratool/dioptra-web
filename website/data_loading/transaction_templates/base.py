@@ -1,0 +1,340 @@
+from __future__ import annotations
+
+import re
+from collections.abc import Iterable
+from datetime import datetime
+from io import BytesIO
+from typing import TYPE_CHECKING
+
+from django.core.exceptions import ImproperlyConfigured
+from openpyxl import Workbook
+from openpyxl.styles import Font
+from openpyxl.styles.numbers import FORMAT_TEXT
+from openpyxl.utils import get_column_letter
+
+if TYPE_CHECKING:
+    from website.models import Analysis
+
+
+CANONICAL_TRANSACTION_FIELDS = [
+    "transaction_date",
+    "country_code",
+    "grant_code",
+    "budget_line_code",
+    "account_code",
+    "site_code",
+    "sector_code",
+    "transaction_code",
+    "transaction_description",
+    "currency_code",
+    "budget_line_description",
+    "amount",
+    "dummy_field_1",
+    "dummy_field_2",
+    "dummy_field_3",
+    "dummy_field_4",
+    "dummy_field_5",
+]
+
+CANONICAL_TRANSACTION_FIELD_LABELS = {
+    "transaction_date": "Transaction Date",
+    "country_code": "Country Code",
+    "grant_code": "Grant Code",
+    "budget_line_code": "Budget Line Code",
+    "account_code": "Account Code",
+    "site_code": "Site Code",
+    "sector_code": "Sector Code",
+    "transaction_code": "Transaction Code",
+    "transaction_description": "Transaction Description",
+    "currency_code": "Currency Code",
+    "budget_line_description": "Budget Line Description",
+    "amount": "Amount",
+    "dummy_field_1": "Dummy Field 1",
+    "dummy_field_2": "Dummy Field 2",
+    "dummy_field_3": "Dummy Field 3",
+    "dummy_field_4": "Dummy Field 4",
+    "dummy_field_5": "Dummy Field 5",
+}
+
+TEXT_FIELD_TYPE = "text"
+DATE_FIELD_TYPE = "date"
+DECIMAL_FIELD_TYPE = "decimal"
+INTEGER_FIELD_TYPE = "integer"
+ISO_SOURCE_DATE_FORMAT = "%Y-%m-%d"
+GROUPED_AMOUNT_PATTERN = re.compile(r"^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$")
+
+
+class TransactionTemplateError(Exception):
+    def __init__(self, errors: Iterable[str]):
+        self.errors = list(errors)
+        super().__init__("; ".join(self.errors))
+
+
+class TransactionTemplate:
+    id = ""
+    label = ""
+    download_headers: list[str] = []
+    download_filename: str | None = None
+    download_date_fields: tuple[str, ...] = ()
+    download_decimal_fields: tuple[str, ...] = ()
+    download_integer_fields: tuple[str, ...] = ()
+    download_date_format = "yyyy-mm-dd"
+    download_decimal_format = "#,##0.00"
+    download_integer_format = "0"
+    download_text_format = FORMAT_TEXT
+    formatted_download_rows = 1000
+    source_date_formats: dict[str, tuple[str, ...]] = {}
+    source_header_aliases: dict[str, tuple[str, ...]] = {}
+    canonical_field_sources: dict[str, str | None] = {}
+    required_source_fields: dict[str, str] = {}
+
+    def source_rows_from_upload(self, rows: list[list[str]]) -> list[dict[str, str]]:
+        rows = self.rows_with_source_headers(rows)
+        if not rows:
+            return []
+
+        source_headers = self._get_source_headers(rows[0])
+        source_header_set = {header for header in source_headers if header}
+        missing_fields = [
+            display_name
+            for field_name, display_name in self.required_source_fields.items()
+            if field_name not in source_header_set
+        ]
+        if missing_fields:
+            raise TransactionTemplateError(
+                [
+                    f"The {self.label} transaction file is missing required headers: "
+                    + ", ".join(missing_fields)
+                ]
+            )
+
+        source_rows = []
+        errors = []
+        for row_num, row in enumerate(rows[1:], 2):
+            if not any(cell for cell in row):
+                continue
+            source_row = {}
+            for column_index, source_header in enumerate(source_headers):
+                if not source_header:
+                    continue
+                value = _source_cell(row, column_index)
+                try:
+                    value = self.normalize_source_cell(source_header, value)
+                except ValueError as e:
+                    errors.append(f"Row {row_num}: {e}")
+                source_row[source_header] = value
+            source_rows.append(source_row)
+
+        if errors:
+            raise TransactionTemplateError(errors)
+        return source_rows
+
+    def normalize_rows(self, rows: list[dict[str, str]], analysis: Analysis) -> list[dict[str, str]]:
+        return rows
+
+    def rows_with_source_headers(self, rows: list[list[str]]) -> list[list[str]]:
+        return rows
+
+    def _get_source_headers(self, header_row: list[str]) -> list[str]:
+        source_headers = [source_header_key(header) for header in header_row]
+        source_header_set = {header for header in source_headers if header}
+        alias_replacements = {}
+        for source_header, aliases in self.source_header_aliases.items():
+            if source_header in source_header_set:
+                continue
+            for alias in aliases:
+                if alias in source_header_set:
+                    alias_replacements[alias] = source_header
+                    break
+        return [alias_replacements.get(header, header) for header in source_headers]
+
+    def normalize_source_cell(self, source_header: str, value: str) -> str:
+        if source_header in self.source_date_formats:
+            return self.parse_source_date(source_header, value)
+        return value
+
+    def parse_source_date(self, source_header: str, value: str) -> str:
+        value = value.strip()
+        if not value:
+            return ""
+
+        date_formats = self.get_source_date_formats(source_header)
+        for date_format in date_formats:
+            try:
+                return datetime.strptime(value, date_format).date().isoformat()
+            except ValueError:
+                pass
+
+        expected_formats = " or ".join(date_formats)
+        display_name = self.get_source_field_display_name(source_header)
+        raise ValueError(f"{display_name} must use date format {expected_formats} (got {value})")
+
+    def get_source_date_formats(self, source_header: str) -> tuple[str, ...]:
+        return tuple(dict.fromkeys((*self.source_date_formats[source_header], ISO_SOURCE_DATE_FORMAT)))
+
+    def get_source_field_display_name(self, source_header: str) -> str:
+        if source_header in self.required_source_fields:
+            return self.required_source_fields[source_header]
+        for header in self.get_download_headers():
+            if source_header_key(header) == source_header:
+                return header
+        raise ImproperlyConfigured(
+            f'Transaction data template "{self.id}" references unknown source header "{source_header}".'
+        )
+
+    def get_first_data_row_number(self, rows: list[list[str]]) -> int:
+        return 2
+
+    def get_source_header_columns(self, rows: list[list[str]]) -> dict[str, str]:
+        rows = self.rows_with_source_headers(rows)
+        if not rows:
+            return {}
+
+        columns = {}
+        source_headers = self._get_source_headers(rows[0])
+        for column_index, source_header in enumerate(source_headers, 1):
+            if source_header and source_header not in columns:
+                columns[source_header] = get_column_letter(column_index)
+        return columns
+
+    def get_source_header_labels(self, rows: list[list[str]]) -> dict[str, str]:
+        rows = self.rows_with_source_headers(rows)
+        if not rows:
+            return {}
+
+        labels = {}
+        source_headers = self._get_source_headers(rows[0])
+        for header, source_header in zip(rows[0], source_headers):
+            if source_header and source_header not in labels:
+                labels[source_header] = str(header).strip()
+        return labels
+
+    def get_validation_field_labels(self, rows: list[list[str]]) -> dict[str, str]:
+        canonical_fields = set(CANONICAL_TRANSACTION_FIELDS)
+        configured_fields = set(self.canonical_field_sources)
+        missing_fields = [
+            field_name for field_name in CANONICAL_TRANSACTION_FIELDS if field_name not in configured_fields
+        ]
+        if missing_fields:
+            raise ImproperlyConfigured(
+                f'Transaction data template "{self.id}" must define canonical_field_sources for: '
+                + ", ".join(missing_fields)
+            )
+        extra_fields = sorted(configured_fields - canonical_fields)
+        if extra_fields:
+            raise ImproperlyConfigured(
+                f'Transaction data template "{self.id}" defines unknown canonical_field_sources: '
+                + ", ".join(extra_fields)
+            )
+
+        source_header_columns = self.get_source_header_columns(rows)
+        source_header_labels = self.get_source_header_labels(rows)
+        field_labels = {}
+        for canonical_field, canonical_label in CANONICAL_TRANSACTION_FIELD_LABELS.items():
+            source_header = self.canonical_field_sources[canonical_field]
+            if source_header is None:
+                field_labels[canonical_field] = canonical_label
+                continue
+            source_label = source_header_labels.get(source_header) or self.get_source_field_display_name(
+                source_header
+            )
+            source_column = source_header_columns.get(source_header)
+            if source_column:
+                field_labels[canonical_field] = f"{source_label} (Column {source_column}) ({canonical_label})"
+            else:
+                field_labels[canonical_field] = f"{source_label} ({canonical_label})"
+        return field_labels
+
+    def get_download_headers(self) -> list[str]:
+        return self.download_headers
+
+    def get_download_filename(self) -> str:
+        if self.download_filename:
+            return self.download_filename
+        return f"{self.id}_transaction_template.xlsx"
+
+    def get_download_content_type(self) -> str:
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    def get_download_field_type(self, header: str) -> str:
+        if header in self.download_date_fields:
+            return DATE_FIELD_TYPE
+        if header in self.download_decimal_fields:
+            return DECIMAL_FIELD_TYPE
+        if header in self.download_integer_fields:
+            return INTEGER_FIELD_TYPE
+        return TEXT_FIELD_TYPE
+
+    def get_download_number_format(self, header: str) -> str:
+        field_type = self.get_download_field_type(header)
+        if field_type == DATE_FIELD_TYPE:
+            return self.download_date_format
+        if field_type == DECIMAL_FIELD_TYPE:
+            return self.download_decimal_format
+        if field_type == INTEGER_FIELD_TYPE:
+            return self.download_integer_format
+        return self.download_text_format
+
+    def build_download_workbook(self) -> Workbook:
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Transactions"
+        worksheet.freeze_panes = "A2"
+        worksheet.append(self.get_download_headers())
+
+        header_font = Font(bold=True)
+        for column_index, header in enumerate(self.get_download_headers(), 1):
+            column_letter = get_column_letter(column_index)
+            number_format = self.get_download_number_format(header)
+            worksheet.cell(row=1, column=column_index).font = header_font
+            worksheet.column_dimensions[column_letter].width = max(12, min(len(header) + 2, 40))
+            worksheet.column_dimensions[column_letter].number_format = number_format
+            for row_index in range(2, self.formatted_download_rows + 2):
+                worksheet.cell(row=row_index, column=column_index).number_format = number_format
+
+        return workbook
+
+    def get_download_content(self) -> bytes:
+        output = BytesIO()
+        self.build_download_workbook().save(output)
+        return output.getvalue()
+
+
+def source_header_key(value: str) -> str:
+    return re.sub(r"_+", "_", re.sub(r"[^0-9a-zA-Z]+", "_", str(value).strip().lower())).strip("_")
+
+
+def canonical_transaction_row(data: dict[str, str]) -> dict[str, str]:
+    return {
+        field_name: (
+            normalize_amount(data.get(field_name, ""))
+            if field_name == "amount"
+            else _canonical_cell(data.get(field_name, ""))
+        )
+        for field_name in CANONICAL_TRANSACTION_FIELDS
+    }
+
+
+def normalize_amount(value) -> str:
+    value = _canonical_cell(value)
+    if "," not in value:
+        return value
+    if GROUPED_AMOUNT_PATTERN.fullmatch(value):
+        return value.replace(",", "")
+    return value
+
+
+def _source_cell(row: list[str], column_index: int) -> str:
+    try:
+        value = row[column_index]
+    except IndexError:
+        return ""
+    return _canonical_cell(value)
+
+
+def _canonical_cell(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    return str(value).strip()

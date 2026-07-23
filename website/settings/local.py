@@ -11,11 +11,13 @@ DATABASES["default"]["PORT"] = "12432"
 DATABASES["default"]["PASSWORD"] = os.getenv("DATABASE_PASSWORD")
 
 # Must match transaction-data-pipeline database service
-DATABASES["transaction_store"]["NAME"] = "dioptra_transactions"
-DATABASES["transaction_store"]["USER"] = "dioptra"
-DATABASES["transaction_store"]["PASSWORD"] = os.getenv("DATABASE_PASSWORD")
-DATABASES["transaction_store"]["HOST"] = "localhost"
-DATABASES["transaction_store"]["PORT"] = "9005"
+DATABASES["transaction_store"]["NAME"] = os.getenv("TRANSACTION_STORE_DATABASE_NAME", "dioptra_transactions")
+DATABASES["transaction_store"]["USER"] = os.getenv("TRANSACTION_STORE_USER", "dioptra")
+DATABASES["transaction_store"]["PASSWORD"] = os.getenv(
+    "TRANSACTION_STORE_PASSWORD", os.getenv("DATABASE_PASSWORD")
+)
+DATABASES["transaction_store"]["HOST"] = os.getenv("TRANSACTION_STORE_HOST", "localhost")
+DATABASES["transaction_store"]["PORT"] = os.getenv("TRANSACTION_STORE_PORT", "9005")
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 

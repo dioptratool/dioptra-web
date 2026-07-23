@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from website.models import Analysis
+from website.data_loading.transaction_templates.base import normalize_amount
 from .constants import _currencies, _date
 
 
@@ -61,7 +62,7 @@ class ValidationResult:
 
     def float(self, value, prefix):
         try:
-            float(value)
+            float(normalize_amount(value))
             return
         except ValueError:
             return self.add_error(f"{prefix} is not a number (got {value})")
