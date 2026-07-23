@@ -1,5 +1,5 @@
 from any_urlfield.models import AnyUrlField
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
@@ -40,7 +40,7 @@ class HelpItem(models.Model):
     title = models.CharField(max_length=255)
     identifier = models.CharField(max_length=150)
 
-    help_text = RichTextField(
+    help_text = CKEditor5Field(
         config_name="help_text",
         blank=True,
         help_text="If you leave this field blank, the contextual help item will not display in the application.",
@@ -60,7 +60,7 @@ class HelpPage(models.Model):
     app_log_entry_link_name = "ombucore.admin:help_helppage_change"
     identifier = models.CharField(max_length=150, null=True, blank=True)
     title = models.CharField(max_length=255)
-    body = RichTextField(blank=True)
+    body = CKEditor5Field(blank=True)
 
     path = UrlPathField(
         "Path",

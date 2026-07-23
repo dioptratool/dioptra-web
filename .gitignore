@@ -17,3 +17,16 @@ backup.csv
 !validation_scripts/backups/.gitkeep
 !validation_scripts/statuses/.gitkeep
 package-lock.json
+!website/static/website/package-lock.json
+
+# CKEditor 5 source and built assets must ship with the application.
+!lib/
+!lib/ombucore/
+!lib/ombucore/frontend/
+!lib/ombucore/frontend/src/
+!lib/ombucore/frontend/src/**
+!lib/ombucore/admin/
+!lib/ombucore/admin/static/
+!lib/ombucore/admin/static/django_ckeditor_5/
+!lib/ombucore/admin/static/django_ckeditor_5/dist/
+!lib/ombucore/admin/static/django_ckeditor_5/dist/**

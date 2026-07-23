@@ -1,4 +1,4 @@
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -15,12 +15,12 @@ class CostEfficiencyStrategy(models.Model):
         "website.Intervention",
         verbose_name=_("Intervention Being Analyzed"),
     )
-    efficiency_driver_description = RichTextField(
+    efficiency_driver_description = CKEditor5Field(
         verbose_name=_("Efficiency Driver description"),
         blank=True,
         null=True,
     )
-    strategy_to_improve_description = RichTextField(
+    strategy_to_improve_description = CKEditor5Field(
         verbose_name=_("Strategy to Improve Cost-Efficiency description"),
         blank=True,
         null=True,

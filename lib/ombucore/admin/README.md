@@ -204,15 +204,14 @@ of this for both the `ImageAsset` and `VideoAsset` models.
 
 ## CKEditor
 
-The CKEditor bundled with `django-ckeditor` doesn't include the Widget plugin
-so a custom build is included in this module's `/static` directory.
+The project uses `django-ckeditor-5` with a custom CKEditor 5 bundle that adds
+the asset embedding toolbar buttons.
 
 The following plugins have been added to support asset embedding:
 
-- ombuutil
 - ombuimage
-- ombuvideo
 - ombudocument
 
-These plugins are included in this module's `/static/ckeditor/ckeditor/plugins`
-directory, and should be kept when updating CKEditor.
+The plugin source lives in this module's `/frontend/src/plugins` directory. The
+compiled bundle is written to `/static/django_ckeditor_5/dist` by the
+`website/static/website` frontend build.

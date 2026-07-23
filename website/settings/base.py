@@ -90,7 +90,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "any_urlfield",
-    "ckeditor",
+    "django_ckeditor_5",
     "rules",
     "imagekit",
     "polymorphic_tree",
@@ -255,97 +255,106 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # CKEditor
 # ------------------------------------------------------------------------------
+CKEDITOR_5_CUSTOM_CSS = "django_ckeditor_5/ckeditor-overrides.css"
+
+heading_options = [
+    {"model": "paragraph", "title": "Paragraph", "class": "ck-heading_paragraph"},
+    {"model": "heading1", "view": "h1", "title": "Heading 1", "class": "ck-heading_heading1"},
+    {"model": "heading2", "view": "h2", "title": "Heading 2", "class": "ck-heading_heading2"},
+    {"model": "heading3", "view": "h3", "title": "Heading 3", "class": "ck-heading_heading3"},
+    {"model": "heading4", "view": "h4", "title": "Heading 4", "class": "ck-heading_heading4"},
+    {"model": "heading5", "view": "h5", "title": "Heading 5", "class": "ck-heading_heading5"},
+    {"model": "heading6", "view": "h6", "title": "Heading 6", "class": "ck-heading_heading6"},
+    {"model": "preformatted", "view": "pre", "title": "Formatted", "class": "ck-heading_preformatted"},
+]
+
 help_text = {
-    "theme": "default",
-    "toolbar": [
-        [
-            "Bold",
-            "Italic",
-            "Underline",
-            "BulletedList",
-            "NumberedList",
-            "Link",
-            "Unlink",
-            "Source",
+    "toolbar": {
+        "items": [
+            "bold",
+            "italic",
+            "underline",
+            "bulletedList",
+            "numberedList",
+            "link",
+            "|",
+            "sourceEditing",
+            "removeFormat",
+            "pasteAsPlainText",
         ],
-    ],
-    "format_tags": "p;h2;h3;h4;h5;h6;pre",
-    "removeDialogTabs": "link:upload;link:advanced",
-    "removeButtons": "BrowseServer",
-    "forcePasteAsPlainText": True,
-    "stylesSet": [],
-    "extraPlugins": "autogrow,wordcount",
-    "autoGrow_minHeight": 200,
-    "autoGrow_maxHeight": 300,
-    "bodyClass": "rte",
-    "width": "100%",
-    "disableNativeSpellChecker": False,
-    "dialog_backgroundCoverColor": "rgb(160, 160, 160)",
-    "contentsCss": "/static/wysiwyg.css",
-    "wordcount": {
-        "showParagraphs": False,
-        "showWordCount": False,
-        "showCharCount": True,
-        "countSpacesAsChars": False,
-        "countHTML": False,
-        "maxWordCount": -1,
+        "shouldNotGroupWhenFull": True,
+    },
+    "heading": {"options": heading_options},
+    "wordCount": {
+        "displayWords": False,
+        "displayCharacters": True,
         "maxCharCount": 350,
     },
 }
 
-# Create one configuration of the help text with a nested "maxCharCount" and another without
+# Create one configuration of the help text with a nested "maxCharCount" and another without.
 help_text_limitless = copy.deepcopy(help_text)
-del help_text_limitless["wordcount"]["maxCharCount"]
+del help_text_limitless["wordCount"]["maxCharCount"]
 
-CKEDITOR_CONFIGS = {
+CKEDITOR_5_CONFIGS = {
     "default": {
-        "theme": "default",
-        "toolbar": [
-            [
-                "Bold",
-                "Italic",
-                "JustifyLeft",
-                "JustifyCenter",
-                "JustifyRight",
-                "BulletedList",
-                "NumberedList",
-                "Link",
-                "Unlink",
-                "Table",
-                "HorizontalRule",
-                "Format",
-                "RemoveFormat",
-                "Styles",
-                "Source",
-                "Ombuimage",
-                "Ombudocument",
+        "toolbar": {
+            "items": [
+                "heading",
+                "|",
+                "bold",
+                "italic",
+                "alignment",
+                "bulletedList",
+                "numberedList",
+                "link",
+                "insertTable",
+                "horizontalLine",
+                "style",
+                "|",
+                "sourceEditing",
+                "removeFormat",
+                "pasteAsPlainText",
+                "ombuImage",
+                "ombuDocument",
             ],
-        ],
-        "format_tags": "p;h2;h3;h4;h5;h6;pre",
-        "removeDialogTabs": "link:upload;link:advanced",
-        "removeButtons": "BrowseServer",
-        "forcePasteAsPlainText": True,
-        "stylesSet": [
-            {
-                "name": "Link - Primary",
-                "element": "a",
-                "attributes": {"class": "btn btn-primary"},
-            },
-            {
-                "name": "Link - secondary",
-                "element": "a",
-                "attributes": {"class": "btn btn-secondary"},
-            },
-        ],
-        "extraPlugins": "autogrow,ombuimage",
-        "removePlugins": "exportpdf",
-        "autoGrow_minHeight": 200,
-        "autoGrow_maxHeight": 300,
-        "bodyClass": "rte",
-        "width": "100%",
-        "disableNativeSpellChecker": False,
-        "dialog_backgroundCoverColor": "rgb(160, 160, 160)",
-        "contentsCss": "/static/wysiwyg.css",
+            "shouldNotGroupWhenFull": True,
+        },
+        "heading": {"options": heading_options},
+        "style": {
+            "definitions": [
+                {
+                    "name": "Link - Primary",
+                    "element": "a",
+                    "classes": ["btn", "btn-primary"],
+                },
+                {
+                    "name": "Link - secondary",
+                    "element": "a",
+                    "classes": ["btn", "btn-secondary"],
+                },
+            ],
+        },
+        "table": {
+            "contentToolbar": [
+                "tableColumn",
+                "tableRow",
+                "mergeTableCells",
+                "|",
+                "toggleTableCaption",
+                "tableProperties",
+                "tableCellProperties",
+            ],
+            "defaultHeadings": {"rows": 1},
+        },
+        "htmlSupport": {
+            "allow": [
+                {
+                    "name": "div",
+                    "attributes": ["data-ombuimage", "data-ombudocument"],
+                },
+            ],
+        },
     },
     "help_text": help_text,
     "help_text_limitless": help_text_limitless,

@@ -29,7 +29,7 @@ html.is-in-panel {
     font-weight: bold;
   }
 
-  a:not(.cke_dialog_ui_button) {
+  a {
     text-decoration: none;
     color: $link-color;
     &:hover,
@@ -384,7 +384,7 @@ html.is-in-panel {
 
 
 // Position keyboard-accessible close affordance (inside panel iframe)
-html.is-in-panel a.panel-close.panel-close--inner:not(.cke_dialog_ui_button) {
+html.is-in-panel a.panel-close.panel-close--inner {
   display: block;
   $size: 40px;
   display: block;

@@ -2,9 +2,21 @@ var gulp = require('gulp');
 var sass = require('gulp-sass/legacy')(require('sass'));
 var concat = require('gulp-concat');
 var livereload = require('gulp-livereload');
+var fs = require('fs');
+var path = require('path');
+var rollup = require('rollup').rollup;
+var nodeResolvePlugin = require('@rollup/plugin-node-resolve');
+var commonjsPlugin = require('@rollup/plugin-commonjs');
+var postcss = require('rollup-plugin-postcss');
+var esbuild = require('rollup-plugin-esbuild');
 
 var bootstrapDir = './node_modules/bootstrap-sass/assets';
 var panelsDir = '../../../lib/ombucore/admin/static';
+var ckeditorEntry = path.resolve(__dirname, '../../../lib/ombucore/frontend/src/ckeditor.js');
+var ckeditorOutDir = path.resolve(__dirname, '../../../lib/ombucore/admin/static/django_ckeditor_5/dist');
+var resolve = nodeResolvePlugin.nodeResolve || nodeResolvePlugin.default || nodeResolvePlugin;
+var commonjs = commonjsPlugin.default || commonjsPlugin;
+var minify = esbuild.minify;
 
 gulp.task('sass', function() {
   return gulp.src('css/style.scss')
@@ -65,6 +77,30 @@ gulp.task('js', function() {
           .pipe(livereload());
 });
 
+gulp.task('ckeditor', async function() {
+  fs.mkdirSync(ckeditorOutDir, { recursive: true });
+
+  var bundle = await rollup({
+    input: ckeditorEntry,
+    plugins: [
+      resolve({ modulePaths: [path.resolve(__dirname, 'node_modules')] }),
+      commonjs(),
+      postcss({ extract: path.join(ckeditorOutDir, 'styles.css'), minimize: true }),
+      minify(),
+    ],
+  });
+
+  await bundle.write({
+    file: path.join(ckeditorOutDir, 'bundle.js'),
+    format: 'iife',
+    name: 'CKEditor5Bundle',
+    sourcemap: true,
+  });
+  await bundle.close();
+});
+
+gulp.task('scripts', gulp.series('js', 'ckeditor'));
+
 gulp.task('watch', function() {
   livereload.listen();
   gulp.watch('css/**/*.scss', gulp.series('sass'));
@@ -72,6 +108,7 @@ gulp.task('watch', function() {
   gulp.watch('css/**/*.scss', gulp.series('panels'));
   gulp.watch('../../**/*.html', gulp.series('templates'));
   gulp.watch(jsFiles, gulp.series('js'));
+  gulp.watch('../../../lib/ombucore/frontend/src/**/*.{css,js}', gulp.series('ckeditor'));
 });
 
 gulp.task('default', gulp.series('watch'));

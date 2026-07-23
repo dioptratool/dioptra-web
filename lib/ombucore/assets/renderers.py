@@ -9,6 +9,7 @@ DOCUMENT_TYPE_NAME_MAP = {
     "doc": "Microsoft Word Document",
     "docx": "Microsoft Word Document",
     "xls": "Microsoft Excel Document",
+    "xlsx": "Microsoft Excel Document",
     "xlt": "Microsoft Excel Document",
     "txt": "Text Document",
     "zip": "ZIP Archive",
@@ -50,6 +51,7 @@ class ImageRenderer(RendererBase):
         if local_settings is not None:
             context.update(local_settings)
             if "caption" in local_settings:
+                context["caption"] = local_settings["caption"]
                 context["title"] = local_settings["caption"]
         return self.render(context)
 
@@ -58,6 +60,7 @@ class ImageRenderer(RendererBase):
             "asset": asset,
             "src": self.get_url(asset),
             "title": asset.title,
+            "caption": asset.caption,
             "align": "center",
             "asset_caption": asset.caption,
             "hide_caption": asset.hide_caption,
@@ -79,8 +82,15 @@ class DocumentRenderer(RendererBase):
             "asset": asset,
             "title": asset.title,
             "url": asset.url,
-            "file_type_name": DOCUMENT_TYPE_NAME_MAP[asset.file_type],
+            "file_type_name": DOCUMENT_TYPE_NAME_MAP.get(asset.file_type, asset.file_type),
             "align": "left",
             "file_type": asset.file_type,
             "file_size": asset.document.file.size,
         }
+
+    def __call__(self, asset, local_settings=None):
+        context = self.get_context(asset)
+        if local_settings is not None:
+            context.update(local_settings)
+            context["align"] = local_settings.get("align", context["align"])
+        return self.render(context)

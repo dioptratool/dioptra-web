@@ -9,7 +9,7 @@ requests==2.32.4
 
 # Django packages
 django-any-urlfield==2.7.post1
-django-ckeditor==6.7.3
+django-ckeditor-5==0.2.20
 django-imagekit==5.0.0
 django-polymorphic-tree==2.1
 django-taggit-autosuggest==0.4.2

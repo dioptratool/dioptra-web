@@ -1,0 +1,29 @@
+/* OmbuDocument editor widget styles */
+.ombu-document {
+    display: inline-block;
+    padding: 0.5em 1em;
+    margin-bottom: 0.5em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+.ombu-document__title {
+    font-weight: bold;
+}
+
+.ombu-document__type {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    color: #666;
+}
+
+.ombu-document--left {
+    float: left;
+    margin-right: 1em;
+}
+
+.ombu-document--right {
+    float: right;
+    margin-left: 1em;
+}

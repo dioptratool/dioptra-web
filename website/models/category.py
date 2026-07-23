@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.conf import settings
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
@@ -21,7 +21,7 @@ class Category(OrderableMixin, models.Model):
         verbose_name=_("Sort Order"),
     )
 
-    help_text = RichTextField(blank=True, verbose_name="Allocation Suggestion Help Text")
+    help_text = CKEditor5Field(blank=True, verbose_name="Allocation Suggestion Help Text")
     default = models.BooleanField(default=False, verbose_name=_("Default"))
 
     class Meta:
