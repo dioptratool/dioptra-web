@@ -28,6 +28,37 @@ class MetricTestCase(TestCase):
         super().setUp()
         self.mock_metric = MockMetric()
 
+    def test_all_metrics_define_cost_efficiency_unit_labels(self):
+        expected_units = {
+            "NumberOfCaregivers": "Caregiver",
+            "NumberOfChildren": "Child",
+            "NumberOfChildrenRecovered": "Child Recovered",
+            "NumberOfChildrenTreated": "Child Treated",
+            "NumberOfClients": "Client",
+            "NumberOfCommunities": "Community",
+            "NumberOfConsultations": "Consultation",
+            "NumberOfCoupleYearsOfProtection": "Couple-Year of Protection (CYP)",
+            "NumberOfDaysOfTraining": "Person-Day of Training",
+            "NumberOfDoses": "Dose",
+            "NumberOfGroups": "Group",
+            "NumberOfHectares": "Hectare",
+            "NumberOfHouseholds": "Household",
+            "NumberOfMeals": "Meal",
+            "NumberOfOutputs": "Output",
+            "NumberOfParticipants": "Participant",
+            "NumberOfPeople": "Person",
+            "NumberOfPersonYearsOfSanitationAccess": "Person-Year of Sanitation Access",
+            "NumberOfPersonYearsOfWaterAccess": "Person-Year of Water Access",
+            "NumberOfTeacherDaysOfTraining": "Teacher-Day of Training",
+            "NumberOfTeacherYearsOfSupport": "Teacher-Year of Support",
+            "NumberOfWomen": "Woman",
+            "ValueOfBusinessGrantAmount": "Grant Cash Provided",
+            "ValueOfCashDistributed": "Cash Distributed",
+            "ValueOfItemsDistributed": "Monetary Unit Distributed",
+        }
+
+        assert {metric.id: metric.cost_efficiency_unit for metric in OUTPUT_METRICS} == expected_units
+
     def test_all_metrics_have_valid_calculate(self):
         for metric in OUTPUT_METRICS:
             param_to_excel_map = {"cost_output_sum": "SUM(B1, B2, B3)"}

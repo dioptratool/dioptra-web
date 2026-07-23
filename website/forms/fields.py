@@ -61,8 +61,12 @@ class AnalysisInterventionManageField(forms.JSONField):
 
     def clean(self, value: list) -> dict:
         value = super().clean(value)
-        if len(value) > 5:
-            raise ValidationError(_("No more than 5 interventions are allowed."), code="invalid")
+        if len(value) > settings.MAX_ANALYSIS_INTERVENTIONS:
+            raise ValidationError(
+                _("No more than %(limit)s interventions are allowed.")
+                % {"limit": settings.MAX_ANALYSIS_INTERVENTIONS},
+                code="invalid",
+            )
         return value
 
 

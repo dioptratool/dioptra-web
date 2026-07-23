@@ -36,6 +36,8 @@ DEBUG = False
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
+MAX_ANALYSIS_INTERVENTIONS = 8
+
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION", "us-west-2")
 
 # To configure databases, use environment variables,

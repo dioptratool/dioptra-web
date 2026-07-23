@@ -67,6 +67,17 @@ class TestSubcomponentsAllocate(StepTest):
             pytest.skip("Subcomponent steps are not expected to load for Multi-intervention Analyses.")
         super().test_completed_steps_is_complete(workflow_with_completed_step)
 
+    def test_subcomponent_apply_to_all_controls_render(self, workflow_with_completed_step, client_with_admin):
+        if workflow_with_completed_step.analysis.interventioninstance_set.count() != 1:
+            pytest.skip("Subcomponent steps are not expected to load for Multi-intervention Analyses.")
+        response = client_with_admin.get(
+            self.step_under_test(workflow=workflow_with_completed_step).get_href(),
+            follow=True,
+        )
+
+        assert 'data-subcomponent-apply-to-all="' in response.content.decode()
+        assert 'data-subcomponent-allocation-index="0"' in response.content.decode()
+
     def test_invalidate_step_works(self, workflow_with_completed_step):
         workflow_with_completed_step.invalidate_step(step_name=self.step_under_test.name)
         assert workflow_with_completed_step.get_step("insights").is_complete, (

@@ -3,6 +3,7 @@ from datetime import date
 
 import pytest
 from django.conf import settings
+from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 
 from website.models import AnalysisCostType, AnalysisType, CostType
@@ -16,9 +17,14 @@ from website.tests.factories import (
     CostLineItemInterventionAllocationFactory,
     CountryFactory,
     InterventionFactory,
+    SubcomponentCostAnalysisFactory,
     UserFactory,
 )
 from website.views.documents import full_cost_model_spreadsheet
+from website.utils.documents import (
+    _write_cost_of_each_subcomponent_per_output_metric_table,
+    _write_metadata_table,
+)
 
 
 @pytest.fixture
@@ -155,6 +161,70 @@ def spreadsheet_analysis(defaults):
 
 class TestAnalysisSpreadsheet:
     @pytest.mark.django_db
+    def test_subcomponent_cost_headers_use_cost_efficiency_unit(self):
+        intervention = InterventionFactory(
+            output_metrics=[
+                "NumberOfPersonYearsOfWaterAccess",
+            ],
+        )
+        analysis = AnalysisFactory()
+        intervention_instance = analysis.add_intervention(
+            intervention,
+            parameters={
+                "number_of_people": 100,
+                "number_of_years_of_water_access": 2,
+            },
+        )
+        SubcomponentCostAnalysisFactory(
+            analysis=analysis,
+            subcomponent_labels=["Infrastructure", "Maintenance"],
+            subcomponent_labels_confirmed=True,
+        )
+        wb = Workbook()
+        worksheet = wb.active
+
+        _write_cost_of_each_subcomponent_per_output_metric_table(
+            ws=worksheet,
+            an_analysis=analysis,
+            intervention_instance=intervention_instance,
+            starting_row=1,
+        )
+
+        assert worksheet["A1"].value == "Cost of Each Sub-component, per Person-Year of Water Access"
+
+    @pytest.mark.django_db
+    def test_metadata_table_keeps_cash_parameter_numeric(self):
+        intervention = InterventionFactory(
+            output_metrics=[
+                "ValueOfCashDistributed",
+            ],
+        )
+        analysis = AnalysisFactory(
+            currency_code="USD",
+            output_count_source="My Output Count Source",
+        )
+        intervention_instance = analysis.add_intervention(
+            intervention,
+            parameters={
+                "value_of_cash_distributed": 10000,
+            },
+        )
+        wb = Workbook()
+        worksheet = wb.active
+
+        _write_metadata_table(
+            ws=worksheet,
+            an_analysis=analysis,
+            intervention_instance=intervention_instance,
+            parameter_metadata={},
+            analysis_url="https://example.com/analysis/1/insights/",
+        )
+
+        assert worksheet["A9"].value == "Value of Cash Distributed"
+        assert worksheet["B9"].value == 10000
+        assert worksheet["B9"].number_format == '"$"#,##0.00'
+
+    @pytest.mark.django_db
     def test_full_cost_model_spreadsheet(self, spreadsheet_analysis, rf):
         rf.user = UserFactory()
 
@@ -195,3 +265,6 @@ class TestAnalysisSpreadsheet:
             == "=FIXED((IFERROR(C34 / (B9 / B11), 0)) + (IFERROR(SUM(E45) / (B9 / B11), 0)), 2)"
         )
         assert worksheet["B25"].value, "=FIXED(SUM(E42) ==  2)"
+        column_a_values = [cell.value for cell in worksheet["A"]]
+        assert "Other Costs" in column_a_values
+        assert "Other HQ Costs" not in column_a_values

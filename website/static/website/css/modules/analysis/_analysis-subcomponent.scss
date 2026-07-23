@@ -138,6 +138,12 @@
     color: rgba(172, 180, 191, 1);
     display: inline;
     content: "%";
+    order: 1;
+  }
+
+  .analysis-table__allocated-apply-all-link-wrapper {
+    order: 2;
+    margin-left: 0.5rem;
   }
 }
 .analysis-table__cost-items.analysis-table__cost-items--confirmed {

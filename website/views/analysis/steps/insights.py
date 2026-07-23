@@ -173,7 +173,7 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
                         "Value of Cash Distributed",
                         "Value of Business Grant Amount",
                     ]:
-                        formatted_value = f"{currency_symbol(self.analysis)}{parameter_value:,.2f}"
+                        formatted_value = f"{currency_symbol(self.analysis) or ''}{parameter_value:,.2f}"
                     else:
                         formatted_value = f"{parameter_value:,.2f}"
                     parameter_lookup[each_intervention_instance.id][label] = formatted_value

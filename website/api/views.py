@@ -18,6 +18,7 @@ class CostLineItemAddNoteView(AnalysisPermissionRequiredMixin, View):
         self.cost_line_item = self._get_object(kwargs["pk"])
         if not self.cost_line_item:
             return HttpResponse(status=404)
+        self.analysis = self.cost_line_item.analysis
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, pk):
@@ -46,10 +47,9 @@ class CostLineItemUpdateCostTypeCategoryView(AnalysisPermissionRequiredMixin, Vi
 
     def dispatch(self, request, *args, **kwargs):
         self.cost_line_item = self._get_object(kwargs["pk"])
-        self.analysis = self.cost_line_item.analysis
-
         if not self.cost_line_item:
             return HttpResponse(status=404)
+        self.analysis = self.cost_line_item.analysis
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, pk):

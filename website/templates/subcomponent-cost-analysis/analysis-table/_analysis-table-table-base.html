@@ -139,7 +139,26 @@
                                                {% if cost_line_item.config.cost_type.type_obj|get_class_name == "Indirect" %}
                                                disabled
                                                {% endif %}
+                                               data-subcomponent-allocation-index="{{ forloop.counter0 }}"
                                         >
+                                        <div class="analysis-table__allocated-apply-all-link-wrapper">
+                                            <a class="analysis-table__allocated-apply-all-link"
+                                               href="#"
+                                               data-subcomponent-apply-to-all="cost_line_item_{{ cost_line_item.id }}_subcomponent_allocation_{{ forloop.counter0 }}"
+                                               data-subcomponent-allocation-index="{{ forloop.counter0 }}">
+                                                <span
+                                                        {% if analysis.subcomponent_cost_analysis.subcomponent_labels|length > 2 %}
+                                                            class="hidden"{% endif %}
+                                                            id="apply-all-subcomponent-{{ cost_line_item.id }}_{{ forloop.counter0 }}">Apply to all</span>
+                                                <svg aria-labelledby="apply-all-subcomponent-{{ cost_line_item.id }}_{{ forloop.counter0 }}"
+                                                     width="20" height="20" viewBox="0 0 20 20"
+                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M10 4.16663V15.8333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    <path d="M15.8334 10L10.0001 15.8333L4.16675 10" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </a>
+                                            {% help 'allocate_costs__apply_to_all' %}
+                                        </div>
                                     </div>
                                 </td>
                             {% endfor %}
