@@ -8,7 +8,7 @@ find media -type d -exec chown nginx {} \;
 # python manage.py migrate --noinput
 
 # Start gunicorn
-gunicorn --timeout 90 --access-logfile - --workers 6 --bind unix:/tmp/scan.sock website.wsgi:application &
+gunicorn --timeout 90 --access-logfile - --workers 6 --max-requests 2000 --max-requests-jitter 30 --bind unix:/tmp/scan.sock website.wsgi:application &
 
 # Start nginx
 nginx -g "daemon off;"

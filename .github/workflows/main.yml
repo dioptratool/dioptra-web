@@ -23,15 +23,15 @@ jobs:
           echo "DJANGO_SECRET_KEY=$(openssl rand -base64 18)" >> "$GITHUB_ENV"
 
       - name: Checkout files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Setup Python Pip cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-pip
         with:
           path: ~/.cache/pip
@@ -99,11 +99,11 @@ jobs:
           echo "release_version=$release_version" >> $GITHUB_ENV
 
       - name: Checkout files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         if: ${{ env.is_build_candidate }}
 
       - name: Login to Amazon with Access Key
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         if: ${{ env.is_build_candidate }}
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
