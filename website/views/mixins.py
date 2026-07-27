@@ -75,9 +75,12 @@ class AnalysisObjectMixin(ContextMixin):
                 "cost_type_categories",
                 "interventioninstance_set",
                 "interventioninstance_set__intervention",
+                "interventioninstance_set__subcomponent_cost_analysis",
+                "interventioninstance_set__subcomponent_cost_analysis__allocations",
                 "unfiltered_cost_line_items",
                 "unfiltered_cost_line_items__config",
                 "unfiltered_cost_line_items__config__allocations",
+                "unfiltered_cost_line_items__config__subcomponent_cost_allocations",
             )
 
         if pk is None:

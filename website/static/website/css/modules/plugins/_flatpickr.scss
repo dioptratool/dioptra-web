@@ -1,5 +1,4 @@
-.flatpickr-month {
-  input {
-    min-height: 0;
-  }
+.flatpickr-month  input,
+.flatpickr-month .flatpickr-current-month .flatpickr-monthDropdown-months {
+  min-height: 0;
 }

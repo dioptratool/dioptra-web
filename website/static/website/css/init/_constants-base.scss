@@ -4,6 +4,8 @@ $color-black: rgb(0,0,0);
 $color-lapis: rgb(16, 69, 122);
 $color-topaz: rgb(27, 119, 212);
 $color-moonstone: rgb(241, 247, 253);
+$color-moonstone-2: rgb(241, 244, 248);
+$color-moonstone-3: rgb(250, 250, 251);
 $color-moss: rgb(105, 191, 121);
 $color-lichen: rgb(183, 87, 87);
 // Neutrals
@@ -13,9 +15,11 @@ $color-smoke: rgb(155, 155, 155);
 $color-white: rgb(255, 255, 255);
 $color-gray: rgb(204, 204, 204);
 $color-light-gray: rgb(237, 243, 250);
+
 // other
 $color-blue: rgb(35, 121, 209);
 $color-gray-blue: rgb(77, 118, 158);
+$color-light-gray-blue: rgba(179, 195, 213);
 $color-light-blue: rgb(121, 179, 236);
 $color-light-black: rgb(28, 28, 28);
 $color-dark-black: rgb(17, 17, 17);
@@ -26,10 +30,11 @@ $color-alert-success-background: rgb(218, 239, 222);
 $color-alert-success-color: rgb(40, 88, 49);
 $color-light-green: rgb(194, 231, 201);
 $color-filter-background: rgb(235, 240, 245);
-$color-moonstone-2: rgb(241, 244, 248);
 $color-total-green: rgb(70, 164, 88);
 $color-blue-green: rgb(4, 140, 140);
 $color-modal: rgb(241, 244, 248);
+$color-blue-light: rgb(188, 217, 245);
+$color-blue-lighter: rgba(213, 231, 249);
 
 // Provider colors
 $color-okta-blue: rgb(25, 125, 189);

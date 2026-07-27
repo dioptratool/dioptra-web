@@ -12,6 +12,7 @@ from website.tests.factories import (
     CostLineItemInterventionAllocationFactory,
     InterventionFactory,
     InterventionGroupFactory,
+    SubcomponentCostAllocationFactory,
     SubcomponentCostAnalysisFactory,
 )
 from website.workflows import AnalysisWorkflow
@@ -166,19 +167,23 @@ def test_simplified_example_of_the_suggested_allocation_from_dioptra(defaults):
     # Now we do the Subcomponent and test our actual values
     subcomponent_cost_analysis = SubcomponentCostAnalysisFactory(
         analysis=analysis_wf.analysis,
-        subcomponent_labels_confirmed=True,
     )
 
-    item_2.config.subcomponent_analysis_allocations = {
-        "0": "75",
-        "1": "25",
-    }
-    item_2.config.save()
-
-    item_3.config.subcomponent_analysis_allocations = {
-        "0": "50",
-        "1": "50",
-    }
-    item_3.config.save()
+    SubcomponentCostAllocationFactory(
+        subcomponent_analysis=subcomponent_cost_analysis,
+        cli_config=item_2.config,
+        allocations={
+            "0": "75",
+            "1": "25",
+        },
+    )
+    SubcomponentCostAllocationFactory(
+        subcomponent_analysis=subcomponent_cost_analysis,
+        cli_config=item_3.config,
+        allocations={
+            "0": "50",
+            "1": "50",
+        },
+    )
 
     assert subcomponent_cost_analysis.cost_line_item_average() == [70.0, 30.0]

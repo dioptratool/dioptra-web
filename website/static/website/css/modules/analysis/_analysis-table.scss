@@ -6,6 +6,7 @@
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  border-top: 1px solid $color-white;
 }
 
 .analysis-table__wrapper--allocate {
@@ -15,48 +16,132 @@
 // Expand /collpase behaviors
 .analysis-table__category-content {
   display: none;
-  
+
   .analysis-table__category--active & {
     display: block;
-  } 
+  }
+}
+
+.analysis-table__category-content--freeze-row {
+  table {
+    overflow-y: auto;
+  }
+  .analysis-table__wrapper {
+    overflow-y: auto;
+    overflow-x: initial;
+    max-height: 95dvh;
+  }
+  .analysis-table__table > thead {
+    position: sticky;
+    top: 0;
+    z-index: 11;
+  }
+  .analysis-table__table > thead > tr > th:last-child {
+    border-right: 1px solid $color-white;
+  }
+  [data-dragged-y=true] .analysis-table__table > thead {
+    box-shadow: 0 1rem 1rem -1rem rgba(0, 0, 0, 0.2);
+  }
+  
 }
 .analysis-table__category-content--freeze-col {
   position: relative;
-  .analysis-table__table > thead > tr:not(.analysis-table__transaction-row),
-  .analysis-table__table > tbody > tr:not(.analysis-table__transaction-row) {
-    & > td:first-child,
-    & > th:first-child {
-      position: absolute;
+
+  .analysis-table__table>thead>tr:first-child:not(.analysis-table__transaction-row),
+  .analysis-table__table>tbody>tr:first-child:not(.analysis-table__transaction-row) {
+
+    &>td:first-child,
+    &>th:first-child {
+      position: sticky;
       left: 0;
       width: 25rem;
       z-index: 10;
     }
-    & > th:first-child {
+
+    &>th:first-child {
       background-color: rgb(16, 69, 122) !important;
-      height: 6.5rem;
     }
-    & > td:first-child {
+
+    &>td:first-child {
       background-color: white;
       min-height: 5rem;
     }
   }
-  .analysis-table__table > .analysis-table__tbody--transactions-active > tr > td:first-child {
+
+  .analysis-table__table>.analysis-table__tbody--transactions-active>tr>td:first-child {
     background-color: $color-table-blue;
     min-height: 5rem;
   }
-  .analysis-table__table {
-    margin-left: 25rem;
-    width: auto;
-    min-width: calc(100% - 25rem);
-  }
+
   .analysis-table__transactions-detail {
     position: relative;
-    left: -25rem;
-    width: calc(100% + 25rem);
 
     th {
       padding-top: 0.5rem;
     }
+  }
+
+  // shadow for frozen cells
+  [data-dragged-x=true] .analysis-table__table> :is(tbody, thead)>tr:not(.analysis-table__transaction-row) {
+
+    &>td:first-child,
+    &>th:first-child {
+      &:after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 100%;
+        width: 1rem;
+        background: linear-gradient(90deg, black, transparent 50%);
+        opacity: 0.1;
+        pointer-events: none;
+      }
+    }
+  }
+
+  &:has(.analysis-table__bulk-update-checkbox) {
+    .analysis-table__table>:is(tbody, thead)>tr:first-child:not(.analysis-table__transaction-row) {
+      &>td:first-child {
+        width: 4rem;
+      }
+      &>td:nth-child(2) {
+        position: sticky;
+        left: 4rem;
+        width: 25rem;
+        z-index: 10;
+      }
+
+      &>td:nth-child(2) {
+        background-color: white;
+        min-height: 5rem;
+      }
+    }
+
+    [data-dragged-x=true] {
+      .analysis-table__table>thead>tr:first-child>th:first-child {
+        border-right: none;
+      }
+      .analysis-table__table>:is(tbody, thead)>tr:first-child:not(.analysis-table__transaction-row) {
+        &>td:first-child::after {
+          display: none;
+        }
+        &>td:nth-child(2)::after {
+          content: "";
+          display: block;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 100%;
+          width: 1rem;
+          background: linear-gradient(90deg, black, transparent 50%);
+          opacity: 0.1;
+          pointer-events: none;
+        }
+      }
+    }
+    
   }
 }
 
@@ -134,17 +219,20 @@
     border-radius: 4px;
   }
 }
+
 .analysis-table__category-header-left {
   min-width: 39.1rem;
 }
 
 .analysis-table__header,
 .analysis-table__category-header {
+
   .analysis-table__category-header-left,
-  .analysis-table__category-header-right { 
+  .analysis-table__category-header-right {
     display: flex;
     align-items: center;
   }
+
   .analysis-table__category-header-left {
     position: relative;
     flex-grow: 1;
@@ -155,16 +243,19 @@
     }
   }
 }
+
 .analysis-table__header .analysis-table__category-header-left {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   column-gap: 2rem;
   min-width: 40.5rem;
+
   .analysis-table__summary {
     margin: 0;
   }
 }
+
 .analysis-table__category-header {
   align-items: center;
   border-top: 1px solid $color-smoke;
@@ -172,7 +263,7 @@
   padding: 1.2rem 0 1.3rem 1.4rem;
   position: relative;
 
-  
+
 
   .analysis-table__category--active & {
     background-color: $color-lapis;
@@ -185,14 +276,14 @@
 
     .analysis-table__category--active & {
       border-color: $color-white;
-    }    
+    }
   }
 
   .analysis-table__category:first-child & {
     border-color: $color-lapis;
-  } 
+  }
 
-  .analysis-table__category--active + .analysis-table__category & {
+  .analysis-table__category--active+.analysis-table__category & {
     border-top-color: $color-white;
   }
 }
@@ -214,17 +305,17 @@
   border-radius: 6px;
   flex: 0 0 auto;
   margin-right: 1.8rem;
-  padding: 1rem 1.6rem;  
+  padding: 1rem 1.6rem;
   @include font-size(14, 1.1429);
 
   .analysis-table__category--active & {
     display: none;
   }
-  
+
   &.analysis-table__cost-items--confirmed {
     background-color: rgb(218, 239, 222);
     color: rgb(40, 88, 49);
-    min-width: 23rem;    
+    min-width: 23rem;
   }
 }
 
@@ -246,7 +337,7 @@
 
   .analysis-table__category--active & {
     display: none;
-  }    
+  }
 }
 
 .analysis-table__category-toggle {
@@ -278,14 +369,14 @@
 }
 
 .analysis-table__category-toggle-icon {
-  height: 100%;  
-  width: 100%;  
+  height: 100%;
+  width: 100%;
 
   svg {
     left: 50%;
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%);    
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -309,30 +400,35 @@
 
 //tables
 .analysis-table__table {
-  border-top: 1px solid $color-white;
+  border-collapse: separate;
   margin-top: 0;
   margin-bottom: 0;
   text-align: left;
   width: 100%;
 
-  > thead > tr > th {
+  >thead>tr>th {
     background-color: $color-lapis;
     border-right: 1px solid $color-white;
+    border-bottom: 1px solid $color-white;
     color: $color-white;
     font-weight: $font-weight-bold;
     padding: 1rem;
-    vertical-align: top;
+    vertical-align: middle;
     @include font-size(13, 1.153846154);
+
+    &:first-child {
+      border-left: none;
+    }
 
     &:last-child {
       border-right: none;
     }
   }
 
-  > tbody > tr > td {
+  >tbody>tr>td {
     border: none;
     padding: 1rem;
-    vertical-align: top;
+    vertical-align: middle;
     @include font-size(13, 1.153846154);
 
     &.analysis-table__transaction-cell,
@@ -344,7 +440,7 @@
   &.analysis-table__table--fix-data {
     border: 1px solid $color-lapis;
 
-    > thead > tr > th {
+    >thead>tr>th {
       vertical-align: middle;
     }
   }
@@ -357,6 +453,7 @@
 
 $analysis-table-site-cell-width: 8.8rem;
 $analysis-table-sector_code-cell-width: 6rem;
+
 .analysis-table__site-cell {
   min-width: $analysis-table-site-cell-width;
 
@@ -370,9 +467,11 @@ $analysis-table-sector_code-cell-width: 6rem;
 }
 
 $analysis-table-site-description-width: 12rem;
+
 .analysis-table__description-cell {
   min-width: $analysis-table-site-description-width;
-  > p {
+
+  >p {
     margin: 0;
     // display: -webkit-box;
     // -webkit-box-orient: vertical;
@@ -382,21 +481,25 @@ $analysis-table-site-description-width: 12rem;
 }
 
 $analysis-table-amount-cell-width: 9rem;
+
 .analysis-table__amount-cell {
   min-width: $analysis-table-amount-cell-width;
   text-align: right;
 }
 
 $analysis-table-intervention-cell-width: 8rem;
+
 .analysis-table__intervention-cell {
   min-width: $analysis-table-intervention-cell-width;
   text-align: right;
 }
+
 .analysis-table__intervention-header {
   text-align: right;
 }
 
 $analysis-table-total-cell-width: 8.3rem;
+
 .analysis-table__item-total-cell {
   min-width: $analysis-table-total-cell-width;
   text-align: right;
@@ -406,34 +509,26 @@ $analysis-table-edit-cell-width: 25.4rem;
 $analysis-table-edit-cell-width-narrow: 13rem;
 $analysis-table-edit-cell-width-tablet: 16rem;
 $analysis-table-dropdown-cell-width: 19rem;
+
 .analysis-table__edit-cell {
   text-align: right;
 
-  @media (max-width: $breakpoint-desktop - 1px) {
-    min-width: $analysis-table-edit-cell-width-tablet - 1rem;
-  }
-
-  .analysis-table__table--fix-data .analysis-table__transaction-table & {
-    min-width: $analysis-table-dropdown-cell-width * 2;
-
-    @media (max-width: $breakpoint-desktop - 1px) {
-      min-width: $analysis-table-edit-cell-width-tablet * 2;
-    }    
-  }
-
   .analysis-table__confirm-categories & {
     min-width: $analysis-table-edit-cell-width-narrow;
-    .help + .analysis-table__help-in-th-label {
+
+    .help+.analysis-table__help-in-th-label {
       margin-left: 34px;
       margin-top: -20px;
     }
   }
 }
-.analysis-table__table > thead > tr > th.analysis-table__edit-cell {
+
+.analysis-table__table>thead>tr>th.analysis-table__edit-cell {
   background-color: #3570AB;
   text-align: left;
 }
-.analysis-table__table > tbody > tr > td.analysis-table__edit-cell {
+
+.analysis-table__table>tbody>tr>td.analysis-table__edit-cell {
   background-color: #F1F4F8;
   text-align: left;
 }
@@ -461,13 +556,14 @@ $analysis-table-dropdown-cell-width: 19rem;
 
 .analysis-table__cost-item-summary {
   margin-left: -0.4rem;
-  padding-left: 0.2rem;  
+  padding-left: 0.2rem;
   position: relative;
 }
 
 .analysis-table__cost-item-title {
   margin-bottom: 0.4rem;
   @include font-size(14, 1.1429);
+  width: 25rem;
 }
 
 .analysis-table__cost-item-transactions-summary {
@@ -498,6 +594,7 @@ $analysis-table-dropdown-cell-width: 19rem;
 }
 
 $analysis-table__category-edit-note-width: 8rem;
+
 .analysis-table__category-edit--note {
   display: inline-block;
   min-width: $analysis-table__category-edit-note-width;
@@ -555,10 +652,10 @@ $analysis-table__category-edit-note-width: 8rem;
 
 .analysis-table__transactions-toggle-icon--collapse {
   display: none;
-  
+
   .analysis-table__tbody--transactions-active & {
     display: block;
-  }  
+  }
 }
 
 .analysis-table__category--transactions-active {
@@ -642,8 +739,8 @@ $analysis-table__category-edit-note-width: 8rem;
 
     &:hover {
       background-color: darken($color-table-accent-blue, 10%);
-    }    
-  }  
+    }
+  }
 }
 
 .analysis-table__edit-table {
@@ -653,7 +750,7 @@ $analysis-table__category-edit-note-width: 8rem;
   text-align: right;
   width: 100%;
 
-  tbody > tr > td {
+  tbody>tr>td {
     padding: 1rem;
   }
 }
@@ -717,7 +814,7 @@ $analysis-table__category-edit-note-width: 8rem;
 
   .analysis-table__tbody--edit-active & {
     display: block;
-  }  
+  }
 }
 
 .analysis-table__category-edit-active-label--note {
@@ -830,9 +927,11 @@ $analysis-table__category-edit-note-width: 8rem;
     margin-bottom: 0;
     align-items: center;
   }
+
   .analysis-table__category-header {
     padding-block: 0;
   }
+
   .analysis-table__summary {
     flex-grow: 1;
   }
@@ -841,10 +940,11 @@ $analysis-table__category-edit-note-width: 8rem;
     .analysis-table__set-contribution {
       background-color: rgb(16, 69, 122);
     }
+
     .analysis-table__category-header-right {
       margin-right: -1px;
 
-      > *:first-child {
+      >*:first-child {
         border-left: 1px solid #fff;
       }
     }
@@ -868,6 +968,12 @@ $analysis-table__category-edit-note-width: 8rem;
   }
 }
 
+.analysis-table__intervention-title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 100%;
+}
+
 .analysis-table__intervention-header,
 .analysis-table__set-contribution {
   width: min(17.7rem, 15vw);
@@ -881,8 +987,9 @@ $analysis-table__category-edit-note-width: 8rem;
     border-right: none;
   }
 }
+
 .analysis-table__intervention-header,
-.analysis-table__table > thead > tr > th.analysis-table__intervention-header {
+.analysis-table__table>thead>tr>th.analysis-table__intervention-header {
   font-size: 1.4rem;
   font-weight: 700;
   background-color: #3570AB;
@@ -907,11 +1014,13 @@ $analysis-table__category-edit-note-width: 8rem;
     &.checked {
       background-color: #C4DEF7;
     }
+
     span {
       font-size: 1.4rem;
       padding-left: 0.8rem;
     }
   }
+
   input[type="checkbox"] {
     width: 2rem;
     height: 2rem;
@@ -919,14 +1028,16 @@ $analysis-table__category-edit-note-width: 8rem;
     border: 1px solid #909AA2;
     border-radius: 3px;
     line-cap: round;
-    
+
     &:checked {
       accent-color: #46A458;
     }
   }
 }
+
 // Allocate
 .analysis-table__allocated-input-group {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -942,16 +1053,17 @@ $analysis-table__category-edit-note-width: 8rem;
 input[type="text"].analysis-table__allocated-input {
   min-height: 0;
   padding: 0.6rem 0.8rem;
-  width: 5.5rem;
+  width: 6rem;
   text-align: right;
   @include font-size(14, 1.1428);
 }
+
 .analysis-table__allocated-input-suffix {
   @include font-size(14, 1.1428);
   color: $color-smoke;
   padding: 0.2rem 1.5rem 0.2rem 0.2rem;
   margin-right: auto;
-  margin-left: 0;
+  margin-left: 0.2rem;
 }
 
 .analysis-table__allocated-total-wrapper {
@@ -960,46 +1072,81 @@ input[type="text"].analysis-table__allocated-input {
   justify-content: flex-end;
   gap: 0.5em;
 }
+
 .analysis-table__allocated-total {
   font-weight: $font-weight-bold;
   padding: 0.7rem 0.8rem;
   border-radius: 6px;
   min-width: 7rem;
 }
+
 .analysis-table__allocated-apply-all-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
   font-weight: $font-weight-bold;
-  color: $color-smoke;
+  background-color: $color-blue;
+  border: none;
+  border-radius: 0.2rem;
+  color: $color-white;
+  padding: 0.8rem 1.5rem;
+  font-weight: $font-weight-bold;
   text-decoration: none;
+  transition: all $transition-duration-default ease;
+  @include font-size(13, 1.125);
+
+  &:hover, &:focus {
+    background-color: darken($color-blue, 10%);
+    color: $color-white;
+    text-decoration: none;
+  }
 
   span {
     text-wrap: nowrap;
-  }
-
-  &:hover {
-    color: $color-lapis;
-    text-decoration: underline;
   }
 }
 
 .analysis-table__allocated-apply-all-link-wrapper {
   display: none;
+  align-items: center;
+  position: absolute;
+  margin-left: -0.5rem;
+  padding: 0.6rem 0 0.6rem 8.5rem;
+  background-color: $color-lapis;
+  border-radius: 0.4rem;
+  box-shadow: 0px 4px 4px 0px rgba(16, 69, 122, 0.2);
   text-align: right;
+  z-index: 1;
 
-  .analysis-table__tbody:first-of-type & {
-    display: inline-flex;
-
-    @media (max-width: $breakpoint-desktop - 1px) {
-      display: inline-flex;
-      margin-bottom: 0.5rem;
-      text-align: right;
-    }
-  }  
+  .help__button svg {
+    background: white;
+    border-radius: 0.4rem;
+    margin-inline: 0.4rem;
+  }
 }
 
-.analysis-table__table > tbody > tr.error {
+:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within {
+  .analysis-table__allocated-apply-all-link-wrapper {
+    display: inline-flex;
+  }
+
+  input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
+    position: relative;
+    z-index: 2;
+
+    &:focus {
+      outline: 2px solid -webkit-focus-ring-color;
+    }
+
+    &~.analysis-table__allocated-input-suffix {
+      color: white;
+      z-index: 2;
+    }
+  }
+}
+
+.analysis-table__table>tbody>tr.error {
+
   .analysis-table__allocated-input,
   .analysis-table__allocated-total {
     background-color: rgba(253, 232, 232, 1);
@@ -1020,12 +1167,13 @@ input[type="text"].analysis-table__allocated-input {
   span {
     display: block;
   }
-  > * {
+
+  >* {
     flex: 0 0 20%;
   }
 }
 
-.analysis-table__shared-cost-estimate-sub  {
+.analysis-table__shared-cost-estimate-sub {
   background-color: rgb(241, 244, 248);
   border-radius: 6px;
   display: flex;
@@ -1209,7 +1357,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 // Fix data 
-.analysis-table__table > tbody > tr > td.analysis-table__bulk-update-checkbox {
+.analysis-table__table>tbody>tr>td.analysis-table__bulk-update-checkbox {
   padding: 0;
 }
 
@@ -1219,6 +1367,7 @@ input[type="text"].analysis-table__allocated-input {
   display: flex;
   justify-content: flex-start;
 }
+
 .analysis-table__pagination-status {
   font-style: italic;
   margin-right: 3.7rem;
@@ -1238,7 +1387,9 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__prev-next--disabled {
-  &,&:hover {
+
+  &,
+  &:hover {
     color: rgba(255, 255, 255, 0.25);
   }
 }

@@ -1,22 +1,20 @@
-import json
 from decimal import Decimal
 
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from website.betterdb import bulk_update_dicts
-from website.models import CostLineItem, CostLineItemConfig
-from website.models.field_types import SubcomponentLabelsType
+from website.models.cost_line_item import CostLineItem, CostLineItemConfig
+from website.models.field_types import SubcomponentAnalysisValuesType, SubcomponentLabelsType
 from website.models.fields import TypedJsonField
+from website.models.query_utils import require_prefetch
 from .category import Category
-from .cost_type import CostType, Indirect, ProgramCost, Support
+from .cost_type import CostType, Indirect, Support
 
 
 class SubcomponentCostAnalysis(models.Model):
-    analysis = models.OneToOneField(
-        "website.Analysis",
-        verbose_name=_("Analysis"),
+    intervention_instance = models.OneToOneField(
+        "website.InterventionInstance",
+        verbose_name=_("Intervention"),
         on_delete=models.CASCADE,
         related_name="subcomponent_cost_analysis",
     )
@@ -28,7 +26,6 @@ class SubcomponentCostAnalysis(models.Model):
         null=True,
     )
 
-    subcomponent_labels_confirmed = models.BooleanField(default=False)
     cloned_from = models.ForeignKey(
         "website.SubcomponentCostAnalysis",
         on_delete=models.SET_NULL,
@@ -42,30 +39,54 @@ class SubcomponentCostAnalysis(models.Model):
         verbose_name_plural = _("Subcomponent Cost Analyses")
 
     def __str__(self):
-        return f"Subcomponent Analysis for {self.analysis.title}"
+        return f"Subcomponent Analysis for {self.intervention_instance.display_name()}"
+
+    @property
+    def analysis(self):
+        return self.intervention_instance.analysis
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.subcomponent_labels:
-            all_labels = []
-            for intervention in self.analysis.interventions.all():
-                all_labels += intervention.subcomponent_labels
-            self.subcomponent_labels = all_labels
+            self.subcomponent_labels = self.intervention_instance.intervention.subcomponent_labels
         super().save(*args, **kwargs)
+
+    def _allocated_cost_for_intervention(self, cost_line_item: CostLineItem) -> Decimal:
+        for allocation in cost_line_item.config.allocations.all():
+            if allocation.intervention_instance_id == self.intervention_instance_id:
+                return cost_line_item.total_cost * (Decimal(allocation.allocation) / Decimal(100))
+        return Decimal("0")
+
+    def _subcomponent_allocation_entries(self) -> list[tuple[CostLineItemConfig, dict, bool]]:
+        return [
+            (
+                allocation_row.cli_config,
+                allocation_row.allocations or {},
+                allocation_row.skipped,
+            )
+            for allocation_row in self.allocations.select_related(
+                "cli_config",
+                "cli_config__cost_line_item",
+                "cli_config__cost_type",
+                "cli_config__category",
+            )
+            .prefetch_related("cli_config__allocations")
+            .all()
+        ]
 
     def allocated_totals(self):
         subcomponent_allocations = []
-        cost_items = self.analysis.cost_line_items.all().with_config_and_allocations()
-        for each_cost_item in cost_items:
-            if not each_cost_item.config.subcomponent_analysis_allocations:
+        for cli_config, allocations, skipped in self._subcomponent_allocation_entries():
+            if not allocations:
                 continue
-            if each_cost_item.config.subcomponent_analysis_allocations_skipped:
+            if skipped:
                 continue
+            each_cost_item = cli_config.cost_line_item
 
             # Get the value of each subcomponent allocation
             subcomponent_allocations.append(
                 [
-                    Decimal(v) / 100 * each_cost_item.allocated_cost_on_model
-                    for v in each_cost_item.config.subcomponent_analysis_allocations.values()
+                    Decimal(v) / 100 * self._allocated_cost_for_intervention(each_cost_item)
+                    for v in allocations.values()
                 ]
             )
 
@@ -78,6 +99,7 @@ class SubcomponentCostAnalysis(models.Model):
         cost_type: CostType | None = None,
         category: Category | None = None,
         grant: str | None = None,
+        analysis_cost_type: int | None = None,
         exclude_support_costs: bool = True,
     ) -> list[Decimal]:
         """
@@ -90,38 +112,40 @@ class SubcomponentCostAnalysis(models.Model):
         """
         subcomponent_allocations = []
         total_cost_for_clis_with_subcomponent_value = 0
-        each_cost_item: CostLineItem
-        cost_items = self.analysis.cost_line_items.cost_type_category_items().with_config_and_allocations()
-        for each_cost_item in cost_items:
-            if not each_cost_item.config.subcomponent_analysis_allocations:
+        for each_config, allocations, skipped in self._subcomponent_allocation_entries():
+            each_cost_item = each_config.cost_line_item
+            if each_cost_item.is_special_lump_sum:
                 continue
-            if cost_type is not None and each_cost_item.config.cost_type != cost_type:
+            if analysis_cost_type is None and each_config.analysis_cost_type:
                 continue
-            if category is not None and each_cost_item.config.category != category:
+            if analysis_cost_type is not None and each_config.analysis_cost_type != analysis_cost_type:
+                continue
+            if not allocations:
+                continue
+            if cost_type is not None and each_config.cost_type != cost_type:
+                continue
+            if category is not None and each_config.category != category:
                 continue
             if grant is not None and each_cost_item.grant_code != grant:
                 continue
 
-            if each_cost_item.config.subcomponent_analysis_allocations_skipped:
+            if skipped:
                 continue
 
-            if each_cost_item.config.cost_type and each_cost_item.config.cost_type.type == Indirect.id:
+            if each_config.cost_type and each_config.cost_type.type == Indirect.id:
                 continue
 
-            if (
-                exclude_support_costs
-                and each_cost_item.config.cost_type
-                and each_cost_item.config.cost_type.type == Support.id
-            ):
+            if exclude_support_costs and each_config.cost_type and each_config.cost_type.type == Support.id:
                 continue
 
+            intervention_allocated_cost = self._allocated_cost_for_intervention(each_cost_item)
             subcomponent_allocations.append(
                 [
-                    (Decimal(allocation_percentage) / 100) * each_cost_item.allocated_cost_on_model
-                    for allocation_percentage in each_cost_item.config.subcomponent_analysis_allocations.values()
+                    (Decimal(allocation_percentage) / 100) * intervention_allocated_cost
+                    for allocation_percentage in allocations.values()
                 ]
             )
-            total_cost_for_clis_with_subcomponent_value += each_cost_item.allocated_cost_on_model
+            total_cost_for_clis_with_subcomponent_value += intervention_allocated_cost
 
         # Add up all the subcomponents of the same type and then divide them with the total of the Cost Line Items
         # This return a list of Average Percentages for Each Subcomponent Label
@@ -144,53 +168,68 @@ class SubcomponentCostAnalysis(models.Model):
 
         return averages
 
-    def calculate_and_apply_allocations_to_shared_costs_and_skipped_items(self):
-        empty_shared_cost_line_items = (
-            self.analysis.cost_line_items.exclude(
-                config__cost_type__type=ProgramCost().id,
-            )
-            .filter(
-                Q(config__subcomponent_analysis_allocations={})
-                | Q(config__subcomponent_analysis_allocations__isnull=True),
-            )
-            .all()
-        )
-
-        skipped_cost_line_items = self.analysis.cost_line_items.filter(
-            config__subcomponent_analysis_allocations_skipped=True
-        ).all()
-
-        cost_line_item_updates = []
-        for cli in empty_shared_cost_line_items.union(skipped_cost_line_items):
-            if cli.config.id:
-                new_cli_info = {
-                    "id": cli.config.id,
-                    "subcomponent_analysis_allocations": json.dumps(
-                        dict(enumerate(map(str, self.cost_line_item_average())))
-                    ),
-                    "subcomponent_analysis_allocations_skipped": False,
-                }
-                cost_line_item_updates.append(new_cli_info)
-
-        bulk_update_dicts(
-            model_cls=CostLineItemConfig,
-            dicts=cost_line_item_updates,
-            pk="id",
-            value_template="(%s,CAST(%s AS jsonb),%s)",
-        )
-
     def reset_cost_line_items(self):
-        bulk_update_dicts(
-            model_cls=CostLineItemConfig,
-            dicts=[
-                {
-                    "id": cli.config.id,
-                    "subcomponent_analysis_allocations": [],
-                    "subcomponent_analysis_allocations_skipped": False,
-                }
-                for cli in self.analysis.cost_line_items.all()
-                if cli.config.id
-            ],
-            pk="id",
-            value_template="(%s,CAST(%s AS jsonb),%s)",
-        )
+        self.allocations.all().delete()
+
+
+class SubcomponentCostAllocation(models.Model):
+    subcomponent_analysis = models.ForeignKey(
+        "website.SubcomponentCostAnalysis",
+        verbose_name=_("Subcomponent Cost Analysis"),
+        on_delete=models.CASCADE,
+        related_name="allocations",
+    )
+    cli_config = models.ForeignKey(
+        "website.CostLineItemConfig",
+        verbose_name=_("Cost Line Item Config"),
+        on_delete=models.CASCADE,
+        related_name="subcomponent_cost_allocations",
+    )
+    allocations = TypedJsonField(
+        typed_json=SubcomponentAnalysisValuesType,
+        default=dict,
+        null=True,
+    )
+    skipped = models.BooleanField(default=False)
+    cloned_from = models.ForeignKey(
+        "website.SubcomponentCostAllocation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+
+    class Meta:
+        verbose_name = _("Subcomponent Cost Allocation")
+        verbose_name_plural = _("Subcomponent Cost Allocations")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["subcomponent_analysis", "cli_config"],
+                name="unique_subcomponent_allocation_per_config",
+            )
+        ]
+
+
+def requires_subcomponent_allocation(cost_line_item) -> bool:
+    return not (cost_line_item.is_special_lump_sum or cost_line_item.config.analysis_cost_type)
+
+
+def subcomponent_allocation_complete(cost_line_item, subcomponent_analysis) -> bool:
+    """
+    A cost line item's subcomponent allocation is complete when it is skipped or
+    has a value for every subcomponent label and those values total exactly 100.
+    """
+    for allocation in require_prefetch(cost_line_item.config, "subcomponent_cost_allocations"):
+        if allocation.subcomponent_analysis_id != subcomponent_analysis.id:
+            continue
+        if allocation.skipped:
+            return True
+        if not allocation.allocations:
+            return False
+        expected_indexes = {
+            str(idx) for idx, _label in enumerate(subcomponent_analysis.subcomponent_labels or [])
+        }
+        if set((allocation.allocations or {}).keys()) != expected_indexes:
+            return False
+        return sum(Decimal(value) for value in allocation.allocations.values()) == Decimal(100)
+    return False

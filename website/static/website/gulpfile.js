@@ -64,6 +64,7 @@ var jsFiles = [
   './js/analysis-categories.js',
   './js/fix-missing-data.js',
   './js/categorize-cost_type.js',
+  './js/allocate-bulk.js',
   './js/ajax-transactions.js',
   './js/filters.js',
   './js/help.js',

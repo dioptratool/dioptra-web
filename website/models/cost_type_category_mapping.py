@@ -104,7 +104,6 @@ class CostTypeCategoryMapping(models.Model):
                     "id": cost_line_item.config.id,
                     "cost_type_id": cost_line_item.config.cost_type_id,
                     "category_id": cost_line_item.config.category_id,
-                    "subcomponent_analysis_allocations_skipped": cost_line_item.config.subcomponent_analysis_allocations_skipped,
                 }
                 is_new = False
             else:
@@ -112,7 +111,6 @@ class CostTypeCategoryMapping(models.Model):
                     "cost_line_item_id": cost_line_item.id,
                     "cost_type_id": None,
                     "category_id": None,
-                    "subcomponent_analysis_allocations_skipped": False,
                 }
                 is_new = True
             # We can have a LOT of line items.

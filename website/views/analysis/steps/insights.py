@@ -64,9 +64,6 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
                 output_cost_all = output_costs[output_metric.id]["all"]
                 output_cost_direct_only = output_costs[output_metric.id]["direct_only"]
 
-                context["subcomponent_analysis_complete"] = self.step.workflow.get_step(
-                    "allocate-subcomponent-costs"
-                ).is_complete
                 output_cost_in_kind = 0
 
                 serialized_metric = {
@@ -133,11 +130,14 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             reverse("analysis", args=(self.analysis.id,))
         )
         context["cost_breakdown"] = {}
+        context["subcomponent_analysis_breakdown_by_intervention"] = {}
         for each_intervention_instance in self.analysis.interventioninstance_set.all():
             context["cost_breakdown"][each_intervention_instance.id] = self._get_cost_breakdown_data(
                 each_intervention_instance
             )
-        context["subcomponent_analysis_breakdown"] = self._get_subcomponent_analysis_breakdown_data()
+            context["subcomponent_analysis_breakdown_by_intervention"][each_intervention_instance.id] = (
+                self._get_subcomponent_analysis_breakdown_data(each_intervention_instance)
+            )
         context["parameters_lookup"] = self._get_formatted_parameter_values()
 
         if self.analysis.currency_code and self.analysis.currency_code != settings.ISO_CURRENCY_CODE:
@@ -307,20 +307,30 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             return index_of_space
         return self._insights_chart_label_find_break(string, index_of_space + 1)
 
-    def _get_subcomponent_analysis_breakdown_data(self):
+    def _get_subcomponent_analysis_breakdown_data(self, intervention_instance: InterventionInstance):
         chart_data = {}
-        if self.workflow.get_step("allocate-subcomponent-costs").is_complete:
+        in_kind_chart_data = {}
+        if hasattr(intervention_instance, "subcomponent_cost_analysis"):
+            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
             chart_data = dict(
                 zip(
-                    self.analysis.subcomponent_cost_analysis.subcomponent_labels,
-                    self.analysis.subcomponent_cost_analysis.cost_line_item_average(
-                        exclude_support_costs=False
-                    ),
+                    subcomponent_analysis.subcomponent_labels,
+                    subcomponent_analysis.cost_line_item_average(),
                 )
             )
+            if self.analysis.in_kind_contributions:
+                in_kind_chart_data = dict(
+                    zip(
+                        subcomponent_analysis.subcomponent_labels,
+                        subcomponent_analysis.cost_line_item_average(
+                            analysis_cost_type=AnalysisCostType.IN_KIND,
+                        ),
+                    )
+                )
 
         return {
             "chart_data": chart_data,
+            "in_kind_chart_data": in_kind_chart_data,
         }
 
     def _get_cost_breakdown_data(self, intervention_instance: InterventionInstance):

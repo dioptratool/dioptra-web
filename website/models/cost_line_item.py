@@ -11,8 +11,6 @@ from django.db.models.functions import Coalesce, Length, NullIf, StrIndex, Subst
 from django.utils.translation import gettext_lazy as _
 
 from website.models.intervention_instance import InterventionInstance
-from website.models.field_types import SubcomponentAnalysisValuesType
-from website.models.fields import TypedJsonField
 from website.models.query_utils import require_prefetch
 
 
@@ -305,20 +303,6 @@ class CostLineItem(models.Model):
         item.allocation = allocation
         item.save()
 
-    def labeled_subcomponent_analysis_allocations(self) -> list[tuple[str, Decimal]]:
-        """
-        Zip the Labels in the subcomponent_cost_analysis with the values in the CostLineItemConfig
-
-        This is done to populate the initial values on the form without including things that don't have labels.
-        """
-        labeled_values = []
-        if not self.config.subcomponent_analysis_allocations:
-            self.config.subcomponent_analysis_allocations = {}
-        for i, label in enumerate(self.analysis.subcomponent_cost_analysis.subcomponent_labels):
-            value = self.config.subcomponent_analysis_allocations.get(str(i), Decimal(0))
-            labeled_values.append((label, value))
-        return labeled_values
-
 
 class AnalysisCostType(IntEnum):
     CLIENT_TIME = 1
@@ -371,14 +355,6 @@ class CostLineItemConfig(models.Model):
         null=True,
         blank=True,
         related_name="+",
-    )
-    subcomponent_analysis_allocations = TypedJsonField(
-        typed_json=SubcomponentAnalysisValuesType,
-        default=dict,
-        null=True,
-    )
-    subcomponent_analysis_allocations_skipped = models.BooleanField(
-        default=False,
     )
 
     @property

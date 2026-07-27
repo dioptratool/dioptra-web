@@ -1,0 +1,85 @@
+{% extends "analysis/base.html" %}
+{% load analysis help humanize i18n static website_tags %}
+
+{% block extrascript %}
+    <script src="{% static 'website/steps/interventions-step.js' %}"></script>
+{% endblock extrascript %}
+
+{% block analysis_header %}
+    <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+        <h1 class="analysis__title">{{ title }}</h1>
+        {% help 'step_guidance__interventions' %}
+    </div>
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+    <div class="row">
+      <div class="col-md-12">
+        <ul class="analysis-interventions">
+            {% for row in intervention_rows %}
+                <li class="analysis-intervention">
+                    <div class="intervention-info">
+                        <h4>{{ row.instance.display_name }}</h4>
+                        <p class="intervention-subtitle">
+                            {{ row.instance.intervention.name }} /
+                        {% spaceless %}
+                            {% for param in row.params %}
+                                {% if forloop.counter != 1 %}<span>, </span>{% endif %}
+                                {% if param.label == "Value of Cash Distributed" or param.label == "Value of Business Grant Amount" %}
+                                    <span class="parameter">{{ param.label }}: {{ param.value|format_currency:currency }}</span>
+                                {% else %}
+                                    <span class="parameter">{{ param.label }}: {{ param.value|floatformat:2|intcomma }} </span>
+                                {% endif %}
+                            {% endfor %}
+                        {% endspaceless %}
+                        </p>
+                    </div>
+                    {% if row.subcomponent_labels %}
+                        <div class="intervention-subcomponent-analysis">
+                            <strong class="intervention-subcomponent-analysis__title">{% translate 'Sub-Component Analysis' %}</strong>
+                            <span class="intervention-subcomponent-analysis__labels">
+                                {% for label in row.subcomponent_labels %}
+                                    {{ label }}{% if not forloop.last %} - {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="intervention-subcomponent-analysis__actions">
+                                | <a href="{{ row.subcomponent_labels_url }}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
+                                {% if not labels_locked %}
+                                    <a href="{{ row.subcomponent_delete_url }}" data-panels-trigger data-panels-reload-on="deleted">{% translate 'Delete' %}</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% elif not labels_locked %}
+                        <p class="intervention-actions">
+                            <a href="{{ row.subcomponent_labels_url }}" class="intervention-action" data-panels-trigger data-panels-reload-on="saved">
+                                {% translate 'Add Sub-Component Analysis' %}
+                            </a>
+                        </p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <button type="button" class="set-interventions manage-interventions" data-href="{{ manage_url }}">
+            <span>
+                {% if intervention_rows %}
+                    {% translate 'Manage Interventions' %}
+                {% else %}
+                    {% translate 'Add Interventions' %}
+                {% endif %}
+            </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="analysis__actions">
+      {% with next=step.get_next %}
+          {% if next and next.dependencies_met %}
+            <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next" href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</a>
+          {% else %}
+            <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+          {% endif %}
+      {% endwith %}
+    </div>
+{% endblock analysis_content %}

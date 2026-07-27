@@ -23,18 +23,19 @@
 
         {% include "widgets/sortable-select-multiple.html" with choices=choices list_id="subcomponent-labels-added" autosort="false" %}
 
-        {% if not widget.attrs.prevent_add_remove %}
-            <a href="#" id="add-label-link" class="btn btn-primary">Add a label</a>
-        <p class="help_text">Maximum of 8</p>
         <div id="add-label-widget" hidden="hidden">
             <div style="margin-bottom: 0.25rem;">
                 <input type="text" id="add-label-input" class="form-control notrackchange" placeholder="Add new label">
             </div>
             <div>
                 <button type="button" id="add-label-btn" class="btn btn-sm btn-primary" disabled>Add</button>
-                <a class="btn btn-sm btn-cancel" href="#" id="cancel-add-label-btn">Cancel</a>
+                <a class="btn btn-sm btn-alt-cancel" href="#" id="cancel-add-label-btn">Cancel</a>
             </div>
         </div>
+
+        {% if not widget.attrs.prevent_add_remove %}
+            <a href="#" id="add-label-link" class="btn btn-sm btn-primary">Add a label</a>
+        <p class="help_text">Maximum of 8</p>
         {% endif %}
     </div>
 </div>

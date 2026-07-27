@@ -10,8 +10,19 @@
         {{ item }}
         <ol class="subcomponent-chart__breakdown-list">
             {% for label, percentage in chart_data.items %}
-                <li><strong>{{ label }} {{ percentage|floatformat:"0"|intcomma }}%</strong>
-                    ({% calculate_subcomponent_cost total_cost percentage analysis.currency_code %})
+                <li>
+                    <span>
+                        <strong>{{ label }} {{ percentage|floatformat:"0"|intcomma }}%</strong>
+                        ({% calculate_subcomponent_cost total_cost percentage analysis.currency_code %})
+                    </span>
+                    {% with in_kind_percentage=in_kind_chart_data|dict_get:label %}
+                        {% if in_kind_percentage != None %}
+                            <span class="subcomponent-chart__list-item__inkind">
+                                <strong>In-Kind Contributions {{ in_kind_percentage|floatformat:"0"|intcomma }}%</strong>
+                                ({% calculate_subcomponent_cost in_kind_total_cost in_kind_percentage analysis.currency_code %})
+                            </span>
+                        {% endif %}
+                    {% endwith %}
                 </li>
             {% endfor %}
         </ol>

@@ -1,13 +1,21 @@
 from datetime import date
 
 from django.test import TestCase
+from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 
+from website.models import AnalysisCostType
 from website.tests.factories import (
     AnalysisFactory,
+    CostLineItemConfigFactory,
+    CostLineItemFactory,
+    CostLineItemInterventionAllocationFactory,
+    CostTypeFactory,
     CountryFactory,
     InsightComparisonDataFactory,
     InterventionFactory,
+    SubcomponentCostAllocationFactory,
+    SubcomponentCostAnalysisFactory,
 )
 from website.users.models import User
 from website.views.analysis.steps.insights import Insights
@@ -61,7 +69,7 @@ class InsightsTestCase(TestCase):
                 "value": "$100.00",
                 "percent": 10.0,
                 "label": _(
-                    f"""
+                    """
                     Including Program Costs ($600.00), Support Costs and Indirect Costs ($100.00)
                     """
                 ),
@@ -71,7 +79,7 @@ class InsightsTestCase(TestCase):
                 "value": "$300.00",
                 "percent": 30.0,
                 "label": _(
-                    f"""
+                    """
                     Including Program Costs ($600.00), Support Costs and Indirect Costs ($100.00), In-Kind
                     Contributions ($300.00)
                     """
@@ -95,6 +103,101 @@ class InsightsTestCase(TestCase):
         parameter_values = self.insights_view._get_formatted_parameter_values()
 
         assert parameter_values[intervention_instance.id]["Value of Cash Distributed"] == "$10.00"
+
+    def test_subcomponent_breakdown_includes_in_kind_chart_data(self):
+        intervention_instance = self.analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        program_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=100,
+            ),
+            cost_type=None,
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=program_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=program_config,
+            allocations={
+                "0": "60",
+                "1": "40",
+            },
+        )
+        CostTypeFactory(name="Program Costs", type=10, order=1, default=True)
+        support_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=900,
+            ),
+            cost_type=CostTypeFactory(name="Support Costs", type=20, order=2),
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=support_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=support_config,
+            allocations={
+                "0": "0",
+                "1": "100",
+            },
+        )
+        in_kind_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=100,
+            ),
+            analysis_cost_type=AnalysisCostType.IN_KIND,
+            cost_type=None,
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=in_kind_config,
+            intervention_instance=intervention_instance,
+            allocation=50,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=in_kind_config,
+            allocations={
+                "0": "25",
+                "1": "75",
+            },
+        )
+
+        breakdown = self.insights_view._get_subcomponent_analysis_breakdown_data(intervention_instance)
+
+        assert breakdown["chart_data"] == {
+            "Treatment": 60,
+            "Outreach": 40,
+        }
+        assert breakdown["in_kind_chart_data"] == {
+            "Treatment": 25,
+            "Outreach": 75,
+        }
+        rendered = render_to_string(
+            "insights/_subcomponent-chart.html",
+            {
+                "analysis": self.analysis,
+                "chart_data": breakdown["chart_data"],
+                "total_cost": 100,
+                "in_kind_chart_data": breakdown["in_kind_chart_data"],
+                "in_kind_total_cost": 20,
+            },
+        )
+        assert "In-Kind Contributions 25%" in rendered
+        assert "In-Kind Contributions 75%" in rendered
 
 
 class InterventionInsightsTestCase(TestCase):

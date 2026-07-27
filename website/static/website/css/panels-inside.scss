@@ -4,7 +4,10 @@
  * Should be included in panel content pages.
  */
 
-@import 'init/constants-base';
+@import 'init/constants';
 @import 'panels-overrides';
 @import 'panels/css/panels-inside-base';
 @import 'panels-extras';
+
+@import 'modules/analysis/analysis-form-fields';
+@import 'modules/analysis/_analysis-panels.scss'

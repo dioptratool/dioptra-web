@@ -14,8 +14,10 @@ class Insights(Step):
     def dependencies_met(self) -> bool:
         if self.workflow.get_step("add-other-costs").is_enabled:
             return self.workflow.get_step("add-other-costs").is_complete
-        else:
-            return self.workflow.get_step("allocate").is_complete
+        subcomponents_step = self.workflow.get_step("allocate-subcomponents")
+        if subcomponents_step.is_enabled:
+            return subcomponents_step.is_complete
+        return self.workflow.get_step("allocate").is_complete
 
     @cached_property
     def is_complete(self) -> bool:

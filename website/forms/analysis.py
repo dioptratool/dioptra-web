@@ -1,28 +1,25 @@
-import html
-import json
 import re
 from typing import TYPE_CHECKING
 
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.handlers.wsgi import WSGIRequest
 from django.utils.translation import gettext_lazy as _l
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 from ombucore.admin.forms.base import ModelFormBase
-from ombucore.admin.templatetags.panels_extras import jsonattr
 from ombucore.admin.widgets import FlatpickrDateWidget
-from website.currency import currency_code
-from website.forms.fields import AnalysisInterventionManageField
-from website.forms.widgets import AnalysisInterventionDefineWidget, TagEditorWidget
-from website.models import Analysis, Category, CostType, Intervention, InterventionInstance, Settings
-from website.models.field_label import FieldLabelOverrides
-from website.models.utils import (
-    get_all_intervention_parameter_fields,
-    get_intervention_parameter_mapping,
-    get_valid_intervention_parameter,
+from website.forms.fields import SubcomponentLabelField
+from website.forms.widgets import TagEditorWidget
+from website.models import (
+    Analysis,
+    Category,
+    CostType,
+    InterventionInstance,
+    Settings,
+    SubcomponentCostAnalysis,
 )
+from website.models.field_label import FieldLabelOverrides
 
 if TYPE_CHECKING:
     from website.users.models import User
@@ -51,11 +48,6 @@ class DefineForm(forms.ModelForm):
         input_formats=settings.DATE_INPUT_FORMATS,
     )
 
-    intervention_data = forms.JSONField(
-        label=_l("Interventions Being Analyzed"),
-        widget=AnalysisInterventionDefineWidget(),
-    )
-
     class Meta:
         model = Analysis
         fields = [
@@ -66,7 +58,6 @@ class DefineForm(forms.ModelForm):
             "end_date",
             "country",
             "grants",
-            "intervention_data",
             "output_count_source",
             "other_hq_costs",
             "in_kind_contributions",
@@ -84,9 +75,6 @@ class DefineForm(forms.ModelForm):
                 attrs={"class": "form__checkbox_lg"},
             ),
         }
-
-    class Media:
-        js = ("website/steps/define-form.js",)
 
     def __init__(self, *args, **kwargs):
         self.user: User | None = kwargs.pop("user", None)
@@ -113,83 +101,11 @@ class DefineForm(forms.ModelForm):
             if self.instance.client_time_cost_line_items.exists():
                 self.fields["client_time"].disabled = True
 
-        # Prepare data for intervention manage panel
-        if self.instance.pk:
-            intervention_instances = self.instance.interventioninstance_set.all()
-        else:
-            intervention_instances = []
-
-        self.initial["intervention_data"] = []
-        for intervention_instance in intervention_instances:
-            self.initial["intervention_data"].append(self._get_intervention_json(intervention_instance))
-
         # Only allow countries that the User is associated with to be selectable
         self.fields["country"].queryset = self.user.associated_countries
 
     def save(self, commit=True):
         analysis = super().save(commit=commit)
-
-        intervention_data = self.cleaned_data.get("intervention_data")
-        created_intervention_instances_ids = []
-        for i, each_intervention_entry in enumerate(intervention_data):
-            intervention = Intervention.objects.get(pk=each_intervention_entry["id"])
-
-            # Get Parameters
-            parameters = {}
-            for each_param in each_intervention_entry.get("params", []):
-                parameters[each_param["name"]] = float(each_param["value"])
-
-            # Get Label
-            label = each_intervention_entry.get("intervention_label")
-
-            # Get Order
-            order = i
-
-            # Handle removed Intervention Instances
-            current_intervention_instances_ids = InterventionInstance.objects.filter(
-                analysis=analysis
-            ).values_list("id", flat=True)
-
-            updated_intervention_instances_ids = [
-                e.get("instance_pk") for e in intervention_data if e.get("instance_pk", -1) > 0
-            ]
-            for each_id in current_intervention_instances_ids:
-                if (
-                    each_id not in updated_intervention_instances_ids
-                    and each_id not in created_intervention_instances_ids
-                ):
-                    InterventionInstance.objects.get(pk=each_id).delete()
-
-            if each_intervention_entry.get("instance_pk") is not None:
-                # Handle new Intervention Instances
-                if each_intervention_entry.get("instance_pk") <= 0:
-                    new_intervention_instance = analysis.add_intervention(
-                        intervention=intervention,
-                        label=label,
-                        parameters=parameters,
-                    )
-                    created_intervention_instances_ids.append(new_intervention_instance.id)
-
-                # Handle changed Intervention Instances
-                else:
-                    existing_intervention_instance = InterventionInstance.objects.get(
-                        pk=each_intervention_entry["instance_pk"]
-                    )
-                    if intervention.id != existing_intervention_instance.intervention.id:
-                        # Handle scenario where the Intervention Type has changed
-                        existing_intervention_instance.delete()
-                        new_intervention_instance = analysis.add_intervention(
-                            intervention=intervention,
-                            label=label,
-                            parameters=parameters,
-                        )
-                        created_intervention_instances_ids.append(new_intervention_instance.id)
-                    else:
-                        existing_intervention_instance.label = label
-                        existing_intervention_instance.parameters = parameters
-                        existing_intervention_instance.order = order
-                        existing_intervention_instance.save()
-
         analysis.ensure_cost_type_category_objects()
         return analysis
 
@@ -203,55 +119,6 @@ class DefineForm(forms.ModelForm):
             self.add_error("start_date", ValidationError("Start date must be before end date."))
         return cleaned_data
 
-    def _get_intervention_json(
-        self,
-        intervention_instance: InterventionInstance,
-    ) -> dict[str : int | str | list[dict[str:str]]]:
-        params = []
-        fields = get_all_intervention_parameter_fields()
-        for valid_param in get_valid_intervention_parameter(intervention_instance):
-            parameter = fields.get(valid_param)
-            if valid_param in intervention_instance.parameters:
-                if parameter is None:
-                    raise ValueError(
-                        f'Parameter "{valid_param}" not found for Intervention: "{intervention_instance.display_name()}"'
-                    )
-                entry = {
-                    "label": str(parameter.label),
-                    "name": str(valid_param),
-                    "value": intervention_instance.parameters[valid_param],
-                }
-            else:
-                entry = {
-                    "label": str(parameter.label),
-                    "name": str(valid_param),
-                    "value": "",
-                }
-
-            params.append(entry)
-
-        return {
-            "id": intervention_instance.intervention.pk,
-            "instance_pk": intervention_instance.pk,
-            "title": intervention_instance.display_name(),
-            "intervention_name": intervention_instance.intervention.name,
-            "intervention_label": intervention_instance.label,
-            "order": intervention_instance.order,
-            "params": params,
-            "currency": currency_code(analysis=intervention_instance.analysis),
-        }
-
-    def _parameter_field_name(self, field_name) -> str:
-        return f"parameter__{field_name}"
-
-    def parameter_fields(self):
-        """
-        Serves the parameter fields up dynamically for the template to render.
-        """
-        for field_name in self.fields:
-            if "parameter__" in field_name:
-                yield self[field_name]
-
     def clean_grants(self) -> str:
         grants = self.cleaned_data["grants"]
         if grants:
@@ -261,29 +128,6 @@ class DefineForm(forms.ModelForm):
                     raise forms.ValidationError(f'Invalid grant format: "{grant}"')
             grants = ",".join(grants)
         return grants
-
-    def clean_intervention_data(self) -> dict:
-        intervention_data = self.cleaned_data["intervention_data"]
-        errors = []
-        for each_intervention_entry in intervention_data:
-            if (
-                each_intervention_entry.get("intervention_label")
-                and len(each_intervention_entry.get("intervention_label", "")) > 100
-            ):
-                errors.append(
-                    f"Intervention labels must be 100 characters or less."
-                    f" {each_intervention_entry['intervention_label']} is too long."
-                )
-            if each_intervention_entry.get("params"):
-                for each_param in each_intervention_entry.get("params"):
-                    if not each_param.get("value"):
-                        errors.append(
-                            f"A value for the parameter \"{each_param['label']}\" "
-                            f"on \"{each_intervention_entry['title']}\" is required."
-                        )
-        if errors:
-            raise forms.ValidationError(errors)
-        return intervention_data
 
     def _grant_is_valid(self, grant) -> bool:
         return True if re.match(r"^\S+$", grant) else False
@@ -299,6 +143,89 @@ class CategorizeCostTypeBulkForm(forms.Form):
         self.fields["config_ids"].choices = (
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
+
+
+class AllocateInterventionBulkForm(forms.Form):
+    """
+    Bulk "Set Allocation" panel form for the Allocate Intervention Costs step.
+    """
+
+    config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
+
+    def __init__(self, *args, analysis, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["config_ids"].choices = (
+            (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
+        )
+        for intervention_instance in analysis.interventioninstance_set.all():
+            self.fields[f"allocation_{intervention_instance.id}"] = forms.DecimalField(
+                label=intervention_instance.display_name(),
+                max_value=100,
+                min_value=0,
+                initial=0,
+                widget=forms.NumberInput(attrs={"class": "bulk-allocation-input"}),
+            )
+        self.fields["notes"] = forms.CharField(
+            label=_l("Notes"),
+            required=False,
+            max_length=2048,
+            widget=forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _l("Source of this information and any other important notes"),
+                }
+            ),
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        allocation_sum = sum(
+            value
+            for name, value in cleaned_data.items()
+            if name.startswith("allocation_") and value is not None
+        )
+        if allocation_sum > 100:
+            raise ValidationError(_l("Total allocation cannot exceed 100%"))
+        return cleaned_data
+
+    class Media:
+        js = ("website/js/bulk-allocate-form.js",)
+
+
+class AllocateSubcomponentsBulkForm(forms.Form):
+    """
+    Bulk "Set Allocation" panel form for the Allocate Sub-Component Costs step.
+    """
+
+    config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
+
+    def __init__(self, *args, subcomponent_labels, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["config_ids"].choices = (
+            (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
+        )
+        for idx, label in enumerate(subcomponent_labels):
+            self.fields[f"subcomponent_allocation_{idx}"] = forms.DecimalField(
+                label=label,
+                max_value=100,
+                min_value=0,
+                initial=0,
+                widget=forms.NumberInput(attrs={"class": "bulk-allocation-input"}),
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        allocation_sum = sum(
+            value
+            for name, value in cleaned_data.items()
+            if name.startswith("subcomponent_allocation_") and value is not None
+        )
+        if allocation_sum != 100:
+            raise ValidationError(_l("Allocations must total 100%"))
+        return cleaned_data
+
+    class Media:
+        js = ("website/js/bulk-allocate-form.js",)
 
 
 class ReassignOwnerForm(ModelFormBase):
@@ -362,118 +289,68 @@ class AnalysisLessonsEditorForm(forms.Form):
     )
 
 
-class DefineInterventionsForm(forms.Form):
-    interventions = AnalysisInterventionManageField()
+class SubcomponentLabelEditForm(forms.Form):
+    label = forms.CharField(label=_l("Label"), max_length=255)
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        self.request = kwargs.pop("request", "")
+
+class SubcomponentLabelsForm(forms.Form):
+    """
+    Edits the sub-component labels of an InterventionInstance, creating or
+    deleting its SubcomponentCostAnalysis as needed.
+    """
+
+    subcomponent_labels = SubcomponentLabelField(required=False)
+
+    def __init__(self, *args, intervention_instance: InterventionInstance, locked: bool = False, **kwargs):
+        self.intervention_instance = intervention_instance
+        self.locked = locked
         super().__init__(*args, **kwargs)
-        self.fields["interventions"].initial = self._get_interventions(self.request)
+        self.fields["subcomponent_labels"].initial = self._initial_labels()
+        if locked:
+            self.fields["subcomponent_labels"].widget.attrs["prevent_add_remove"] = True
 
-    def _get_interventions(self, request) -> list:
-        if request:
-            return json.loads(html.unescape(request.GET.get("data", "[]")))
+    def _existing_labels(self) -> list[str]:
+        if hasattr(self.intervention_instance, "subcomponent_cost_analysis"):
+            return self.intervention_instance.subcomponent_cost_analysis.subcomponent_labels or []
         return []
+
+    def _initial_labels(self) -> list[str]:
+        labels = self._existing_labels()
+        if not labels and not self.locked:
+            labels = self.intervention_instance.intervention.subcomponent_labels or []
+        return labels
+
+    def clean_subcomponent_labels(self) -> list[str]:
+        labels = self.cleaned_data["subcomponent_labels"] or []
+        if self.locked and len(labels) != len(self._existing_labels()):
+            raise ValidationError(
+                _l("Sub-component labels cannot be added or removed after cost data has been loaded.")
+            )
+        return labels
+
+    def save(self) -> None:
+        labels = self.cleaned_data["subcomponent_labels"] or []
+        if labels:
+            subcomponent_analysis, _ = SubcomponentCostAnalysis.objects.get_or_create(
+                intervention_instance=self.intervention_instance
+            )
+            subcomponent_analysis.subcomponent_labels = labels
+            subcomponent_analysis.save()
+        elif hasattr(self.intervention_instance, "subcomponent_cost_analysis"):
+            self.intervention_instance.subcomponent_cost_analysis.delete()
 
     class Media:
         js = (
-            "website/steps/define-form.js",
             "panels/lib/Sortable.js",
-            "panels/js/json-manager-widget.js",
+            "website/js/subcomponent-labels.js",
         )
-        css = {"all": ("panels/css/panels-relation-widget.css",)}
+        css = {
+            "all": (
+                "panels/css/panels-relation-widget.css",
+                "website/css/subcomponent-confirm-labels.css",
+            )
+        }
 
 
-class AnalysisInterventionForm(forms.Form):
-    intervention = forms.ModelChoiceField(
-        Intervention.objects,
-        required=False,
-    )
-    intervention_label = forms.CharField(
-        max_length=100,
-        help_text="Optional custom name for the intervention being analyzed",
-        required=False,
-    )
-
-    # for updating results view
-    original_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
-    # store InterventionInstance pk if set
-    instance_pk = forms.IntegerField(widget=forms.HiddenInput(), required=False)
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
-        self.request = kwargs.pop("request", None)
-        super().__init__(*args, **kwargs)
-
-        # Inject intervention->parameters mapping into intervention field.
-        self.mapping = get_intervention_parameter_mapping()
-
-        self.fields["intervention"].widget.attrs.update(
-            {
-                "data-mapping": jsonattr(self.mapping),
-            }
-        )
-
-        intervention_data = self._get_intervention_data(self.request)
-        intervention_id = intervention_data.get("id")
-
-        # Add fields for all possible parameters.  We do this because the form JS
-        #   will need to display them when/if a new intervention is selected
-        for parameter_name, field in get_all_intervention_parameter_fields().items():
-            field_name = self._parameter_field_name(parameter_name)
-            self.fields[field_name] = field
-            self.fields[field_name].initial = None
-            self.fields[field_name].widget.attrs["class"] = "parameter"
-
-            # Set everything to Required as the default.  We'll adjust these
-            # dynamically in JS
-            self.fields[field_name].required = True
-
-            # Update parameter requirement based on selected intervention.
-            # Only runs when the form is being submitted.
-            if self.data and self.data.get("intervention"):
-                new_intervention_id = int(self.data.get("intervention"))
-                if parameter_name not in self.mapping[new_intervention_id][0]:
-                    self.fields[field_name].required = False
-
-        # Set requirements for secondary output metric based on submitted data
-        if self.data and self.data.get("intervention") and len(self.mapping[new_intervention_id]) > 1:
-            new_intervention_id = int(self.data.get("intervention"))
-            needs_required = False
-            for parameter_name in self.mapping[new_intervention_id][1]:
-                field_name = self._parameter_field_name(parameter_name)
-                # Only consider fields that do not overlap the primary metric
-                if self.data.get(field_name) and parameter_name not in self.mapping[new_intervention_id][0]:
-                    # Propagating field requirement is only necessary when multiple secondary parameters exist
-                    if len(self.mapping[new_intervention_id][1]) > 1:
-                        needs_required = True
-
-            if needs_required:
-                for parameter_name in self.mapping[new_intervention_id][1]:
-                    field_name = self._parameter_field_name(parameter_name)
-                    self.fields[field_name].required = True
-
-        # Set initial form values if received
-        if intervention_id:
-            self.fields["intervention"].initial = intervention_id
-            self.fields["original_id"].initial = intervention_id
-        if intervention_data.get("instance_pk"):
-            self.fields["instance_pk"].initial = intervention_data.get("instance_pk")
-        self.fields["intervention_label"].initial = intervention_data.get("intervention_label")
-        for parameter in intervention_data.get("params", []):
-            parameter_name = self._parameter_field_name(parameter.get("name"))
-            self.fields[parameter_name].initial = parameter.get("value")
-
-    def _parameter_field_name(self, field_name):
-        return f"parameter__{field_name}"
-
-    def _get_intervention_data(self, request: WSGIRequest | None) -> dict:
-        data = request.GET.get("data", "")
-        if data:
-            return json.loads(html.unescape(data))
-        else:
-            return {}
-
-    class Media:
-        js = ("website/steps/intervention-edit-form.js",)
+class SubcomponentLabelsDeleteConfirmForm(forms.Form):
+    pass

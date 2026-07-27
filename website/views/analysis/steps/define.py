@@ -4,14 +4,8 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _l
 from django.views.generic import CreateView, UpdateView
 
-from ombucore.admin import panel_commands as commands
-from ombucore.admin.actionlink import ActionLink
-from ombucore.admin.views import FormView as PanelsFormView
 from website.app_log import loggers as app_loggers
-from website.forms.analysis import AnalysisInterventionForm, DefineForm, DefineInterventionsForm
-from website.models.utils import (
-    build_intervention_instance_data,
-)
+from website.forms.analysis import DefineForm
 from website.views.mixins import AnalysisObjectMixin, AnalysisPermissionRequiredMixin, AnalysisStepMixin
 from website.workflows import AnalysisWorkflow
 
@@ -72,83 +66,3 @@ class DefineUpdate(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionReq
 
     def get_success_url(self):
         return self.request.path
-
-
-class DefineInterventions(PermissionRequiredMixin, PanelsFormView):
-    form_class = DefineInterventionsForm
-    supertitle = _l("Manage")
-    title = _l("Interventions being analyzed")
-    permission_required = "website.add_analysis"
-    template_name = "panel-form-analysis-interventions.html"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["request"] = self.request
-        return kwargs
-
-    def get_success_commands(self):
-        kwargs = self.get_form_kwargs()
-        return [
-            commands.Resolve(
-                {
-                    "operation": "saved",
-                    "value": kwargs["data"].get("interventions"),
-                }
-            )
-        ]
-
-    def get_panel_action_links(self):
-        return [
-            ActionLink(
-                text="Create",
-                href=reverse("analysis-define-interventions-add"),
-                panels_trigger=False,  # handled in JS
-            )
-        ]
-
-
-class AddAnalysisIntervention(PermissionRequiredMixin, PanelsFormView):
-    form_class = AnalysisInterventionForm
-    supertitle = _l("Add")
-    title = _l("Intervention")
-    permission_required = "website.add_analysis"
-    template_name = "panel-form-add-intervention.html"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["request"] = self.request
-        return kwargs
-
-    def get_success_commands(self):
-        return [
-            commands.Resolve(
-                {
-                    "operation": "selected",
-                    "info": {
-                        "intervention": self._collect_intervention_instance_data(),
-                    },
-                }
-            )
-        ]
-
-    def _collect_intervention_instance_data(self) -> dict[str, None | float]:
-        kwargs = self.get_form_kwargs()
-
-        intervention_instance = build_intervention_instance_data(kwargs)
-        return intervention_instance
-
-
-class EditAnalysisIntervention(AddAnalysisIntervention):
-    supertitle = _l("Edit")
-
-    def get_success_commands(self):
-        return [
-            commands.Resolve(
-                {
-                    "operation": "saved",
-                    "info": {
-                        "intervention": self._collect_intervention_instance_data(),
-                    },
-                }
-            )
-        ]

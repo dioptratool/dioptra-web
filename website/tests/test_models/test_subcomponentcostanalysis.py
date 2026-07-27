@@ -7,70 +7,20 @@ from website.tests.factories import (
     CostLineItemConfigFactory,
     CostLineItemFactory,
     CostLineItemInterventionAllocationFactory,
+    SubcomponentCostAllocationFactory,
+    SubcomponentCostAnalysisFactory,
 )
 
 
 @pytest.mark.django_db
-class TestAnalysisSubcomponentAnalysisComplete:
-    def test_starts_with_insights_complete(
-        self,
-        analysis_workflow_with_subcomponent_labels_and_client_time_added,
-    ):
-        analysis_wf = analysis_workflow_with_subcomponent_labels_and_client_time_added
-        assert analysis_wf.get_step("insights").is_complete, (
-            f"'insights' should be complete.  Instead "
-            f"the last complete step is: '{analysis_wf.get_last_complete().name}'"
+class TestSubcomponentCostAnalysis:
+    def test_analysis_has_subcomponent_labels(self):
+        subcomponent_cost_analysis = SubcomponentCostAnalysisFactory(
+            subcomponent_labels=["Setup", "Delivery"]
         )
 
-    def test_starts_incomplete(self, analysis_workflow_with_subcomponent_labels_and_client_time_added):
-        analysis = analysis_workflow_with_subcomponent_labels_and_client_time_added.analysis
-        assert not all(scg.subcomponent_allocation_complete() for scg in analysis.cost_type_category_grants)
+        assert subcomponent_cost_analysis.analysis.has_subcomponent_labels()
 
-    def test_complete_if_skipped(self, analysis_workflow_with_subcomponent_labels_and_client_time_added):
-        analysis = analysis_workflow_with_subcomponent_labels_and_client_time_added.analysis
-        for scg in analysis.cost_type_category_grants.all():
-            if not scg.subcomponent_allocation_complete():
-                for cost_line_item in scg.get_cost_line_items():
-                    cost_line_item.config.subcomponent_analysis_allocations_skipped = True
-                    cost_line_item.config.save()
-                assert scg.subcomponent_allocation_complete()
-
-    def test_complete_if_allocated(self, analysis_workflow_with_subcomponent_labels_and_client_time_added):
-        analysis = analysis_workflow_with_subcomponent_labels_and_client_time_added.analysis
-        for scg in analysis.cost_type_category_grants.all():
-            if not scg.subcomponent_allocation_complete():
-                for cost_line_item in scg.get_cost_line_items():
-                    cost_line_item.config.subcomponent_analysis_allocations = {"foo": "100"}
-                    cost_line_item.config.save()
-                assert scg.subcomponent_allocation_complete()
-
-    def test_complete_if_mixed(self, analysis_workflow_with_subcomponent_labels_and_client_time_added):
-        analysis = analysis_workflow_with_subcomponent_labels_and_client_time_added.analysis
-        for scg in analysis.cost_type_category_grants.all():
-            assert scg.get_cost_line_items().count() == 1
-
-            if not scg.subcomponent_allocation_complete():
-                for cost_line_item in scg.get_cost_line_items():
-                    cost_line_item.config.subcomponent_analysis_allocations_skipped = True
-                    cost_line_item.config.save()
-
-                CostLineItemConfigFactory(
-                    cost_line_item=CostLineItemFactory(
-                        analysis=analysis,
-                        grant_code=scg.grant,
-                    ),
-                    subcomponent_analysis_allocations={"foo": "100"},
-                    cost_type=scg.cost_type_category.cost_type,
-                    category=scg.cost_type_category.category,
-                )
-
-                assert scg.get_cost_line_items().count() == 2
-
-                assert scg.subcomponent_allocation_complete()
-
-
-@pytest.mark.django_db
-class TestSubcomponentCostAnalysis:
     def test_cost_line_item_average_minimal(
         self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
     ):
@@ -92,16 +42,9 @@ class TestSubcomponentCostAnalysis:
             analysis=subcomponent_cost_analysis.analysis,
         )
         CostLineItemConfigFactory(
-            subcomponent_analysis_allocations={
-                "0": "100",
-                "1": "0",
-                "2": "0",
-                "3": "0",
-                "4": "0",
-            },
             cost_line_item=new_cli,
             analysis_cost_type=AnalysisCostType.CLIENT_TIME,
-        ),
+        )
         assert subcomponent_cost_analysis.cost_line_item_average() == [
             20,
             20,
@@ -119,7 +62,11 @@ class TestSubcomponentCostAnalysis:
         for _ in range(100):
             cli_config = CostLineItemConfigFactory(
                 cost_line_item=CostLineItemFactory(analysis=subcomponent_cost_analysis.analysis),
-                subcomponent_analysis_allocations={
+            )
+            SubcomponentCostAllocationFactory(
+                subcomponent_analysis=subcomponent_cost_analysis,
+                cli_config=cli_config,
+                allocations={
                     "0": "10",
                     "1": "10",
                     "2": "10",
@@ -135,35 +82,27 @@ class TestSubcomponentCostAnalysis:
 
         # This is not great test code, but the values here will change based on the seeded number of interventions.
         #  It is correct but if you end up here chasing down a value you may want to refactor the fixtures
-        if analysis.interventions.count() == 2:
-            # The odd number is from the existing two from the fixture
-            assert subcomponent_cost_analysis.cost_line_item_average() == [
-                Decimal("10.08"),
-                Decimal("10.08"),
-                Decimal("10.08"),
-                Decimal("10.08"),
-                Decimal("59.68"),
-            ]
-        elif analysis.interventions.count() == 1:
-            # The odd number is from the existing one from the fixture
-            assert subcomponent_cost_analysis.cost_line_item_average() == [
-                Decimal("10.04"),
-                Decimal("10.04"),
-                Decimal("10.04"),
-                Decimal("10.04"),
-                Decimal("59.84"),
-            ]
-        else:
-            raise AssertionError("Unexpected number of interventions for this test")
+        assert subcomponent_cost_analysis.cost_line_item_average() == [
+            Decimal("10.04"),
+            Decimal("10.04"),
+            Decimal("10.04"),
+            Decimal("10.04"),
+            Decimal("59.84"),
+        ]
 
     def test_cost_line_item_average_with_skipped_items(
         self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
     ):
         subcomponent_cost_analysis = SubcomponentCostAnalysis.objects.first()
         for _ in range(10):
-            CostLineItemConfigFactory(
+            cli_config = CostLineItemConfigFactory(
                 cost_line_item=CostLineItemFactory(analysis=subcomponent_cost_analysis.analysis),
-                subcomponent_analysis_allocations_skipped=True,
+            )
+            SubcomponentCostAllocationFactory(
+                subcomponent_analysis=subcomponent_cost_analysis,
+                cli_config=cli_config,
+                allocations={},
+                skipped=True,
             )
 
         assert subcomponent_cost_analysis.cost_line_item_average() == [
@@ -184,7 +123,11 @@ class TestSubcomponentCostAnalysis:
                 total_cost=Decimal("1000"),
                 analysis=subcomponent_cost_analysis.analysis,
             ),
-            subcomponent_analysis_allocations={
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_cost_analysis,
+            cli_config=config1,
+            allocations={
                 "0": "100",
                 "1": "0",
                 "2": "0",

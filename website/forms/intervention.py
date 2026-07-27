@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from ombucore.admin.forms.base import ModelFormBase
-from website.forms.subcomponent import SubcomponentLabelField
+from website.forms.fields import SubcomponentLabelField
 from website.models.intervention import OUTPUT_METRIC_CHOICES
 
 

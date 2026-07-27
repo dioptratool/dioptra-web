@@ -147,6 +147,12 @@
   margin-top: 3.2rem;
 }
 
+.analysis__hr {
+  margin-top: 2.4rem;
+  margin-bottom: 2.4rem;
+  border-top: 1px solid rgba(144, 154, 162, 1);
+}
+
 // Messages
 .analysis__message {
   border-radius: 6px;
@@ -318,6 +324,18 @@
     font-size: 1.3rem;
     box-shadow: 0 1px 0 0 #C0C0C0;
     margin-bottom: 0.5rem;
+
+    &:has(.intervention-actions) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+
+      @media (max-width: calc($breakpoint-desktop - 1px)) {
+        flex-direction: column;
+        align-items: start;
+      }
+    }
     h4, p {
       color: #333;
       font-size: 1.3rem;
@@ -326,11 +344,68 @@
     h4 {
       margin-bottom: 0.5rem;
     }
+    .intervention-info {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+    }
+    .intervention-action {
+      background-color: $color-blue-lighter;
+      border-radius: 2px;
+      padding: 8px 10px;
+      text-decoration: none;
+      text-wrap: nowrap;
+      font-weight: bold;
+      color: $color-mineshaft;
+      transition: all $transition-duration-default ease;
+
+      &:hover {
+        background-color: $color-blue-light;
+      }
+    }
+    .intervention-subcomponent-analysis {
+      align-items: center;
+      background-color: #D7EAFB;
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.75rem;
+      padding: 0.6rem 1rem;
+    }
+    .intervention-subcomponent-analysis__title {
+      font-weight: $font-weight-bold;
+    }
+    .intervention-subcomponent-analysis__labels {
+      flex: 1 1 auto;
+    }
+    .intervention-subcomponent-analysis__actions {
+      display: flex;
+      gap: 0.5rem 1rem;
+
+      a {
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 }
 .set-interventions {
-  @include button-submit();
-  padding: 0.8rem 3rem;
+  background-color: $color-green;
+  border: none;
+  border-radius: 2px;
+  color: $color-white;
+  font-weight: $font-weight-bold;
+  padding: 1.6rem;
+  min-width: 13rem;
+  transition: all $transition-duration-default;
+  @include font-size(16, 1.125);
+
+  &:hover {
+    background-color: darken($color-green, 10%);
+  }
 }
 
 .analysis-toggle {

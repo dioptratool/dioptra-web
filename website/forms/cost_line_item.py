@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 
 from babel.numbers import get_currency_symbol
 from django import forms
@@ -14,6 +14,7 @@ from website.models import (
     CostLineItem,
     CostLineItemConfig,
     CostType,
+    SubcomponentCostAllocation,
 )
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 
@@ -230,6 +231,9 @@ class InKindCostLineItemForm(AddCostLineItemForm):
             },
         }
 
+    class Media:
+        js = ("website/js/bulk-allocate-form.js",)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["budget_line_description"].label = _(
@@ -237,6 +241,105 @@ class InKindCostLineItemForm(AddCostLineItemForm):
         )
         self.fields["quantity"].label = _("How many items were contributed in-kind?")
         self.fields["unit_cost"].label = _("What is the unit cost per item?")
+        self._add_subcomponent_allocation_fields()
+        self._build_allocation_groups()
+
+    def _subcomponent_allocations_by_analysis_id(self):
+        if not (self.instance and self.instance.id and hasattr(self.instance, "config")):
+            return {}
+
+        return {
+            allocation.subcomponent_analysis_id: allocation
+            for allocation in self.instance.config.subcomponent_cost_allocations.all()
+        }
+
+    def _add_subcomponent_allocation_fields(self):
+        existing_allocations = self._subcomponent_allocations_by_analysis_id()
+        for intervention_instance in self.analysis.interventioninstance_set.all():
+            if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                continue
+
+            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+            allocation_row = existing_allocations.get(subcomponent_analysis.id)
+            allocations = allocation_row.allocations if allocation_row else {}
+            for idx, label in enumerate(subcomponent_analysis.subcomponent_labels or []):
+                self.fields[self.subcomponent_field_name(subcomponent_analysis.id, idx)] = (
+                    PositiveFixedDecimalField(
+                        label=label,
+                        initial=allocations.get(str(idx), ""),
+                        widget=PercentWidget(),
+                        help_text="Enter a percent amount between 0 and 100",
+                        allow_zero=True,
+                        required=False,
+                    )
+                )
+
+    @staticmethod
+    def subcomponent_field_name(subcomponent_analysis_id, idx):
+        return f"intervention_subcomponent_allocation_{subcomponent_analysis_id}_{idx}"
+
+    @staticmethod
+    def is_intervention_allocation_field(field_name):
+        return field_name.startswith("intervention_allocation_")
+
+    @classmethod
+    def is_subcomponent_allocation_field(cls, field_name):
+        return field_name.startswith("intervention_subcomponent_allocation_")
+
+    def _build_allocation_groups(self):
+        for field_name, field in self.fields.items():
+            if self.is_intervention_allocation_field(field_name) or self.is_subcomponent_allocation_field(
+                field_name
+            ):
+                classes = field.widget.attrs.get("class", "").split()
+                if "bulk-allocation-input" not in classes:
+                    classes.append("bulk-allocation-input")
+                field.widget.attrs["class"] = " ".join(classes)
+
+        allocation_groups = []
+        for intervention_instance in self.analysis.interventioninstance_set.all():
+            allocation_field_name = f"intervention_allocation_{intervention_instance.id}"
+            group = {
+                "intervention": intervention_instance,
+                "allocation_field": self[allocation_field_name],
+                "subcomponent_fields": [],
+                "subcomponent_total": None,
+            }
+
+            if hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+                total = Decimal(0)
+                total_has_value = False
+                for idx, label in enumerate(subcomponent_analysis.subcomponent_labels or []):
+                    field = self[self.subcomponent_field_name(subcomponent_analysis.id, idx)]
+                    group["subcomponent_fields"].append(
+                        {
+                            "label": label,
+                            "field": field,
+                        }
+                    )
+                    value = field.value()
+                    if value not in (None, ""):
+                        try:
+                            total += Decimal(str(value))
+                            total_has_value = True
+                        except DecimalException:
+                            pass
+
+                group["subcomponent_total"] = total if total_has_value else Decimal(0)
+
+            allocation_groups.append(group)
+
+        self.allocation_groups = allocation_groups
+        self.non_allocation_fields = [
+            self[field_name]
+            for field_name in self.fields
+            if not self.is_intervention_allocation_field(field_name)
+            and not self.is_subcomponent_allocation_field(field_name)
+            and not self[field_name].is_hidden
+            and field_name != "note"
+        ]
+        self.note_field = self["note"] if "note" in self.fields else None
 
     def clean(self):
         cleaned_data = super().clean()
@@ -245,8 +348,86 @@ class InKindCostLineItemForm(AddCostLineItemForm):
         unit_cost = cleaned_data.get("unit_cost", 0)
         total_cost = quantity * unit_cost
         cleaned_data["total_cost"] = round(Decimal(total_cost), 4)
+        self._clean_subcomponent_allocations(cleaned_data)
 
         return cleaned_data
+
+    def _clean_subcomponent_allocations(self, cleaned_data):
+        for intervention_instance in self.analysis.interventioninstance_set.all():
+            if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                continue
+
+            allocation = cleaned_data.get(f"intervention_allocation_{intervention_instance.id}")
+            if allocation in (None, 0):
+                continue
+
+            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+            labels = subcomponent_analysis.subcomponent_labels or []
+            if not labels:
+                continue
+
+            allocation_sum = Decimal(0)
+            has_error = False
+            for idx, _label in enumerate(labels):
+                field_name = self.subcomponent_field_name(subcomponent_analysis.id, idx)
+                subcomponent_allocation = cleaned_data.get(field_name)
+                if subcomponent_allocation is None:
+                    self.add_error(field_name, _("This field is required."))
+                    has_error = True
+                    continue
+                if subcomponent_allocation < 0 or subcomponent_allocation > 100:
+                    self.add_error(field_name, _("Allocations must be between 0-100%."))
+                    has_error = True
+                allocation_sum += subcomponent_allocation
+
+            if not has_error and allocation_sum != Decimal(100):
+                for idx, _label in enumerate(labels):
+                    field_name = self.subcomponent_field_name(subcomponent_analysis.id, idx)
+                    self.add_error(field_name, _("Sub-component allocations must total 100%."))
+
+    def save(self, commit=True):
+        result = super().save(commit=commit)
+        if commit:
+            self._save_subcomponent_allocations(result.config)
+
+        return result
+
+    def _save_subcomponent_allocations(self, config):
+        for intervention_instance in self.analysis.interventioninstance_set.all():
+            if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                continue
+
+            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+            labels = subcomponent_analysis.subcomponent_labels or []
+            if not labels:
+                continue
+
+            intervention_allocation = self.cleaned_data.get(
+                f"intervention_allocation_{intervention_instance.id}"
+            )
+            if not intervention_allocation:
+                SubcomponentCostAllocation.objects.filter(
+                    cli_config=config,
+                    subcomponent_analysis=subcomponent_analysis,
+                ).delete()
+                continue
+
+            allocations = {}
+            for idx, _label in enumerate(labels):
+                allocation = self.cleaned_data.get(
+                    self.subcomponent_field_name(subcomponent_analysis.id, idx)
+                )
+                if allocation is not None:
+                    allocations[str(idx)] = str(allocation)
+
+            SubcomponentCostAllocation.objects.update_or_create(
+                cli_config=config,
+                subcomponent_analysis=subcomponent_analysis,
+                defaults={
+                    "allocations": allocations,
+                    "skipped": False,
+                },
+            )
 
 
 class ClientTimeCostLineItemForm(AddCostLineItemForm):
@@ -277,9 +458,9 @@ class ClientTimeCostLineItemForm(AddCostLineItemForm):
         )
 
         self.fields["budget_line_description"].label = _("What is the name of this group of clients?")
-        self.fields["loe_or_unit"].label = _(f"How many of them participated in this intervention?")
+        self.fields["loe_or_unit"].label = _("How many of them participated in this intervention?")
         self.fields["quantity"].label = _(
-            f"How many hours did each of them spend to participate in this intervention?"
+            "How many hours did each of them spend to participate in this intervention?"
         )
         self.fields["unit_cost"].label = _(f"Hourly cost per person for {country_name}")
 

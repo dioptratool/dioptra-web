@@ -65,9 +65,23 @@ class MultiStep(Step):
 
     def get_last_incomplete(self) -> Step | None:
         for step in self.steps:
+            if not step.is_enabled:
+                continue
             if not step.is_complete:
                 return step
         return None
+
+    def get_last_complete(self) -> Step | None:
+        last_complete = None
+
+        for step in self.steps:
+            if not step.is_enabled:
+                continue
+            if not step.is_complete:
+                return last_complete
+            last_complete = step
+
+        return last_complete
 
     @property
     def is_complete(self) -> bool:

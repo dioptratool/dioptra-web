@@ -1,0 +1,42 @@
+{% extends 'panel-form-reorder.html' %}
+{% load humanize panels_extras %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-analysis-intervention"
+          enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}"
+          novalidate="novalidate"
+          {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+{% endblock form-start %}
+
+{% block panel-body %}
+    <div class="panel-body-contents">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="help-block errors">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li><em>{{ error }}</em></li>
+                    {% endfor %}
+                    {% for error in form.choices.errors %}
+                        <li><em>{{ error }}</em></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <div class="panels-relation-widget--multiple panels--reorder sortable">
+            {# The .form-group wrapper is required by the panel dirty-tracking JS: #}
+            {# it marks the group "changed" on reorder, which enables Save. #}
+            <div class="form-group" style="display: none;">{{ form.choices }}</div>
+            <ul class="panels-relation-widget--results panels--reorder--results">
+                {% for item in reorder_items %}
+                    <li class="panels-relation-widget--result" data-id="{{ item.obj.pk }}" data-obj-info="{{ item.obj|related_info|jsonattr }}">
+                        <span class="handle">☰</span>
+                        <div class="intervention-info">
+                            <h4>{{ item.obj.display_name }}</h4>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock panel-body %}

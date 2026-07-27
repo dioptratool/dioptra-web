@@ -1,0 +1,31 @@
+{% extends 'panel-form.html' %}
+{% load panels_extras %}
+
+{% block panel-body %}
+    {% csrf_token %}
+    {% if form.errors %}
+        <div class="help-block errors">
+            <ul>
+                {% for error in form.non_field_errors %}
+                    <li><em>{{ error }}</em></li>
+                {% endfor %}
+                {% for error in form.choices.errors %}
+                    <li><em>{{ error }}</em></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    <div class="panels-relation-widget--multiple panels--reorder sortable">
+        {# The .form-group wrapper is required by the panel dirty-tracking JS: #}
+        {# it marks the group "changed" on reorder, which enables Save. #}
+        <div class="form-group" style="display: none;">{{ form.choices }}</div>
+        <ul class="panels-relation-widget--results panels--reorder--results">
+            {% for obj in form.queryset %}
+                <li class="panels-relation-widget--result" data-id="{{ obj.pk }}" data-obj-info="{{ obj|related_info|jsonattr }}">
+                    <span class="handle">☰</span>
+                    <span class="title" title="{{ obj }}">{{ obj }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock panel-body %}

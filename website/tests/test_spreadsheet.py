@@ -1,5 +1,6 @@
 import io
 from datetime import date
+from decimal import Decimal
 
 import pytest
 from django.conf import settings
@@ -17,9 +18,11 @@ from website.tests.factories import (
     CostLineItemInterventionAllocationFactory,
     CountryFactory,
     InterventionFactory,
+    SubcomponentCostAllocationFactory,
     SubcomponentCostAnalysisFactory,
     UserFactory,
 )
+from website.utils.documents import _write_cost_efficiency_table, _write_other_cost_model_table
 from website.views.documents import full_cost_model_spreadsheet
 from website.utils.documents import (
     _write_cost_of_each_subcomponent_per_output_metric_table,
@@ -161,6 +164,73 @@ def spreadsheet_analysis(defaults):
 
 class TestAnalysisSpreadsheet:
     @pytest.mark.django_db
+    def test_subcomponent_metric_metadata_references_program_costs(self, spreadsheet_analysis):
+        worksheet = Workbook().active
+        intervention_instance = spreadsheet_analysis.interventioninstance_set.first()
+        metric_metadata = {}
+
+        _write_cost_efficiency_table(
+            worksheet,
+            spreadsheet_analysis,
+            intervention_instance,
+            metrics_all_costs_metadata=metric_metadata,
+        )
+
+        for metric in intervention_instance.intervention.output_metric_objects():
+            program_cost_row = next(
+                row
+                for row in range(1, worksheet.max_row + 1)
+                if worksheet[f"A{row}"].value == f"{metric.metric_name} Program Costs only"
+            )
+            assert metric_metadata[metric.metric_name] == f"B{program_cost_row}"
+
+    @pytest.mark.django_db
+    def test_other_cost_table_includes_in_kind_subcomponent_allocations(self, spreadsheet_analysis):
+        intervention_instance = spreadsheet_analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        in_kind_item = spreadsheet_analysis.in_kind_contributions_cost_line_items.get(
+            budget_line_description="In Kind Line Item"
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=in_kind_item.config,
+            allocations={"0": "40", "1": "60"},
+        )
+        worksheet = Workbook().active
+        other_cost_rows = {
+            int(AnalysisCostType.IN_KIND): [],
+            int(AnalysisCostType.CLIENT_TIME): [],
+        }
+
+        last_row = _write_other_cost_model_table(
+            worksheet,
+            spreadsheet_analysis,
+            intervention_instance,
+            other_cost_rows,
+            starting_row=1,
+        )
+
+        assert [worksheet.cell(row=2, column=column).value for column in range(7, 11)] == [
+            "Treatment",
+            "Treatment Total",
+            "Outreach",
+            "Outreach Total",
+        ]
+        in_kind_row = other_cost_rows[int(AnalysisCostType.IN_KIND)][0]
+        assert worksheet[f"G{in_kind_row}"].value == Decimal("0.4")
+        assert worksheet[f"H{in_kind_row}"].value == f"=E{in_kind_row} * G{in_kind_row}"
+        assert worksheet[f"I{in_kind_row}"].value == Decimal("0.6")
+        assert worksheet[f"J{in_kind_row}"].value == f"=E{in_kind_row} * I{in_kind_row}"
+        client_time_row = other_cost_rows[int(AnalysisCostType.CLIENT_TIME)][0]
+        assert all(
+            worksheet.cell(row=client_time_row, column=column).value is None for column in range(7, 11)
+        )
+        assert last_row == 5
+
+    @pytest.mark.django_db
     def test_subcomponent_cost_headers_use_cost_efficiency_unit(self):
         intervention = InterventionFactory(
             output_metrics=[
@@ -176,9 +246,8 @@ class TestAnalysisSpreadsheet:
             },
         )
         SubcomponentCostAnalysisFactory(
-            analysis=analysis,
+            intervention_instance=intervention_instance,
             subcomponent_labels=["Infrastructure", "Maintenance"],
-            subcomponent_labels_confirmed=True,
         )
         wb = Workbook()
         worksheet = wb.active

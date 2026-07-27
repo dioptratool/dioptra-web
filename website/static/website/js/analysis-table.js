@@ -4,42 +4,13 @@ document.querySelectorAll('input.analysis-table__subcomponent-allocate-input, in
   input.addEventListener('focusin', (e) => e.target.select())
 })
 
-// auto resize frozen table rows whenever a table is activated
-window.addEventListener('DOMContentLoaded', (e) => {
-  document.querySelectorAll('.analysis-table__category-toggle')?.forEach((trigger) => {
-    trigger.addEventListener('click', (evt) => {
-      setTimeout(() => {// allow time for offsetHeight to update
-        const frozenTable = evt.target.closest('.analysis-table__category')?.querySelector('.analysis-table__category-content--freeze-col');
-        if (frozenTable) {
-          resizeFrozenTableRows(frozenTable)
-        }
-      }, 200)
-    })
-  })
-  document.querySelector('.analysis-table__category--unconfirmed')?.classList.add('analysis-table__category--active')
-  document.querySelectorAll('.analysis-table__category-content--freeze-col')?.forEach((table) => {
-    resizeFrozenTableRows(table)
-  })
+document.querySelectorAll('.analysis-table__category-content--freeze-col, .analysis-table__category-content--freeze-row')?.forEach((table) => {
+  const wrapper = table.querySelector('.analysis-table__wrapper');
+  wrapper.addEventListener('scroll', (e) => {
+    wrapper.setAttribute('data-dragged-x', e.target.scrollLeft > 5);
+    wrapper.setAttribute('data-dragged-y', e.target.scrollTop > 5);
+  });
 });
-
-function resizeFrozenTableRows(table) {
-  const active = table.closest('.analysis-table__category--active')
-  table.querySelectorAll('td')?.forEach((cell) => {
-
-    const row = cell.closest('tr')
-    if (row && cell.offsetHeight > row.offsetHeight) {
-      row.style.height = cell.offsetHeight + 'px'
-    }
-    const frozenCell = row.querySelector('td:first-child')
-    if (!active) {
-      frozenCell.style.height = null
-      return
-    }
-    if (cell.offsetHeight > frozenCell.offsetHeight) {
-      frozenCell.style.height = cell.offsetHeight + 'px'
-    }
-  })
-}
 
 /* Make tables mouse draggable */
 const tableWrapperSelector = '.analysis-table__wrapper'

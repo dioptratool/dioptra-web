@@ -19,5 +19,5 @@ class TestCategorize(StepTest):
     def test_invalidate_step_works(self, workflow_with_completed_step):
         workflow_with_completed_step.invalidate_step(step_name=self.step_under_test.name)
         assert (
-            workflow_with_completed_step.get_last_complete().parent.name == self.step_under_test.name
+            workflow_with_completed_step.get_last_complete().name == self.step_under_test.name
         ), "There is no invalidation logic for this step so nothing should change."

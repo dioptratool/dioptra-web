@@ -30,7 +30,7 @@
                         class="analysis-table__category{% if not cost_type_category_grant.allocation_complete %} analysis-table__category--unconfirmed{% endif %}
             {% if cost_type_category_grant.show_allocation_calculator or errors|error_in_category:cost_type_category_grant.cost_type_category.category %}analysis-table__category--active{% endif %}"
                 >
-                    <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit class="warn-unsaved-changes">
+                    <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit class="allocate-bulk-form warn-unsaved-changes">
                         {% csrf_token %}
                         {% with cost_line_items=object_list|cost_line_items_by_category:cost_type_category_grant.cost_type_category.category %}
 
@@ -43,8 +43,23 @@
                                 </div>
                             </div>
 
-                            <div class="analysis-table__category-content analysis-table__category-content--freeze-col">
-                                {% include 'analysis/analysis-table/_analysis-table-table-base.html' with allocateEdit='true' showSectorCode='true' %}
+                            <div class="analysis-table__category-content analysis-table__category-content--freeze-col analysis-table__category-content--freeze-row">
+                                {% if step.cost_type.type_obj.allocation_editable %}
+                                    <div class="analysis-table__heading-actions">
+                                        <div class="analysis-table__heading-select-all">
+                                            <div class="form__checkbox form__checkbox--simple">
+                                                <label for="select-all-{{ cost_type_category_grant.pk }}" class="analysis-table__select-all-label">
+                                                    <input type="checkbox" class="select-all" id="select-all-{{ cost_type_category_grant.pk }}" value="select-all"><span>{% translate 'Select All' %}</span></label>
+                                            </div>
+                                            <button type="submit" class="bulk-assign-items analysis-table__bulk-assign-btn"
+                                                    data-href="{% url 'analysis-allocate-cost_type-grant-bulk' pk=analysis.pk cost_type_pk=step.cost_type.id grant=step.grant %}"
+                                                    data-dialog-confirm="{% translate 'There are unsaved allocation changes in this table that may be affected. Continue?' %}"
+                                                    disabled>{% include 'icons/disallowed.svg' %}<span>{% translate 'Set Allocation' %}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% include 'analysis/analysis-table/_analysis-table-table-base.html' with allocateEdit='true' showSectorCode='true' bulkSelect=step.cost_type.type_obj.allocation_editable|yesno:'true,false' %}
                                 <div class="analysis-table__category-footer">
                                     <button class="analysis-table__category-footer-action analysis-table__category-footer-action--allocate" type="submit" name="submit">
                                         {% if step.cost_type.type_obj.allocation_editable %}
@@ -111,94 +126,130 @@
 {% block extrascript %}
     <script type="text/javascript">
         $(function () {
+            const table = document.querySelector('.analysis-table');
+
             // reset form state for firefox on load
             Array.from(document.forms).forEach((f) => f.reset());
 
             $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
                 e.preventDefault();
-                var $link = $(e.currentTarget);
-                var inputName = $link.data('apply-to-all');
-                var interventionId = $link.data('intervention-id');
-                var value = $('[name="' + inputName + '"]').val();
-                $link
-                    .parents('form')
-                    .find('input[name^="cost_line_item_allocation_"][data-intervention-id="' + interventionId + '"]')
-                    .val(value);
-                updateAllAllocationTotals();
+                const link = e.currentTarget;
+                const form = link.closest('form');
+                const interventionId = link.dataset.interventionId;
+                const sourceInput = form?.elements[link.dataset.applyToAll];
+
+                if (!form || !sourceInput) return;
+
+                form.querySelectorAll('input.analysis-table__allocated-input[data-intervention-id="' + interventionId + '"]').forEach((input) => {
+                    input.value = sourceInput.value;
+                    updateAllocationRow(input.closest('tr'), interventionId);
+                });
+                setFormStatus(form);
             });
 
             $('.analysis-table').on('click', 'a[data-allocation]', function (e) {
                 e.preventDefault();
-                var $link = $(e.currentTarget);
-                form = $link.parents('form');
-                var errorFields = form.find('.form__errors--allocated').parent('div').find('input');
-                errorFields.each(function() {
-                    allocation = $link.data()?.allocation || '';
-                    $(this).val(allocation.replace('%', ''));
+                const link = e.currentTarget;
+                const form = link.closest('form');
+                const allocation = (link.dataset.allocation || '').replace('%', '');
+
+                form?.querySelectorAll('.form__errors--allocated').forEach((errorEl) => {
+                    errorEl.parentElement?.querySelectorAll('input.analysis-table__allocated-input').forEach((input) => {
+                        input.value = allocation;
+                        updateAllocationRow(input.closest('tr'), input.dataset.interventionId);
+                    });
                 });
+                setFormStatus(form);
             });
 
-            // allocation 
-            document.querySelectorAll('input.analysis-table__allocated-input')?.forEach((input) => {
-                let $lineId = input.dataset.costLineItemId
-                input.addEventListener('input', function (e) {
-                    updateAllocationTotal($lineId);
-                });
-                input.addEventListener('change', function (e) {
-                    updateAllocationTotal($lineId);
-                });
-            });
+            table?.addEventListener('input', handleAllocationInput);
+            table?.addEventListener('change', handleAllocationInput);
 
-            function updateAllocationTotal(lineId) {
-                const row = document.querySelector('.analysis-table__allocated-total[data-cost-line-item-id="'+ lineId +'"]')?.closest('tr')
-
-                let total = 0
-                row?.querySelectorAll('input[type="text"]')?.forEach((input) => {
-                    if (input.value) {
-                        total += parseFloat(input.value)
-                    }
-                });
-                document.querySelector('.analysis-table__allocated-total[data-cost-line-item-id="'+ lineId +'"]').innerHTML = +total.toFixed(4) + "%"
-
-                if (total.toFixed(4) > 100) {
-                    row.classList.add("error")
-                    row.closest('form')?.querySelector('.analysis-table__category-footer-action--allocate')?.setAttribute('disabled', true)
-                } else {
-                    row.classList.remove("error")
-                    row.closest('form')?.querySelector('.analysis-table__category-footer-action--allocate')?.removeAttribute('disabled')
+            function handleAllocationInput(e) {
+                const input = e.target;
+                if (input.matches('input.analysis-table__allocated-input')) {
+                    updateAllocationRow(input.closest('tr'), input.dataset.interventionId);
                 }
-                setErrorStatus(row.closest('form'));
             }
-            
-            // init Total
+
+            function updateAllocationRow(row, interventionId) {
+                if (!row) return;
+
+                updateAllocationTotal(row);
+                setFormStatus(row.closest('form'));
+            }
+
+            function updateAllocationTotal(row) {
+                const totalEl = row?.querySelector('.analysis-table__allocated-total');
+                if (!row || !totalEl) return;
+
+                let total = 0;
+                row.querySelectorAll('input.analysis-table__allocated-input').forEach((input) => {
+                    total += parseNumber(input.value);
+                });
+                totalEl.textContent = formatPercent(total);
+
+                row.classList.toggle("allocation-error", roundPercent(total) > 100);
+                row.classList.toggle("error", row.classList.contains("allocation-error"));
+            }
+
+            function setFormStatus(form) {
+                if (!form) return;
+
+                form.querySelector('.analysis-table__category-footer-action--allocate')?.toggleAttribute(
+                    'disabled',
+                    !!form.querySelector('tr.allocation-error')
+                );
+                setErrorStatus(form);
+            }
+
+            function parseNumber(value) {
+                const parsed = parseFloat(value || "0");
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function roundPercent(value) {
+                return Number(value.toFixed(4));
+            }
+
+            function formatPercent(value) {
+                return roundPercent(value) + "%";
+            }
+
             function updateAllAllocationTotals() {
-                document.querySelectorAll('.analysis-table__allocated-total[data-cost-line-item-id]').forEach((totalEl) => updateAllocationTotal(totalEl.dataset.costLineItemId))
+                document.querySelectorAll('.analysis-table__table > tbody > tr:first-child').forEach((row) => {
+                    updateAllocationTotal(row);
+                });
+                document.querySelectorAll('.analysis-table form').forEach(setFormStatus);
             }
             updateAllAllocationTotals();
         });
 
         function setErrorStatus(tableFormEl) {
-            const error_count = tableFormEl.querySelectorAll('tr.error')?.length
-            const header = tableFormEl?.querySelector('.analysis-table__category-header-supplement')
-            const headerBadge = header?.querySelector('.analysis-table__cost-items--error')
-            const footer = tableFormEl?.querySelector('.analysis-table__category-footer')
-            const footerBadge = footer?.querySelector('.analysis-table__cost-items--error')
+            if (!tableFormEl) return;
 
-            if (error_count) {
-                const badge = document.createElement('div')
-                badge.classList.add("analysis-table__cost-items", "analysis-table__cost-items--error")
-                badge.innerHTML = `${error_count} cost ${error_count > 1 ? "items" : "item"} with error`
+            const errorCount = tableFormEl.querySelectorAll('tr.error').length;
+            const header = tableFormEl.querySelector('.analysis-table__category-header-supplement');
+            const footer = tableFormEl.querySelector('.analysis-table__category-footer');
+            const label = `${errorCount} cost ${errorCount > 1 ? "items" : "item"} with error`;
 
-                if (headerBadge)
-                    headerBadge.replaceWith(badge.cloneNode(true))
-                else header.prepend(badge.cloneNode(true))
+            updateErrorBadge(header, errorCount, label);
+            updateErrorBadge(footer, errorCount, label);
+        }
 
-                if (footerBadge)
-                    footerBadge.replaceWith(badge.cloneNode(true))
-                else footer.prepend(badge.cloneNode(true))
+        function updateErrorBadge(container, errorCount, label) {
+            if (!container) return;
+
+            let badge = container.querySelector('.analysis-table__cost-items--error');
+            if (errorCount) {
+                if (!badge) {
+                    badge = document.createElement('div');
+                    badge.classList.add("analysis-table__cost-items", "analysis-table__cost-items--error");
+                    container.prepend(badge);
+                }
+                badge.textContent = label;
             } else {
-                headerBadge?.remove()
-                footerBadge?.remove()
+                badge?.remove();
             }
         }
     </script>

@@ -34,6 +34,9 @@ class AddOtherCosts(MultiStep):
 
     @cached_property
     def dependencies_met(self) -> bool:
+        subcomponents_step = self.workflow.get_step("allocate-subcomponents")
+        if subcomponents_step.is_enabled:
+            return subcomponents_step.is_complete
         return self.workflow.get_step("allocate").is_complete
 
     @cached_property

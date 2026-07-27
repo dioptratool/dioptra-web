@@ -1,4 +1,5 @@
 from django import forms
+from django.db import transaction
 
 
 class ReorderForm(forms.Form):
@@ -7,7 +8,7 @@ class ReorderForm(forms.Form):
         self.queryset = kwargs.pop("choices")
         try:
             self.label = kwargs.pop("label")
-        except:
+        except KeyError:
             pass
         super().__init__(*args, **kwargs)
         self.fields["choices"] = forms.ModelMultipleChoiceField(
@@ -17,12 +18,17 @@ class ReorderForm(forms.Form):
         )
 
     def clean(self):
-        choices_qs = self.cleaned_data["choices"]
+        # Absent when field validation failed (e.g. a posted pk no longer in
+        # the queryset); let that error surface instead of crashing.
+        choices_qs = self.cleaned_data.get("choices")
+        if choices_qs is None:
+            return self.cleaned_data
         choices = self.data.getlist("choices")
-        for i, choice in enumerate(choices):
-            ordered_object = choices_qs.get(pk=choice)
-            setattr(ordered_object, self.order_field, i + 1)
-            ordered_object.save()
+        with transaction.atomic():
+            for i, choice in enumerate(choices):
+                ordered_object = choices_qs.get(pk=choice)
+                setattr(ordered_object, self.order_field, i + 1)
+                ordered_object.save()
         return self.cleaned_data
 
     class Media:

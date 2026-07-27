@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-from django.conf import settings
 from django.db.models import F, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -14,7 +13,6 @@ from website.models import InterventionInstance
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 from website.models.cost_type import ProgramCost
 from website.models.output_metric import OutputMetric
-from website.workflows import AnalysisWorkflow
 
 _gray_fill = PatternFill(start_color="00DADADA", end_color="00DADADA", fill_type="solid")
 
@@ -150,7 +148,7 @@ def _write_metadata_table(
         ]:
             # For these values we format things as a date
             ws[f"B{row}"] = val
-            ws[f"B{row}"].number_format = f"yyyy-MM-dd"
+            ws[f"B{row}"].number_format = "yyyy-MM-dd"
         else:
             ws[f"B{row}"] = val
             ws[f"B{row}"].number_format = "#,##0.00"
@@ -194,13 +192,12 @@ def _write_cost_efficiency_table(
 
         ws[f"B{row}"] = output_costs[each_metric.id]["direct_only"]
         ws[f"B{row}"].border = _black_border
+        metrics_all_costs_metadata[each_metric.metric_name] = f"B{row}"
 
         row += 1
 
         ws[f"A{row}"] = f"{each_metric.metric_name} including Program Costs, Support Costs, Indirect Costs"
         ws[f"A{row}"].border = _black_border
-
-        metrics_all_costs_metadata[each_metric.metric_name] = f"B{row}"
 
         ws[f"B{row}"] = output_costs[each_metric.id]["all"]
         ws[f"B{row}"].border = _black_border
@@ -245,16 +242,18 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
 
     row = starting_row
 
+    if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        return row
+    subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+
     for output_metric in intervention_instance.intervention.output_metric_objects():
         ws[f"A{row}"] = f"Cost of Each Sub-component, per {output_metric.cost_efficiency_unit}"
         ws[f"A{row}"].font = Font(bold=True)
 
         row += 1
-        percentages = an_analysis.subcomponent_cost_analysis.cost_line_item_average(
-            exclude_support_costs=False
-        )
+        percentages = subcomponent_analysis.cost_line_item_average()
         for idx, each_percentage in enumerate(percentages):
-            ws[f"A{row}"] = f"{an_analysis.subcomponent_cost_analysis.subcomponent_labels[idx]}"
+            ws[f"A{row}"] = f"{subcomponent_analysis.subcomponent_labels[idx]}"
             ws[f"A{row}"].border = _black_border
 
             # This is a placeholder value that is used when building the
@@ -542,11 +541,16 @@ def _write_full_cost_model_table(
         "Item Total",
     ]
 
-    if (
-        hasattr(an_analysis, "subcomponent_cost_analysis")
-        and an_analysis.subcomponent_cost_analysis.subcomponent_labels_confirmed
-    ):
-        for each_label in an_analysis.subcomponent_cost_analysis.subcomponent_labels:
+    subcomponent_analysis = None
+    subcomponent_allocations_by_config = {}
+    if hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+        subcomponent_allocations_by_config = {
+            allocation.cli_config_id: allocation for allocation in subcomponent_analysis.allocations.all()
+        }
+
+    if subcomponent_analysis and subcomponent_analysis.subcomponent_labels:
+        for each_label in subcomponent_analysis.subcomponent_labels:
             header_row.append(each_label)
             header_row.append(each_label + " Total")
 
@@ -613,16 +617,19 @@ def _write_full_cost_model_table(
         ws[f"H{row}"].number_format = "#,##0.00"
         ws[f"J{row}"].number_format = "#,##0.00"
 
+        subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
         if (
-            hasattr(an_analysis, "subcomponent_cost_analysis")
-            and an_analysis.subcomponent_cost_analysis.subcomponent_labels_confirmed
-            and getattr(each_cost_line_item.config, "subcomponent_analysis_allocations", None)
+            subcomponent_analysis
+            and subcomponent_analysis.subcomponent_labels
+            and subcomponent_allocation
+            and each_cost_line_item.config.cost_type
+            and each_cost_line_item.config.cost_type.type == ProgramCost.id
         ):
             subcomponent_analysis_start_column = len(row_data) + 1
             for (
                 idx,
                 each_subcomponent_allocation,
-            ) in each_cost_line_item.config.subcomponent_analysis_allocations.items():
+            ) in subcomponent_allocation.allocations.items():
                 percentage = ws.cell(
                     row=row,
                     column=subcomponent_analysis_start_column + (int(idx) * 2),
@@ -663,18 +670,27 @@ def _write_other_cost_model_table(
     ws[f"A{row}"] = "Other Costs"
     ws[f"A{row}"].font = Font(bold=True)
     row += 1
-    _write_header_row(
-        ws,
-        row,
-        [
-            "Category",
-            "Cost Item",
-            "Total Cost",
-            "% of Intervention",
-            "Item Total",
-            "Notes",
-        ],
-    )
+
+    header_row = [
+        "Category",
+        "Cost Item",
+        "Total Cost",
+        "% of Intervention",
+        "Item Total",
+        "Notes",
+    ]
+
+    subcomponent_allocations_by_config = {}
+    if an_analysis.in_kind_contributions and hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+        subcomponent_allocations_by_config = {
+            allocation.cli_config_id: allocation for allocation in subcomponent_analysis.allocations.all()
+        }
+        for label in subcomponent_analysis.subcomponent_labels or []:
+            header_row.append(label)
+            header_row.append(label + " Total")
+
+    _write_header_row(ws, row, header_row)
 
     row += 1
 
@@ -692,6 +708,23 @@ def _write_other_cost_model_table(
         cost_type = int(each_cost_line_item.config.analysis_cost_type)
         if cost_type in other_cost_rows:
             other_cost_rows[cost_type].append(row)
+
+        subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
+        if cost_type == int(AnalysisCostType.IN_KIND) and subcomponent_allocation:
+            for idx, allocation in subcomponent_allocation.allocations.items():
+                percentage_column = 7 + (int(idx) * 2)
+                percentage = ws.cell(
+                    row=row,
+                    column=percentage_column,
+                    value=Decimal(allocation) / 100,
+                )
+                total = ws.cell(
+                    row=row,
+                    column=percentage_column + 1,
+                    value=f"=E{row} * {get_column_letter(percentage_column)}{row}",
+                )
+                percentage.number_format = "0.00%"
+                total.number_format = "#,##0.00"
 
         row += 1
 

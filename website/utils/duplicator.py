@@ -11,6 +11,7 @@ from website.models import (
     CostLineItem,
     CostLineItemConfig,
     InterventionInstance,
+    SubcomponentCostAllocation,
     SubcomponentCostAnalysis,
     Transaction,
 )
@@ -99,6 +100,37 @@ def clone_analysis(analysis_id: int, owner: User, **values) -> Analysis:
     for cli in CostLineItem.objects.filter(analysis=new_analysis).all():
         old_to_new_cli_configs.update(old_to_new_id_map(CostLineItemConfig, cost_line_item=cli))
 
+    with BulkInserter(connection, SubcomponentCostAnalysis._meta.db_table) as inserter:
+        subcomponent_analyses = SubcomponentCostAnalysis.objects.filter(
+            intervention_instance__in=old_to_new_intervention_instances.keys()
+        )
+        for subcomponent_analysis in subcomponent_analyses.values().all():
+            subcomponent_analysis["intervention_instance_id"] = old_to_new_intervention_instances[
+                subcomponent_analysis["intervention_instance_id"]
+            ]
+            inserter.add_row(cloneable_row(subcomponent_analysis))
+
+    old_to_new_subcomponent_analyses = old_to_new_id_map(
+        SubcomponentCostAnalysis,
+        intervention_instance__analysis=new_analysis,
+    )
+
+    with BulkInserter(connection, SubcomponentCostAllocation._meta.db_table) as inserter:
+        for subcomponent_allocation in (
+            SubcomponentCostAllocation.objects.filter(
+                subcomponent_analysis__in=old_to_new_subcomponent_analyses.keys()
+            )
+            .values()
+            .all()
+        ):
+            subcomponent_allocation["subcomponent_analysis_id"] = old_to_new_subcomponent_analyses[
+                subcomponent_allocation["subcomponent_analysis_id"]
+            ]
+            subcomponent_allocation["cli_config_id"] = old_to_new_cli_configs[
+                subcomponent_allocation["cli_config_id"]
+            ]
+            inserter.add_row(cloneable_row(subcomponent_allocation))
+
     with BulkInserter(connection, CostLineItemInterventionAllocation._meta.db_table) as inserter:
         for cli_allocation in (
             CostLineItemInterventionAllocation.objects.filter(cli_config__in=old_to_new_cli_configs.keys())
@@ -165,13 +197,6 @@ def clone_analysis(analysis_id: int, owner: User, **values) -> Analysis:
                 )
             )
 
-    if hasattr(og_analysis, "subcomponent_cost_analysis") and og_analysis.subcomponent_cost_analysis:
-        with BulkInserter(connection, SubcomponentCostAnalysis._meta.db_table) as inserter:
-            subcomponent_analysis = (
-                SubcomponentCostAnalysis.objects.filter(analysis=og_analysis).values().first()
-            )
-
-            inserter.add_row(cloneable_row(subcomponent_analysis, analysis_id=new_analysis.pk))
     new_analysis.output_costs = {}
     new_analysis.save()
     return new_analysis

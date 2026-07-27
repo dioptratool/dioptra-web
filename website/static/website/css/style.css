@@ -2850,7 +2850,8 @@ details summary {
   }
 }
 
-.flatpickr-month input {
+.flatpickr-month input,
+.flatpickr-month .flatpickr-current-month .flatpickr-monthDropdown-months {
   min-height: 0;
 }
 
@@ -3445,9 +3446,9 @@ details summary {
 
 .form__errors--allocated {
   text-align: left !important;
-  margin-top: 0.8rem;
-  margin-bottom: 0;
-  margin-left: 31%;
+  margin: 0;
+  padding: 0;
+  text-wrap: nowrap;
 }
 
 .form__errors-list {
@@ -4842,6 +4843,12 @@ th .help__button svg *, .analysis-table__category--active .analysis-table__categ
   margin-top: 3.2rem;
 }
 
+.analysis__hr {
+  margin-top: 2.4rem;
+  margin-bottom: 2.4rem;
+  border-top: 1px solid rgb(144, 154, 162);
+}
+
 .analysis__message {
   border-radius: 6px;
   max-width: 100%;
@@ -5024,6 +5031,18 @@ body.loading .analysis__loading {
   box-shadow: 0 1px 0 0 #C0C0C0;
   margin-bottom: 0.5rem;
 }
+.analysis-interventions .analysis-intervention:has(.intervention-actions) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+@media (max-width: 1199px) {
+  .analysis-interventions .analysis-intervention:has(.intervention-actions) {
+    flex-direction: column;
+    align-items: start;
+  }
+}
 .analysis-interventions .analysis-intervention h4, .analysis-interventions .analysis-intervention p {
   color: #333;
   font-size: 1.3rem;
@@ -5032,31 +5051,65 @@ body.loading .analysis__loading {
 .analysis-interventions .analysis-intervention h4 {
   margin-bottom: 0.5rem;
 }
+.analysis-interventions .analysis-intervention .intervention-info {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+.analysis-interventions .analysis-intervention .intervention-action {
+  background-color: rgb(213, 231, 249);
+  border-radius: 2px;
+  padding: 8px 10px;
+  text-decoration: none;
+  text-wrap: nowrap;
+  font-weight: bold;
+  color: rgb(51, 51, 51);
+  transition: all 0.2s ease;
+}
+.analysis-interventions .analysis-intervention .intervention-action:hover {
+  background-color: rgb(188, 217, 245);
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis {
+  align-items: center;
+  background-color: #D7EAFB;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__title {
+  font-weight: 700;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__labels {
+  flex: 1 1 auto;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions {
+  display: flex;
+  gap: 0.5rem 1rem;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions a {
+  text-decoration: none;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions a:hover {
+  text-decoration: underline;
+}
 
 .set-interventions {
   background-color: rgb(74, 163, 91);
   border: none;
   border-radius: 2px;
   color: rgb(255, 255, 255);
-  display: inline-block;
   font-weight: 700;
   padding: 1.6rem;
-  text-decoration: none;
+  min-width: 13rem;
   transition: all 0.2s;
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
 }
-.set-interventions:focus {
-  color: rgb(255, 255, 255);
-}
 .set-interventions:hover {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
-  color: rgb(255, 255, 255);
-  text-decoration: none;
-}
-.set-interventions {
-  padding: 0.8rem 3rem;
 }
 
 .analysis-toggle {
@@ -5485,6 +5538,7 @@ a.analysis-navigation__prev-next:hover {
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  border-top: 1px solid rgb(255, 255, 255);
 }
 
 .analysis-table__wrapper--allocate {
@@ -5498,24 +5552,43 @@ a.analysis-navigation__prev-next:hover {
   display: block;
 }
 
+.analysis-table__category-content--freeze-row table {
+  overflow-y: auto;
+}
+.analysis-table__category-content--freeze-row .analysis-table__wrapper {
+  overflow-y: auto;
+  overflow-x: initial;
+  max-height: 95dvh;
+}
+.analysis-table__category-content--freeze-row .analysis-table__table > thead {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+}
+.analysis-table__category-content--freeze-row .analysis-table__table > thead > tr > th:last-child {
+  border-right: 1px solid rgb(255, 255, 255);
+}
+.analysis-table__category-content--freeze-row [data-dragged-y=true] .analysis-table__table > thead {
+  box-shadow: 0 1rem 1rem -1rem rgba(0, 0, 0, 0.2);
+}
+
 .analysis-table__category-content--freeze-col {
   position: relative;
 }
-.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:not(.analysis-table__transaction-row) > td:first-child, .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:not(.analysis-table__transaction-row) > th:first-child,
-.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:not(.analysis-table__transaction-row) > td:first-child,
-.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:not(.analysis-table__transaction-row) > th:first-child {
-  position: absolute;
+.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > td:first-child, .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > th:first-child,
+.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > td:first-child,
+.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > th:first-child {
+  position: sticky;
   left: 0;
   width: 25rem;
   z-index: 10;
 }
-.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:not(.analysis-table__transaction-row) > th:first-child,
-.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:not(.analysis-table__transaction-row) > th:first-child {
+.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > th:first-child,
+.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > th:first-child {
   background-color: rgb(16, 69, 122) !important;
-  height: 6.5rem;
 }
-.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:not(.analysis-table__transaction-row) > td:first-child,
-.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:not(.analysis-table__transaction-row) > td:first-child {
+.analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > td:first-child,
+.analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > td:first-child {
   background-color: white;
   min-height: 5rem;
 }
@@ -5523,18 +5596,54 @@ a.analysis-navigation__prev-next:hover {
   background-color: rgb(223, 235, 247);
   min-height: 5rem;
 }
-.analysis-table__category-content--freeze-col .analysis-table__table {
-  margin-left: 25rem;
-  width: auto;
-  min-width: calc(100% - 25rem);
-}
 .analysis-table__category-content--freeze-col .analysis-table__transactions-detail {
   position: relative;
-  left: -25rem;
-  width: calc(100% + 25rem);
 }
 .analysis-table__category-content--freeze-col .analysis-table__transactions-detail th {
   padding-top: 0.5rem;
+}
+.analysis-table__category-content--freeze-col [data-dragged-x=true] .analysis-table__table > :is(tbody, thead) > tr:not(.analysis-table__transaction-row) > td:first-child:after, .analysis-table__category-content--freeze-col [data-dragged-x=true] .analysis-table__table > :is(tbody, thead) > tr:not(.analysis-table__transaction-row) > th:first-child:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 1rem;
+  background: linear-gradient(90deg, black, transparent 50%);
+  opacity: 0.1;
+  pointer-events: none;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:first-child {
+  width: 4rem;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:nth-child(2) {
+  position: sticky;
+  left: 4rem;
+  width: 25rem;
+  z-index: 10;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:nth-child(2) {
+  background-color: white;
+  min-height: 5rem;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) [data-dragged-x=true] .analysis-table__table > thead > tr:first-child > th:first-child {
+  border-right: none;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) [data-dragged-x=true] .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:first-child::after {
+  display: none;
+}
+.analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) [data-dragged-x=true] .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:nth-child(2)::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 1rem;
+  background: linear-gradient(90deg, black, transparent 50%);
+  opacity: 0.1;
+  pointer-events: none;
 }
 
 .analysis-table__transaction-row {
@@ -5775,7 +5884,7 @@ a.analysis-navigation__prev-next:hover {
 }
 
 .analysis-table__table {
-  border-top: 1px solid rgb(255, 255, 255);
+  border-collapse: separate;
   margin-top: 0;
   margin-bottom: 0;
   text-align: left;
@@ -5784,13 +5893,17 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table__table > thead > tr > th {
   background-color: rgb(16, 69, 122);
   border-right: 1px solid rgb(255, 255, 255);
+  border-bottom: 1px solid rgb(255, 255, 255);
   color: rgb(255, 255, 255);
   font-weight: 700;
   padding: 1rem;
-  vertical-align: top;
+  vertical-align: middle;
   font-size: 13px;
   font-size: 1.3rem;
   line-height: 1.153846154;
+}
+.analysis-table__table > thead > tr > th:first-child {
+  border-left: none;
 }
 .analysis-table__table > thead > tr > th:last-child {
   border-right: none;
@@ -5798,7 +5911,7 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table__table > tbody > tr > td {
   border: none;
   padding: 1rem;
-  vertical-align: top;
+  vertical-align: middle;
   font-size: 13px;
   font-size: 1.3rem;
   line-height: 1.153846154;
@@ -5858,19 +5971,6 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table__edit-cell {
   text-align: right;
 }
-@media (max-width: 1199px) {
-  .analysis-table__edit-cell {
-    min-width: 15rem;
-  }
-}
-.analysis-table__table--fix-data .analysis-table__transaction-table .analysis-table__edit-cell {
-  min-width: 38rem;
-}
-@media (max-width: 1199px) {
-  .analysis-table__table--fix-data .analysis-table__transaction-table .analysis-table__edit-cell {
-    min-width: 32rem;
-  }
-}
 .analysis-table__confirm-categories .analysis-table__edit-cell {
   min-width: 13rem;
 }
@@ -5920,6 +6020,7 @@ a.analysis-navigation__prev-next:hover {
   font-size: 14px;
   font-size: 1.4rem;
   line-height: 1.1429;
+  width: 25rem;
 }
 
 .analysis-table__cost-item-transactions-summary {
@@ -6297,6 +6398,12 @@ a.analysis-navigation__prev-next:hover {
   }
 }
 
+.analysis-table__intervention-title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 100%;
+}
+
 .analysis-table__intervention-header,
 .analysis-table__set-contribution {
   width: min(17.7rem, 15vw);
@@ -6354,6 +6461,7 @@ a.analysis-navigation__prev-next:hover {
 }
 
 .analysis-table__allocated-input-group {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -6369,7 +6477,7 @@ a.analysis-navigation__prev-next:hover {
 input[type=text].analysis-table__allocated-input {
   min-height: 0;
   padding: 0.6rem 0.8rem;
-  width: 5.5rem;
+  width: 6rem;
   text-align: right;
   font-size: 14px;
   font-size: 1.4rem;
@@ -6383,7 +6491,7 @@ input[type=text].analysis-table__allocated-input {
   color: rgb(155, 155, 155);
   padding: 0.2rem 1.5rem 0.2rem 0.2rem;
   margin-right: auto;
-  margin-left: 0;
+  margin-left: 0.2rem;
 }
 
 .analysis-table__allocated-total-wrapper {
@@ -6405,30 +6513,58 @@ input[type=text].analysis-table__allocated-input {
   align-items: center;
   gap: 0.5em;
   font-weight: 700;
-  color: rgb(155, 155, 155);
+  background-color: rgb(35, 121, 209);
+  border: none;
+  border-radius: 0.2rem;
+  color: rgb(255, 255, 255);
+  padding: 0.8rem 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-size: 1.3rem;
+  line-height: 1.125;
+}
+.analysis-table__allocated-apply-all-link:hover, .analysis-table__allocated-apply-all-link:focus {
+  background-color: rgb(27.6844262295, 95.7090163934, 165.3155737705);
+  color: rgb(255, 255, 255);
   text-decoration: none;
 }
 .analysis-table__allocated-apply-all-link span {
   text-wrap: nowrap;
 }
-.analysis-table__allocated-apply-all-link:hover {
-  color: rgb(16, 69, 122);
-  text-decoration: underline;
-}
 
 .analysis-table__allocated-apply-all-link-wrapper {
   display: none;
+  align-items: center;
+  position: absolute;
+  margin-left: -0.5rem;
+  padding: 0.6rem 0 0.6rem 8.5rem;
+  background-color: rgb(16, 69, 122);
+  border-radius: 0.4rem;
+  box-shadow: 0px 4px 4px 0px rgba(16, 69, 122, 0.2);
   text-align: right;
+  z-index: 1;
 }
-.analysis-table__tbody:first-of-type .analysis-table__allocated-apply-all-link-wrapper {
+.analysis-table__allocated-apply-all-link-wrapper .help__button svg {
+  background: white;
+  border-radius: 0.4rem;
+  margin-inline: 0.4rem;
+}
+
+:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within .analysis-table__allocated-apply-all-link-wrapper {
   display: inline-flex;
 }
-@media (max-width: 1199px) {
-  .analysis-table__tbody:first-of-type .analysis-table__allocated-apply-all-link-wrapper {
-    display: inline-flex;
-    margin-bottom: 0.5rem;
-    text-align: right;
-  }
+:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
+  position: relative;
+  z-index: 2;
+}
+:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper):focus {
+  outline: 2px solid -webkit-focus-ring-color;
+}
+:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) ~ .analysis-table__allocated-input-suffix {
+  color: white;
+  z-index: 2;
 }
 
 .analysis-table__table > tbody > tr.error .analysis-table__allocated-input,
@@ -6855,23 +6991,47 @@ input[type=text].analysis-table__allocated-input {
   background-color: rgb(207, 217.2857142857, 231);
 }
 
+.analysis-table__table > thead > tr > th.analysis-table__intervention-subtotal-header,
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header {
-  background-color: rgb(53, 112, 171);
+  background-color: rgb(197, 222, 246);
+  color: rgb(51, 51, 51);
 }
 
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header--total {
-  background-color: rgb(53, 112, 171);
+  background-color: rgb(197, 222, 246);
+  color: rgb(51, 51, 51);
   text-align: right;
+  min-width: 16rem;
 }
 
-.analysis-table__table > tbody > tr > .analysis-table__subcomponent-input-cell {
-  padding-top: 0.5rem;
+.analysis-table__table > tbody > tr > .analysis-table__intervention-subtotal-cell {
   background-color: rgb(241, 244, 248);
 }
 
+.analysis-table__table > tbody > tr > .analysis-table__subcomponent-input-cell {
+  background-color: rgb(250, 250, 251);
+}
+
+.analysis-table__intervention-subtotal {
+  display: block;
+  min-width: 8rem;
+  text-align: right;
+}
+
 .analysis-table__subcomponent-total {
-  min-width: 5.6rem;
+  min-width: 6rem;
   font-weight: 700;
+  padding: 0.6rem 0.8rem;
+  text-align: right;
+  display: grid;
+  place-items: center;
+}
+
+.analysis-table__subcomponent-total-wrapper {
+  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
 }
 
 .analysis-table__subcomponent-skip {
@@ -6884,16 +7044,20 @@ input[type=text].analysis-table__allocated-input {
   position: absolute;
   left: -9999em;
 }
-.analysis-table__subcomponent-skip label {
-  line-height: 1;
-  color: rgb(27, 119, 212);
-  text-decoration: underline;
+
+.analysis-table__subcomponent-skip__label {
+  padding: 8px 16px;
+  border-radius: 2px;
+  background-color: rgb(241, 247, 253);
+  color: rgb(51, 51, 51);
+  margin-bottom: 0;
+}
+.analysis-table__subcomponent-skip__label:hover {
+  filter: brightness(0.9);
   cursor: pointer;
 }
-
 .analysis-table__subcomponent-skip input:disabled + .analysis-table__subcomponent-skip__label {
-  color: rgb(172, 180, 191);
-  font-weight: 400;
+  color: rgb(155, 155, 155);
   text-decoration: none;
   cursor: not-allowed;
 }
@@ -6913,13 +7077,18 @@ input[type=text].analysis-table__allocated-input {
   flex-direction: row;
   align-items: center;
   margin-right: 0.5rem;
+  position: relative;
 }
 .analysis-table__subcomponent-allocate .analysis-table__subcomponent-allocate-input {
   margin: 0;
   margin-right: 0.5rem;
-  padding: 0.4rem 0.6rem;
   min-height: auto;
-  width: 4.8rem;
+  width: 6rem;
+  padding: 0.6rem 0.8rem;
+  text-align: right;
+  font-size: 14px;
+  font-size: 1.4rem;
+  line-height: 1.1428;
 }
 .analysis-table__subcomponent-allocate .analysis-table__subcomponent-allocate-input:disabled {
   color: rgb(204, 204, 204);
@@ -6957,9 +7126,8 @@ input[type=text].analysis-table__allocated-input {
 .analysis-table__table > tbody > tr.error .analysis-table__subcomponent-total {
   background-color: rgb(253, 232, 232);
   color: rgb(183, 87, 87);
-}
-.analysis-table__table > tbody > tr.error .analysis-table__subcomponent-skip {
-  background-color: rgb(253, 232, 232);
+  display: flex;
+  align-items: center;
 }
 
 .analysis-table__allocation_suggestions {
@@ -7036,8 +7204,9 @@ input[type=text].analysis-table__allocated-input {
   font-size: 1.2rem;
   padding-top: 0.25em;
   padding-left: 0;
-  margin-left: -5.6rem; /* "span" into total column */
+  margin-left: 0;
   margin-bottom: 0;
+  grid-column: span 2;
 }
 
 .analysis-table__actions__label-form .help_text,
@@ -8255,15 +8424,22 @@ button.comparison__item:hover, button.comparison__item:focus {
 }
 .subcomponent-chart__breakdown-list li {
   counter-increment: breakdownCount;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 0.8rem;
   padding: 0;
+  margin-bottom: 0;
+  background-color: rgb(241, 247, 253);
+  border-bottom: 1px solid rgb(179, 195, 213);
   line-height: 1.5;
-  margin-bottom: 0.8rem;
+}
+.subcomponent-chart__breakdown-list li > span {
+  padding: 0.6rem 0.8rem;
 }
 .subcomponent-chart__breakdown-list li:before {
   display: inline-flex;
   width: 2rem;
   height: 2rem;
-  margin-right: 0.5em;
   content: counter(breakdownCount);
   background: rgba(0, 0, 0, 0.2);
   border-radius: 50%;
@@ -8272,6 +8448,8 @@ button.comparison__item:hover, button.comparison__item:focus {
   color: rgb(255, 255, 255);
   font-size: 1.2rem;
   font-weight: 700;
+  place-self: center;
+  transform: translateX(0.6rem);
 }
 .subcomponent-chart__breakdown-list li:nth-child(1):before {
   background-color: rgb(40, 87, 134);
@@ -8299,4 +8477,7 @@ button.comparison__item:hover, button.comparison__item:focus {
 }
 .subcomponent-chart__breakdown-list li:nth-child(9):before {
   background-color: rgb(123, 45, 83);
+}
+.subcomponent-chart__breakdown-list .subcomponent-chart__list-item__inkind {
+  background-color: rgb(223, 235, 247);
 }

@@ -10,7 +10,11 @@
     <table class="analysis-table__table">
         <thead>
         <tr>
-            <th>{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+            {% if bulkSelect == 'true' %}
+                <th colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+            {% else %}
+                <th>{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+            {% endif %}
             {% if costItemEdit == 'true' %}
                 <th class="analysis-table__grant-cell">{{ 'Grant'|label_override:'ci_grant_code' }}</th>{% endif %}
             {% if lumpSumTable != 'true' %}
@@ -19,6 +23,7 @@
                 <th>{% translate 'Sector Code' %}</th>{% endif %}
             {% if lumpSumTable != 'true' %}
                 <th>{% translate 'Account Code Description' %}</th>{% endif %}
+
             <th class="analysis-table__amount-cell">
                 {% if not cost_line_items|contains_sensitive_data %}
                     {% if allocateEdit == 'true' %}
@@ -29,14 +34,14 @@
                 {% endif %}
             </th>
             {% for intervention_instance in analysis.interventioninstance_set.all %}
-                {% if costItemEdit == 'true' or allocateEdit == 'true' %}
+                {% if costItemEdit == 'true' %}
                     <th class="analysis-table__edit-cell">
-                        {% if costItemEdit == 'true' %}
-                            {% help 'confirm_categories__edit_cost_type_category' %}
-                            <span class="analysis-table__help-in-th-label">{% translate 'Edit Cost Type & Category' %}</span>
-                        {% elif allocateEdit == 'true' %}
-                            <span class="analysis-table__help-in-th-label">{{ intervention_instance.display_name }}</span>
-                        {% endif %}
+                        {% help 'confirm_categories__edit_cost_type_category' %}
+                        <span class="analysis-table__help-in-th-label">{% translate 'Edit Cost Type & Category' %}</span>
+                    </th>
+                {% elif allocateEdit == 'true' %}
+                    <th class="analysis-table__edit-cell">
+                        <span class="analysis-table__intervention-title">{{ intervention_instance.display_name }}</span>
                     </th>
                 {% endif %}
             {% endfor %}
@@ -48,6 +53,18 @@
             {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
                 {% with transactions_count=cost_line_item.transactions.count %}
                     <tr>
+                        {% if bulkSelect == 'true' %}
+                            <td class="analysis-table__bulk-update-checkbox">
+                                <div class="form__checkbox form__checkbox--simple form__checkbox--no-label">
+                                    <label>
+                                        <input type="checkbox" class="bulk-checkbox"
+                                           {# No name attribute so it isn't submitted with the form, only used via JS #}
+                                               value="{{ cost_line_item.config.id }}" aria-label="{% translate 'Select' %}">
+                                        <span></span>
+                                    </label>
+                                </div>
+                            </td>
+                        {% endif %}
                         <td class="analysis-table__cost-item-cell">
                             <div class="analysis-table__cost-item-summary">
                                 {% if dioptra_settings.show_transactions %}
@@ -95,6 +112,7 @@
                             {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                         {% for intervention_instance in analysis.interventioninstance_set.all %}
                             {% if costItemEdit == 'true' or allocateEdit == 'true' %}
+                                {% with allocation=cost_line_item.config.allocations_by_intervention_id|dict_get:intervention_instance.id %}
                                 <td class="analysis-table__edit-cell">
                                     {% if costItemEdit == 'true' %}
                                         <button class="analysis-table__category-edit">{% translate 'Edit' %}</button>
@@ -102,33 +120,29 @@
                                     {% elif allocateEdit == 'true' %}
                                         <div class="analysis-table__allocate">
                                             <div class="analysis-table__allocated-input-group">
-                                                {% with allocation=cost_line_item.config.allocations_by_intervention_id|dict_get:intervention_instance.id %}
                                                     {% if step.cost_type.type_obj.allocation_editable or step.step_allocation_editable or lumpSumTable == 'true' %}
-                                                        <input class="analysis-table__allocated-input" type="text"
+                                                        <input class="analysis-table__allocated-input {% if errors|dict_get:cost_line_item.id %}error{% endif %}" type="text"
                                                                name="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"
                                                                value="{% if allocation != None %}{{ allocation }}{% elif lumpSumTable == 'true' or not step.cost_type.is_program_cost %}{{ suggested_allocation_calculations|dict_get:intervention_instance|dict_get:'suggested_allocation'|floatformat:4 }}{% endif %}"
                                                                data-intervention-id="{{ intervention_instance.id }}"
                                                                data-cost-line-item-id="{{ cost_line_item.id }}"
-                                                               class="{% if errors|dict_get:cost_line_item.id %}error{% endif %}">
+                                                               data-cost-line-item-total-cost="{{ cost_line_item.total_cost }}">
                                                         <span class="analysis-table__allocated-input-suffix">%</span>
-                                                        <div class="analysis-table__allocated-apply-all-link-wrapper">
-                                                            {# FE-TODO: Add tooltip support #}
-                                                            <a class="analysis-table__allocated-apply-all-link" href="#"
-                                                               data-apply-to-all="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"
-                                                               data-intervention-id="{{ intervention_instance.id }}">
-                                                                <span
-                                                                        {% if analysis.interventioninstance_set.count > 2 %}
-                                                                            class="hidden"{% endif %}
-                                                                            id="apply-all-{{ cost_line_item.id }}_{{ intervention_instance.id }}">Apply to all</span>
-                                                                <svg aria-labelledby="apply-all-{{ cost_line_item.id }}_{{ intervention_instance.id }}"
-                                                                     width="20" height="20" viewBox="0 0 20 20"
-                                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M10 4.16663V15.8333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-                                                                    <path d="M15.8334 10L10.0001 15.8333L4.16675 10" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
-                                                                </svg>
-                                                            </a>
-                                                            {% help 'allocate_costs__apply_to_all' %}
-                                                        </div>
+                                                        {% if forloop.parentloop.first %}
+                                                            <div class="analysis-table__allocated-apply-all-link-wrapper" tabindex="-1">
+                                                                <a class="analysis-table__allocated-apply-all-link" href="#"
+                                                                data-apply-to-all="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"
+                                                                data-intervention-id="{{ intervention_instance.id }}">
+                                                                    <span id="apply-all-{{ cost_line_item.id }}_{{ intervention_instance.id }}">Apply to all</span>
+                                                                    <svg aria-labelledby="apply-all-{{ cost_line_item.id }}_{{ intervention_instance.id }}" width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M9 2V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                        <path d="M15 10L9 16L3 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    </svg>
+                                                                        
+                                                                </a>
+                                                                {% help 'allocate_costs__apply_to_all' %}
+                                                            </div>
+                                                        {% endif %}
                                                     {% else %}
                                                         {# Leave an input here for show, but submit the actual value in a hidden field with the correct name. #}
                                                         <input type="text"
@@ -137,10 +151,9 @@
                                                                class="{% if errors|dict_get:cost_line_item.id %}error{% endif %}"
                                                                disabled>
                                                         <input type="hidden"
-                                                               name="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"
+                                                       name="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"
                                                                value="{{ suggested_allocation_calculations|dict_get:intervention_instance|dict_get:'suggested_allocation'|floatformat:4 }}">
                                                     {% endif %}
-                                                {% endwith %}
                                             </div>
                                             {% if errors|dict_get:cost_line_item.id and not cost_type_category_grant.show_allocation_calculator %}
                                                 <br>
@@ -162,6 +175,7 @@
 
                                     {% endif %}
                                 </td>
+                                {% endwith %}
                             {% endif %}
                         {% endfor %}
                         <td class="analysis-table__total-cell">
@@ -182,7 +196,7 @@
                     {% if dioptra_settings.show_transactions %}
                         {% if transactions_count > 0 %}
                             <tr class="analysis-table__transaction-row">
-                                <td colspan="{% if type == 'fixData' %}8{% elif type == 'categorizeCostType' %}8{% elif showSectorCode %}9{% else %}7{% endif %}"
+                                <td colspan="{% if type == 'fixData' %}8{% elif type == 'categorizeCostType' %}8{% elif showSectorCode %}{% if bulkSelect == 'true' %}10{% else %}9{% endif %}{% else %}7{% endif %}"
                                     class="analysis-table__transaction-cell">
                                     <div class="analysis-table__transactions-detail">
                                         <table
@@ -224,12 +238,11 @@
                         {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
                             <tr class="analysis-table__edit-row allocate-costs">
                                 <td
-                                        colspan="{% if showSectorCode == 'true' %}8{% elif type == 'categorizeCostType' %}9{% else %}7{% endif %}"
+                                        colspan="99"
                                         class="analysis-table__edit-row-cell">
                                     {# FE TODO: set based on # of items #}
-                                    <form action="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}"
-                                          method="POST"
-                                          novalidate data-show-loading-on-submit>
+                                    {# Not a nested <form>: the save button posts to the note endpoint via JS. #}
+                                    <div>
                                         {% csrf_token %}
                                         <table class="analysis-table__edit-table">
                                             <tbody>
@@ -259,7 +272,7 @@
                                             </tr>
                                             </tbody>
                                         </table>
-                                    </form>
+                                    </div>
                                 </td>
                             </tr>
 

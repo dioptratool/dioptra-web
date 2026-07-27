@@ -648,6 +648,89 @@ $(function() {
 })
 
 $(function() {
+
+    $('form.allocate-bulk-form').each(function () {
+        setupBulkForm($(this))
+    });
+
+
+    function setupBulkForm($form) {
+        var $selectAllCheckbox = $form.find('input[type="checkbox"].select-all');
+        var $bulkCheckboxes = $form.find('input[type="checkbox"].bulk-checkbox');
+        var $bulkAssignItems = $form.find('button.bulk-assign-items');
+        var bulkUrl = $bulkAssignItems.attr('data-href');
+
+        $selectAllCheckbox.on('change', function () {
+            if ($selectAllCheckbox.prop('checked')) {
+                selectAll();
+            } else {
+                selectNone();
+            }
+        });
+
+        $bulkAssignItems.on('click', function (e) {
+            e.preventDefault();
+            const confirmation = e.target.closest('.bulk-assign-items').getAttribute('data-dialog-confirm')
+
+            // check for changed values, show confirm dialog if there are
+            const tableForm = e.target.closest('form')
+            const allocationInputs = tableForm.querySelectorAll('input.analysis-table__allocated-input, input.analysis-table__subcomponent-allocate-input')
+            const unsavedChanges = Array.from(allocationInputs).filter((input) => input.hasAttribute('data-changed')).length
+            if (confirmation && unsavedChanges) {
+                if (!confirm(confirmation)) {
+                    e.stopPropagation();
+                    return;
+                }
+            }
+            assignCheckedItems();
+        });
+
+        $bulkCheckboxes.on('change', function () {
+            if (getCheckedConfigIds().length == 0) {
+                $bulkAssignItems.prop('disabled', true);
+            } else {
+                $bulkAssignItems.prop('disabled', false);
+            }
+        });
+
+        // Only enable the bulk checkbox once the page is done fully loading.
+        $selectAllCheckbox.prop('disabled', false);
+
+        function selectAll() {
+            $bulkCheckboxes.prop('checked', true);
+            $bulkAssignItems.prop('disabled', false);
+        }
+
+        function selectNone() {
+            $bulkCheckboxes.prop('checked', false);
+            $bulkAssignItems.prop('disabled', true);
+        }
+
+        function assignCheckedItems() {
+            var configIds = getCheckedConfigIds();
+            var queryString = '?config_ids=' + configIds.join(',');
+            var url = bulkUrl + queryString;
+
+            $(window).off('beforeunload');
+            Panels.open(url).then(function () {
+                window.location = window.location.href;
+            });
+        }
+
+        function getCheckedConfigIds() {
+            return $bulkCheckboxes
+              .filter(':checked')
+              .toArray()
+              .map(function (checkboxEl) {
+                  return parseInt(checkboxEl.value, 10);
+              })
+        }
+
+
+    }
+})
+
+$(function() {
     $('button[data-transactions-href]').on('click', function(e) {
         var $button = $(e.currentTarget);
         if (!$button.hasClass('transactions-loaded')) {
@@ -1184,42 +1267,13 @@ document.querySelectorAll('input.analysis-table__subcomponent-allocate-input, in
   input.addEventListener('focusin', (e) => e.target.select())
 })
 
-// auto resize frozen table rows whenever a table is activated
-window.addEventListener('DOMContentLoaded', (e) => {
-  document.querySelectorAll('.analysis-table__category-toggle')?.forEach((trigger) => {
-    trigger.addEventListener('click', (evt) => {
-      setTimeout(() => {// allow time for offsetHeight to update
-        const frozenTable = evt.target.closest('.analysis-table__category')?.querySelector('.analysis-table__category-content--freeze-col');
-        if (frozenTable) {
-          resizeFrozenTableRows(frozenTable)
-        }
-      }, 200)
-    })
-  })
-  document.querySelector('.analysis-table__category--unconfirmed')?.classList.add('analysis-table__category--active')
-  document.querySelectorAll('.analysis-table__category-content--freeze-col')?.forEach((table) => {
-    resizeFrozenTableRows(table)
-  })
+document.querySelectorAll('.analysis-table__category-content--freeze-col, .analysis-table__category-content--freeze-row')?.forEach((table) => {
+  const wrapper = table.querySelector('.analysis-table__wrapper');
+  wrapper.addEventListener('scroll', (e) => {
+    wrapper.setAttribute('data-dragged-x', e.target.scrollLeft > 5);
+    wrapper.setAttribute('data-dragged-y', e.target.scrollTop > 5);
+  });
 });
-
-function resizeFrozenTableRows(table) {
-  const active = table.closest('.analysis-table__category--active')
-  table.querySelectorAll('td')?.forEach((cell) => {
-
-    const row = cell.closest('tr')
-    if (row && cell.offsetHeight > row.offsetHeight) {
-      row.style.height = cell.offsetHeight + 'px'
-    }
-    const frozenCell = row.querySelector('td:first-child')
-    if (!active) {
-      frozenCell.style.height = null
-      return
-    }
-    if (cell.offsetHeight > frozenCell.offsetHeight) {
-      frozenCell.style.height = cell.offsetHeight + 'px'
-    }
-  })
-}
 
 /* Make tables mouse draggable */
 const tableWrapperSelector = '.analysis-table__wrapper'

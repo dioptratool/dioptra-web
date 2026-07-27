@@ -371,7 +371,9 @@ class ReorderView(FormView, PanelUIMixin):
         kwargs.pop("prefix")
         kwargs.pop("initial")
         kwargs["order_field"] = self.order_field
-        if self.queryset:
+        # `is not None`: an empty scoped queryset must not fall back to the
+        # unscoped default, which would expose every instance of the model.
+        if self.queryset is not None:
             kwargs["choices"] = self.queryset.order_by(self.order_field).all()
         else:
             kwargs["choices"] = self.model.objects.order_by(self.order_field).all()

@@ -61,21 +61,43 @@
 }
 
 // Subcomponent allocate
+.analysis-table__table > thead > tr > th.analysis-table__intervention-subtotal-header,
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header {
-  background-color:  rgb(53, 112, 171);  
+  background-color:  $color-table-accent-blue; 
+  color: $color-mineshaft; 
 }
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header--total {
-  background-color:  rgb(53, 112, 171);
+  background-color:  $color-table-accent-blue;
+  color: $color-mineshaft;
   text-align: right;
+  min-width: 16rem;
+}
+.analysis-table__table > tbody > tr > .analysis-table__intervention-subtotal-cell {
+  background-color: $color-moonstone-2;
 }
 .analysis-table__table > tbody > tr > .analysis-table__subcomponent-input-cell {
-  padding-top: 0.5rem;
-  background-color: $color-moonstone-2;  
+  background-color: $color-moonstone-3;
+}
+
+.analysis-table__intervention-subtotal {
+  display: block;
+  min-width: 8rem;
+  text-align: right;
 }
 
 .analysis-table__subcomponent-total {
-  min-width: 5.6rem;
+  min-width: 6rem;
   font-weight: 700;
+  padding: 0.6rem 0.8rem;
+  text-align: right;
+  display: grid;
+  place-items: center;
+}
+.analysis-table__subcomponent-total-wrapper {
+  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
 }
 .analysis-table__subcomponent-skip {
   min-width: 7.2rem;
@@ -87,17 +109,19 @@
     position: absolute;
     left: -9999em;
   }
-  label {
-    line-height: 1;
-    color: $color-topaz;
-    text-decoration: underline;
-    cursor: pointer;
-  }
 }
 .analysis-table__subcomponent-skip__label {
+  padding: 8px 16px;
+  border-radius: 2px;
+  background-color: $color-moonstone;
+  color: $color-mineshaft;
+  margin-bottom: 0;
+  &:hover {
+    filter: brightness(0.9);
+    cursor: pointer;
+  }
   .analysis-table__subcomponent-skip input:disabled + & {
-    color: rgba(172, 180, 191, 1);
-    font-weight: 400;
+    color: $color-smoke;
     text-decoration: none;
     cursor: not-allowed;
   }
@@ -116,13 +140,16 @@
   flex-direction: row;
   align-items: center;
   margin-right: 0.5rem;
+  position: relative;
 
   .analysis-table__subcomponent-allocate-input {
     margin: 0;
     margin-right: 0.5rem;
-    padding: 0.4rem 0.6rem;
     min-height: auto;
-    width: 4.8rem;
+    width: 6rem;
+    padding: 0.6rem 0.8rem;
+    text-align: right;
+    @include font-size(14, 1.1428);
 
     &:disabled {
       color: $color-gray;
@@ -166,9 +193,8 @@
   .analysis-table__subcomponent-total {
     background-color: rgba(253, 232, 232, 1);
     color: $color-lichen;
-  }
-  .analysis-table__subcomponent-skip {
-    background-color: rgba(253, 232, 232, 1);
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -244,8 +270,9 @@
   font-size: 1.2rem;
   padding-top: 0.25em;
   padding-left: 0;
-  margin-left: -5.6rem; /* "span" into total column */
+  margin-left: 0;
   margin-bottom: 0;
+  grid-column: span 2;
 }
 
 .analysis-table__actions__label-form,

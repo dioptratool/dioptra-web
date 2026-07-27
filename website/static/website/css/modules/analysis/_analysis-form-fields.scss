@@ -1,0 +1,148 @@
+html.is-in-panel .allocation-input-table-title,
+.panel-form.bulk-allocate-form .control-label {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 25px;
+  color: $color-mineshaft;
+  text-transform: none;
+
+  span {
+    font-weight: 700;
+  }
+}
+html.is-in-panel .allocation-total-title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 25px;
+  margin-bottom: 0;
+}
+html.is-in-panel .allocation-total-subtitle {
+  font-weight: 400;
+  font-style: Italic;
+  font-size: 14px;
+  color: $color-smoke;
+  margin-bottom: 0;
+}
+
+.allocation-input-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-block: 10px 20px;
+}
+//tables
+.allocation-input-table {
+  border: 1px solid $color-smoke;
+  border-collapse: separate;
+  border-radius: 2px;
+  margin: 0;
+  text-align: left;
+  overflow: hidden;
+
+  .form-group.changed::after {
+    display: none;
+  }
+
+  th, td {
+    padding: 6px;
+    font-size: 13px;
+    line-height: 1.153846154;
+    border-bottom: 1px solid $color-white;
+    border-right: 1px solid $color-white;
+    vertical-align: text-top;
+    width: 120px;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  th {
+    background-color: $color-chart-2;
+    color: $color-white;
+    font-weight: $font-weight-bold;
+    vertical-align: middle;
+    height: 44px;
+  }
+
+  tr:last-child > td {
+    border-bottom: none;
+  }
+
+  .allocation-input-table__subcomponent-header,
+  .allocation-input-table__subcomponent-total-header {
+    background-color: $color-table-accent-blue;
+    color: $color-mineshaft;
+  }
+  .allocation-input-table__subcomponent-total-header,
+  .allocation-input-table__subcomponent-total-cell {
+    text-align: right;
+  }
+  .allocation-input-table__subcomponent-total-cell {
+    background-color: $color-moonstone-3;
+
+    .allocation-input-table__subcomponent-total {
+      min-width: 60px;
+      font-size: 14px;
+      line-height: 1.15;
+      font-weight: 700;
+      padding: 6px 8px;
+      text-align: right;
+
+      &.error {
+        background-color: rgba(253, 232, 232, 1);
+        color: $color-lichen;    
+      }
+    }
+  }
+  .allocation-input-table__input-cell {
+    background-color: $color-moonstone-2;
+
+    /* Chrome, Safari, Edge, Opera */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  
+    .form-control, .bulk-allocation-input {
+      width: 72px;
+      padding: 6px 8px;
+      text-align: right;
+      font-size: 15px;
+      line-height: 1.1428;
+      height: auto;
+      border: 1px solid $color-smoke;
+      border-radius: 2px !important;
+    }
+    .input-group-text__after {
+      background: none;
+      border: none;
+      color: $color-smoke;
+    }
+  }
+}
+
+.allocation-input-table__total {
+  margin-block: 10px 20px;
+}
+.allocation-input-table__total-value {
+  display: inline-block;
+  min-width: 80px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  background: #EBEBEB;
+  font-size: 14px;
+  font-weight: 700 !important;
+  text-align: right;
+
+  &.error {
+    color: rgba(183, 87, 87, 1);
+    background: rgba(247, 231, 231, 1);
+  }
+}

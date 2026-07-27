@@ -24,7 +24,9 @@ from website.models import (
     InsightComparisonData,
     Intervention,
     InterventionGroup,
+    InterventionInstance,
     Region,
+    SubcomponentCostAllocation,
     SubcomponentCostAnalysis,
     Transaction,
 )
@@ -109,6 +111,14 @@ class AnalysisFactory(DjangoModelFactory):
         model = Analysis
 
 
+class InterventionInstanceFactory(DjangoModelFactory):
+    analysis = factory.SubFactory(AnalysisFactory)
+    intervention = factory.SubFactory(InterventionFactory)
+
+    class Meta:
+        model = InterventionInstance
+
+
 class CostTypeFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Test Cost Type {n}")
 
@@ -175,6 +185,27 @@ class SubcomponentCostAnalysisFactory(DjangoModelFactory):
 
     class Meta:
         model = SubcomponentCostAnalysis
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        analysis = kwargs.pop("analysis", None)
+        if analysis is not None:
+            intervention_instance = analysis.interventioninstance_set.first()
+            if intervention_instance is None:
+                intervention_instance = InterventionInstanceFactory(analysis=analysis)
+            kwargs["intervention_instance"] = intervention_instance
+        elif "intervention_instance" not in kwargs:
+            kwargs["intervention_instance"] = InterventionInstanceFactory()
+        return super()._create(model_class, *args, **kwargs)
+
+
+class SubcomponentCostAllocationFactory(DjangoModelFactory):
+    subcomponent_analysis = factory.SubFactory(SubcomponentCostAnalysisFactory)
+    cli_config = factory.SubFactory(CostLineItemConfigFactory)
+    allocations = factory.LazyAttribute(lambda _: {"0": "100"})
+
+    class Meta:
+        model = SubcomponentCostAllocation
 
 
 class HelpTopicFactory(DjangoModelFactory):

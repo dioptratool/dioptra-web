@@ -35,7 +35,13 @@ from website.views.analysis.steps.add_other_costs import (
 from website.views.analysis.steps.allocate import (
     Allocate,
     AllocateCostTypeGrant,
+    AllocateInterventionBulk,
     AllocateSupportingCosts,
+)
+from website.views.analysis.steps.allocate_subcomponents import (
+    AllocateSubcomponents,
+    AllocateSubcomponentsBulk,
+    AllocateSubcomponentsInterventionGrant,
 )
 from website.views.analysis.steps.categorize import Categorize
 from website.views.analysis.steps.categorize_cost_type import (
@@ -43,30 +49,19 @@ from website.views.analysis.steps.categorize_cost_type import (
     CategorizeCostTypeBulk,
 )
 from website.views.analysis.steps.define import (
-    AddAnalysisIntervention,
     DefineCreate,
-    DefineInterventions,
     DefineUpdate,
-    EditAnalysisIntervention,
 )
 from website.views.analysis.steps.insights import Insights, InsightsPrint
 from website.views.analysis.steps.load_data import LoadData, TransactionTemplateDownload
 from website.views.dashboard import DashboardView
 from website.views.documents import full_cost_model_spreadsheet
 from website.views.duplicator import DuplicateView
-from website.views.subcomponent_cost_analysis.steps.subcomponent_allocate import (
-    SubcomponentsAllocate,
-    SubcomponentsAllocateBulk,
-    SubcomponentsAllocatebyCostTypeGrant,
-)
-from website.views.subcomponent_cost_analysis.steps.subcomponent_confirm import (
-    ConfirmSubcomponentsCreate,
-)
-from website.views.subcomponent_cost_analysis.subcomponent_cost_analysis import (
+from website.views.analysis.steps.interventions import (
     EditSubcomponentLabel,
-    EditSubcomponents,
-    EditSubcomponentsLimited,
-    SubcomponentCostAnalysisDetailView,
+    Interventions,
+    InterventionSubcomponentLabels,
+    InterventionSubcomponentLabelsDelete,
 )
 
 urlpatterns = [
@@ -107,19 +102,9 @@ urlpatterns = [
         name="analysis-define-create",
     ),
     path(
-        "analysis/define/interventions/",
-        DefineInterventions.as_view(),
-        name="analysis-define-interventions",
-    ),
-    path(
-        "analysis/define/interventions/add/",
-        AddAnalysisIntervention.as_view(),
-        name="analysis-define-interventions-add",
-    ),
-    path(
-        "analysis/define/interventions/edit/",
-        EditAnalysisIntervention.as_view(),
-        name="analysis-define-interventions-edit",
+        "subcomponents/label/change/<int:label_idx>/<path:label>",
+        EditSubcomponentLabel.as_view(),
+        name="subcomponent-label-edit-label",
     ),
     path(
         "analysis/<int:pk>/",
@@ -130,6 +115,21 @@ urlpatterns = [
         "analysis/<int:pk>/define/",
         DefineUpdate.as_view(),
         name="analysis-define-update",
+    ),
+    path(
+        "analysis/<int:pk>/interventions/",
+        Interventions.as_view(),
+        name="analysis-interventions",
+    ),
+    path(
+        "analysis/<int:pk>/interventions/<int:instance_pk>/subcomponent-labels/",
+        InterventionSubcomponentLabels.as_view(),
+        name="analysis-interventions-subcomponent-labels",
+    ),
+    path(
+        "analysis/<int:pk>/interventions/<int:instance_pk>/subcomponent-labels/delete/",
+        InterventionSubcomponentLabelsDelete.as_view(),
+        name="analysis-interventions-subcomponent-labels-delete",
     ),
     path(
         "analysis/<int:pk>/load-data/",
@@ -166,6 +166,12 @@ urlpatterns = [
         SaveSuggestedToAllConfirmView.as_view(),
         name="analysis-allocate-cost_type-grant--save-suggested",
     ),
+    # NOTE: bulk routes must precede the `<path:grant>` catch-alls below.
+    path(
+        "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/bulk/",
+        AllocateInterventionBulk.as_view(),
+        name="analysis-allocate-cost_type-grant-bulk",
+    ),
     path(
         "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/",
         AllocateCostTypeGrant.as_view(),
@@ -175,6 +181,21 @@ urlpatterns = [
         "analysis/<int:pk>/allocate/<path:grant>/other-costs/",
         AllocateSupportingCosts.as_view(),
         name="analysis-allocate-supporting-costs",
+    ),
+    path(
+        "analysis/<int:pk>/allocate-subcomponents/",
+        AllocateSubcomponents.as_view(),
+        name="analysis-allocate-subcomponents",
+    ),
+    path(
+        "analysis/<int:pk>/allocate-subcomponents/<int:intervention_instance_pk>/<path:grant>/bulk/",
+        AllocateSubcomponentsBulk.as_view(),
+        name="analysis-allocate-subcomponents-intervention-grant-bulk",
+    ),
+    path(
+        "analysis/<int:pk>/allocate-subcomponents/<int:intervention_instance_pk>/<path:grant>/",
+        AllocateSubcomponentsInterventionGrant.as_view(),
+        name="analysis-allocate-subcomponents-intervention-grant",
     ),
     path(
         "analysis/<int:pk>/add-other-costs/",
@@ -212,49 +233,9 @@ urlpatterns = [
         name="analysis-create-copy",
     ),
     path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/confirm_subcomponents/",
-        ConfirmSubcomponentsCreate.as_view(),
-        name="subcomponent-cost-analysis-create",
-    ),
-    path(
         "panels/analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/delete/",
         SubcomponentsDeleteView.as_view(),
         name="subcomponent-cost-analysis-delete",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/",
-        SubcomponentCostAnalysisDetailView.as_view(),
-        name="subcomponent-cost-analysis",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/confirm_subcomponents/edit/",
-        EditSubcomponents.as_view(),
-        name="subcomponent-cost-analysis-label-edit",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/confirm_subcomponents/edit-labels/",
-        EditSubcomponentsLimited.as_view(),
-        name="subcomponent-cost-analysis-label-edit-only",
-    ),
-    path(
-        "subcomponents/label/change/<int:label_idx>/<str:label>",
-        EditSubcomponentLabel.as_view(),
-        name="subcomponent-label-edit-label",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/allocate/",
-        SubcomponentsAllocate.as_view(),
-        name="subcomponent-cost-analysis-allocate",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/allocate/<int:cost_type_pk>/<path:grant>/",
-        SubcomponentsAllocatebyCostTypeGrant.as_view(),
-        name="subcomponent-cost-analysis-allocate-cost_type-grant",
-    ),
-    path(
-        "analysis/<int:pk>/subcomponent_cost_analysis/allocate/bulk/",
-        SubcomponentsAllocateBulk.as_view(),
-        name="subcomponent-cost-analysis-allocate-bulk",
     ),
     path(
         "grant/<int:pk>/category-help/",

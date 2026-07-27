@@ -1,5 +1,10 @@
 import pytest
 
+from website.models import CostLineItemConfig, SubcomponentCostAllocation
+from website.tests.factories import (
+    SubcomponentCostAllocationFactory,
+    SubcomponentCostAnalysisFactory,
+)
 from website.workflows.analysis.steps.load_data import LoadData
 from .common import StepTest
 
@@ -9,8 +14,8 @@ class TestLoadDataStep(StepTest):
     step_under_test = LoadData
 
     @pytest.fixture()
-    def up_to_date_workflow(self, analysis_workflow_with_define_complete):
-        return analysis_workflow_with_define_complete
+    def up_to_date_workflow(self, analysis_workflow_with_interventions_complete):
+        return analysis_workflow_with_interventions_complete
 
     @pytest.fixture()
     def workflow_with_completed_step(self, analysis_workflow_with_loaddata_complete):
@@ -47,3 +52,21 @@ class TestLoadDataStep(StepTest):
         step = self.step_under_test(workflow=up_to_date_workflow)
         assert step.get_href()
         assert step.get_href() == f"/analysis/{step.workflow.analysis.pk}/load-data/"
+
+    def test_invalidate_clears_subcomponent_allocations_before_cost_configs(
+        self,
+        workflow_with_completed_step,
+    ):
+        step = self.step_under_test(workflow=workflow_with_completed_step)
+        analysis = step.analysis
+        config = analysis.cost_line_items.first().config
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(analysis=analysis)
+        subcomponent_allocation = SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=config,
+        )
+
+        step.invalidate()
+
+        assert not SubcomponentCostAllocation.objects.filter(pk=subcomponent_allocation.pk).exists()
+        assert not CostLineItemConfig.objects.filter(pk=config.pk).exists()

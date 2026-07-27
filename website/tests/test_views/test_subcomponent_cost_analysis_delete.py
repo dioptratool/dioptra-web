@@ -13,7 +13,7 @@ class TestSubcomponentCostAnalysisDelete:
     ):
         analysis_wf = analysis_workflow_with_subcomponent_labels
         analysis = analysis_wf.analysis
-        subcomponent = analysis.subcomponent_cost_analysis
+        subcomponent = analysis.subcomponent_cost_analyses()[0]
 
         assert SubcomponentCostAnalysis.objects.filter(pk=subcomponent.pk).exists()
 

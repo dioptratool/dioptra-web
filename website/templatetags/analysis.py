@@ -1,4 +1,6 @@
 import json
+from decimal import Decimal
+from decimal import DecimalException
 from html import unescape
 
 from django import forms
@@ -8,6 +10,7 @@ from django.db.models import Q
 from ombucore.admin.widgets import FlatpickrDateWidget
 from website.models import AccountCodeDescription, CostLineItem
 from website.models.cost_line_item import CostLineItemInterventionAllocation
+from website.models.query_utils import require_prefetch
 
 register = template.Library()
 
@@ -116,18 +119,6 @@ def lines_allocation_complete(cost_line_items):
 
 
 @register.filter
-def lines_subcomponent_allocation_complete(cost_line_items):
-    return (
-        cost_line_items.filter(
-            config__subcomponent_analysis_allocations_skipped__isnull=False,
-            config__subcomponent_analysis_allocations__isnull=True,
-            config__subcomponent_analysis_allocations={},
-        ).count()
-        == 0
-    )
-
-
-@register.filter
 def error_in_lump_sums(errors):
     if not errors:
         return False
@@ -140,6 +131,48 @@ def get_allocation_by_intervention_id(
     intervention_instance_id: int,
 ) -> CostLineItemInterventionAllocation:
     return cost_line_item.config.allocations.filter(intervention_instance_id=intervention_instance_id).first()
+
+
+@register.filter
+def subcomponent_allocation_for_intervention(cost_line_item: CostLineItem, intervention_instance):
+    if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        return None
+
+    subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+    allocation_row = None
+    for allocation in require_prefetch(cost_line_item.config, "subcomponent_cost_allocations"):
+        if allocation.subcomponent_analysis_id == subcomponent_analysis.id:
+            allocation_row = allocation
+            break
+
+    allocations = allocation_row.allocations if allocation_row else {}
+    allocation_total = None
+    if allocation_row and not allocation_row.skipped:
+        allocation_total = sum(Decimal(value) for value in allocations.values())
+
+    return {
+        "analysis": subcomponent_analysis,
+        "labels": [
+            {
+                "idx": idx,
+                "label": label,
+                "value": allocations.get(str(idx), ""),
+            }
+            for idx, label in enumerate(subcomponent_analysis.subcomponent_labels or [])
+        ],
+        "skipped": allocation_row.skipped if allocation_row else False,
+        "total": allocation_total,
+    }
+
+
+@register.filter
+def allocated_cost_for_percentage(cost_line_item: CostLineItem, percentage):
+    if percentage is None:
+        return Decimal(0)
+    try:
+        return cost_line_item.total_cost * (Decimal(percentage) / Decimal(100))
+    except (DecimalException, TypeError, ValueError):
+        return Decimal(0)
 
 
 @register.filter(name="get_json")

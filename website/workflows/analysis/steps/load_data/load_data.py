@@ -17,7 +17,7 @@ class LoadData(Step):
 
     @cached_property
     def dependencies_met(self) -> bool:
-        return self.workflow.get_step("define").is_complete
+        return self.workflow.get_step("interventions").is_complete
 
     @cached_property
     def is_complete(self) -> bool:
