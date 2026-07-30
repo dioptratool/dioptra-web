@@ -122,7 +122,7 @@ def _write_metadata_table(
         author = an_analysis.owner.get_full_name()
 
     metadata += [
-        ("Currency", f"{currency_name(analysis=an_analysis)}"),
+        ("Currency", currency_name(analysis=an_analysis) or ""),
         ("Owner", author),
         ("Analysis URL", analysis_url),
     ]
@@ -140,8 +140,10 @@ def _write_metadata_table(
             "Value of Cash Distributed",
             "Value of Business Grant Amount",
         ]:
-            # For these values we format things as currency
-            ws[f"B{row}"] = f"{currency_symbol(an_analysis)}{val:,.2f}"
+            # Keep currency parameters numeric so spreadsheet formulas can use them.
+            ws[f"B{row}"] = val
+            symbol = currency_symbol(an_analysis) or ""
+            ws[f"B{row}"].number_format = f'"{symbol}"#,##0.00' if symbol else "#,##0.00"
         elif key in [
             "Analysis Start Date",
             "Analysis End Date",
@@ -236,7 +238,7 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
     starting_row: int,
 ) -> int:
     """
-    Write the "Cost of Each Sub-component, per OUTPUT METRIC" table to the provided worksheet
+    Write the "Cost of Each Sub-component, per OUTPUT METRIC UNIT" table to the provided worksheet
 
     Returns the last row with data on it to position other things on the page.
     """
@@ -244,7 +246,7 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
     row = starting_row
 
     for output_metric in intervention_instance.intervention.output_metric_objects():
-        ws[f"A{row}"] = f"Cost of Each Sub-component, per {output_metric}"
+        ws[f"A{row}"] = f"Cost of Each Sub-component, per {output_metric.cost_efficiency_unit}"
         ws[f"A{row}"].font = Font(bold=True)
 
         row += 1
@@ -465,7 +467,7 @@ def _fill_in_subcomponent_cost_efficiency_functions(
             )
         except ValueError:
             # We can assume when this happens it has hit a header for one of the Subcomponent Sub Sections.
-            # Something that looks like the following.  Where "Number of People" and "Number of Days of Training" are
+            # Something that looks like the following.  Where "Person" and "Person-Day of Training" are
             # the two Output Metrics for an intervention.  The ValueError is raised when it hits A27 which
             # doesn't have a value to lookup in the subcomponent label list.  We can just skip it
             # since the value is blank on that row.   We are filling in column B for this sub section.
@@ -473,10 +475,10 @@ def _fill_in_subcomponent_cost_efficiency_functions(
             # Example layout:
             #
             #   Row#    A
-            #   24      Cost of Each Sub-component, per Number of People
+            #   24      Cost of Each Sub-component, per Person
             #   25      subcomponentlabel1
             #   26      subcomponentlabel2
-            #   27      Cost of Each Sub-component, per Number of Days of Training
+            #   27      Cost of Each Sub-component, per Person-Day of Training
             #   28      subcomponentlabel1
             #   29      subcomponentlabel2
             #
@@ -658,7 +660,7 @@ def _write_other_cost_model_table(
     if not (an_analysis.client_time or an_analysis.in_kind_contributions):
         return row
 
-    ws[f"A{row}"] = "Other HQ Costs"
+    ws[f"A{row}"] = "Other Costs"
     ws[f"A{row}"].font = Font(bold=True)
     row += 1
     _write_header_row(

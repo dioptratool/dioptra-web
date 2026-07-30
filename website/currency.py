@@ -5,40 +5,33 @@ from django.conf import settings
 
 from website.models import Analysis
 
-ISO_CURRENCY_CODE_NOT_SET = True
 
-if settings.ISO_CURRENCY_CODE == "none":
-    ISO_CURRENCY_CODE_NOT_SET = False
-
-if settings.ISO_CURRENCY_CODE is None:
-    ISO_CURRENCY_CODE_NOT_SET = False
+def iso_currency_code_is_set() -> bool:
+    return settings.ISO_CURRENCY_CODE not in [None, "none"]
 
 
 def currency_code(analysis: Analysis = None) -> str | None:
-    if ISO_CURRENCY_CODE_NOT_SET:
+    if not iso_currency_code_is_set():
         return None
-    elif analysis is not None and analysis.currency_code:
+    if analysis is not None and analysis.currency_code:
         return analysis.currency_code
-    else:
-        return settings.ISO_CURRENCY_CODE
+    return settings.ISO_CURRENCY_CODE
 
 
 def currency_name(analysis: Analysis = None):
-    if ISO_CURRENCY_CODE_NOT_SET:
+    if not iso_currency_code_is_set():
         return None
-    elif analysis is not None and analysis.currency_code:
-        return get_currency_name(analysis.currency_code)
-    else:
-        return get_currency_name(settings.ISO_CURRENCY_CODE)
+    if analysis is not None and analysis.currency_code:
+        return get_currency_name(analysis.currency_code, locale=get_currency_locale())
+    return get_currency_name(settings.ISO_CURRENCY_CODE, locale=get_currency_locale())
 
 
 def currency_symbol(analysis: Analysis = None) -> str | None:
-    if ISO_CURRENCY_CODE_NOT_SET:
+    if not iso_currency_code_is_set():
         return None
-    elif analysis is not None and analysis.currency_code:
+    if analysis is not None and analysis.currency_code:
         return get_currency_symbol(analysis.currency_code, locale=get_currency_locale())
-    else:
-        return get_currency_symbol(settings.ISO_CURRENCY_CODE, locale=get_currency_locale())
+    return get_currency_symbol(settings.ISO_CURRENCY_CODE, locale=get_currency_locale())
 
 
 def get_currency_locale(currency_code: str = "en_US") -> str:

@@ -44,7 +44,7 @@ class TestPageAccess:
         "/reset/done/",
     ]
 
-    SKIPPED_URLS = ["/ajax-file-preview/"]
+    SKIPPED_URLS = ["/ajax-file-preview/", "/ckeditor5/image_upload/"]
 
     @pytest.fixture
     def urls_with_params(self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents):
@@ -149,6 +149,15 @@ class TestPageAccess:
             assert response.url.startswith(
                 "/accounts/login/"
             ), f'The redirect from {url} doesn\'t start with "/accounts/login/": {response.url}'
+
+    def test_anonymous_user_access_is_blocked_for_ckeditor_upload(self, client):
+        url = reverse("ck_editor_5_upload_file")
+
+        response = client.get(url)
+        assert response.status_code == 405
+
+        response = client.post(url)
+        assert response.status_code == 403
 
     def test_anonymous_user_access_is_blocked_pages_with_params(self, client, urls_with_params):
         for name, params in urls_with_params:

@@ -1,3 +1,5 @@
+import uuid
+
 from django.template.loader import get_template
 
 
@@ -20,7 +22,10 @@ class PanelCommand:
         return template.render(context)
 
     def get_context_data(self):
-        context = {"payload": self.payload}
+        context = {
+            "payload": self.payload,
+            "payload_script_id": f"panel-command-payload-{uuid.uuid4().hex}",
+        }
         if self.panel_method:
             context["panel_method"] = self.panel_method
         return context

@@ -2,7 +2,7 @@ import logging
 import warnings
 from decimal import Decimal
 
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.conf import settings
 from django.db import connection, models
 from django.db.models import F, JSONField, Q, Sum, Value
@@ -119,13 +119,13 @@ class Analysis(models.Model):
     )
     needs_transaction_resync = models.BooleanField(default=False, editable=False)
 
-    efficiency_lesson = RichTextField(
+    efficiency_lesson = CKEditor5Field(
         blank=True,
         null=True,
         help_text="What did we learn about the cost-efficiency of this intervention?",
     )
 
-    breakdown_lesson = RichTextField(
+    breakdown_lesson = CKEditor5Field(
         blank=True,
         null=True,
         help_text="Do the proportion of these cost categories look reasonable?",

@@ -3120,7 +3120,6 @@ details summary {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
-  min-width: 20rem;
 }
 .form__submit:focus {
   color: rgb(255, 255, 255);
@@ -3129,6 +3128,9 @@ details summary {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
   color: rgb(255, 255, 255);
   text-decoration: none;
+}
+.form__submit {
+  min-width: 20rem;
 }
 
 .flatpickr-input.form-control[readonly] {
@@ -3650,6 +3652,16 @@ input[type=text].filters__search-input {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
+}
+.filter__search-btn:focus {
+  color: rgb(255, 255, 255);
+}
+.filter__search-btn:hover {
+  background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+}
+.filter__search-btn {
   background-color: rgb(16, 69, 122);
   display: inline-block;
   margin-right: 1.5rem;
@@ -3659,14 +3671,6 @@ input[type=text].filters__search-input {
   font-size: 13px;
   font-size: 1.3rem;
   line-height: 1.3846;
-}
-.filter__search-btn:focus {
-  color: rgb(255, 255, 255);
-}
-.filter__search-btn:hover {
-  background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
-  color: rgb(255, 255, 255);
-  text-decoration: none;
 }
 .filter__search-btn:hover, .filter__search-btn:focus {
   background-color: rgb(10.0869565217, 43.5, 76.9130434783);
@@ -3691,6 +3695,16 @@ input[type=text].filters__search-input {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
+}
+.filter__add-filter-btn:focus {
+  color: rgb(255, 255, 255);
+}
+.filter__add-filter-btn:hover {
+  background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+}
+.filter__add-filter-btn {
   background-color: rgb(241, 244, 248);
   color: rgb(51, 51, 51);
   min-width: 18.3rem;
@@ -3700,14 +3714,6 @@ input[type=text].filters__search-input {
   font-size: 13px;
   font-size: 1.3rem;
   line-height: 1.3846;
-}
-.filter__add-filter-btn:focus {
-  color: rgb(255, 255, 255);
-}
-.filter__add-filter-btn:hover {
-  background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
-  color: rgb(255, 255, 255);
-  text-decoration: none;
 }
 .filter__add-filter-btn:hover, .filter__add-filter-btn:focus {
   background-color: rgb(235, 240, 245);
@@ -4449,8 +4455,6 @@ th .help__button svg *, .analysis-table__category--active .analysis-table__categ
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
-  text-align: center;
-  min-width: 31.6rem;
 }
 .socialaccount_provider:focus {
   color: rgb(255, 255, 255);
@@ -4459,6 +4463,10 @@ th .help__button svg *, .analysis-table__category--active .analysis-table__categ
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
   color: rgb(255, 255, 255);
   text-decoration: none;
+}
+.socialaccount_provider {
+  text-align: center;
+  min-width: 31.6rem;
 }
 .socialaccount_provider.okta {
   background-color: rgb(25, 125, 189);
@@ -4793,15 +4801,15 @@ th .help__button svg *, .analysis-table__category--active .analysis-table__categ
   margin-bottom: 1.1rem;
 }
 
-.analysis__data-list {
-  font-size: 16px;
-  font-size: 1.6rem;
-  line-height: 1.5;
-}
 .analysis__data-list:after {
   content: "";
   display: table;
   clear: both;
+}
+.analysis__data-list {
+  font-size: 16px;
+  font-size: 1.6rem;
+  line-height: 1.5;
 }
 
 .analysis__data-list-label {
@@ -5038,7 +5046,6 @@ body.loading .analysis__loading {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
-  padding: 0.8rem 3rem;
 }
 .set-interventions:focus {
   color: rgb(255, 255, 255);
@@ -5047,6 +5054,9 @@ body.loading .analysis__loading {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
   color: rgb(255, 255, 255);
   text-decoration: none;
+}
+.set-interventions {
+  padding: 0.8rem 3rem;
 }
 
 .analysis-toggle {
@@ -6725,8 +6735,6 @@ input[type=text].analysis-table__allocated-input {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
-  padding-top: 1.1rem;
-  padding-bottom: 1.1rem;
 }
 .analysis-table__bulk-assign-btn:focus,
 .analysis-fix-data__submit:focus {
@@ -6737,6 +6745,11 @@ input[type=text].analysis-table__allocated-input {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
   color: rgb(255, 255, 255);
   text-decoration: none;
+}
+.analysis-table__bulk-assign-btn,
+.analysis-fix-data__submit {
+  padding-top: 1.1rem;
+  padding-bottom: 1.1rem;
 }
 .analysis-table__bulk-assign-btn span,
 .analysis-fix-data__submit span {
@@ -6919,6 +6932,11 @@ input[type=text].analysis-table__allocated-input {
   color: rgb(172, 180, 191);
   display: inline;
   content: "%";
+  order: 1;
+}
+.analysis-table__subcomponent-allocate .analysis-table__allocated-apply-all-link-wrapper {
+  order: 2;
+  margin-left: 0.5rem;
 }
 
 .analysis-table__cost-items.analysis-table__cost-items--confirmed {
@@ -7134,13 +7152,6 @@ input[type=text].analysis-table__allocated-input {
   font-size: 16px;
   font-size: 1.6rem;
   line-height: 1.125;
-  display: inline-block;
-  margin-right: 1.5rem;
-  padding: 0.8rem 1rem;
-  text-align: center;
-  font-size: 13px;
-  font-size: 1.3rem;
-  line-height: 1.3846;
 }
 .insights__download_pdf:focus {
   color: rgb(255, 255, 255);
@@ -7149,6 +7160,15 @@ input[type=text].analysis-table__allocated-input {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
   color: rgb(255, 255, 255);
   text-decoration: none;
+}
+.insights__download_pdf {
+  display: inline-block;
+  margin-right: 1.5rem;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  font-size: 13px;
+  font-size: 1.3rem;
+  line-height: 1.3846;
 }
 
 .insights__header {

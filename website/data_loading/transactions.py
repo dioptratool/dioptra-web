@@ -3,10 +3,11 @@ import datetime
 import logging
 from collections import defaultdict
 from decimal import Decimal
-from itertools import chain, islice, zip_longest
+from itertools import chain, islice
 from typing import AnyStr, IO
 
 import django
+from django.core.exceptions import ImproperlyConfigured
 from django.db import connection, connections
 from psycopg import sql
 from psycopg.rows import dict_row
@@ -14,6 +15,8 @@ from psycopg.rows import dict_row
 from website import betterdb, stopwatch
 from website.models import Analysis
 from website.models.transaction import Transaction, TransactionLike
+from .transaction_templates.base import canonical_transaction_row
+from .transaction_templates import TransactionTemplateError, get_transaction_template
 from .utils import BulkInserter, cast_and_handle_numeric_strings, excel_file_to_array
 from .validation import validate_transaction_row
 from .validation.error_messages import ERROR_MESSAGES
@@ -52,26 +55,6 @@ def transaction_filter(
         16 dummy_field_5 text
     """
 
-    headers = [
-        "transaction_date",
-        "country_code",
-        "grant_code",
-        "budget_line_code",
-        "account_code",
-        "site_code",
-        "sector_code",
-        "transaction_code",
-        "transaction_description",
-        "currency_code",
-        "budget_line_description",
-        "amount",
-        "dummy_field_1",
-        "dummy_field_2",
-        "dummy_field_3",
-        "dummy_field_4",
-        "dummy_field_5",
-    ]
-
     if isinstance(grant_codes, str):
         grant_codes = [grant_code.strip().upper() for grant_code in grant_codes.split(",")]
 
@@ -79,26 +62,28 @@ def transaction_filter(
         for i, each_row in enumerate(data):
             # This transaction filter needs to be consolidated into the
             # budget cost line item logic above
-            each_row[2] = cast_and_handle_numeric_strings(each_row[2])
-            each_row[3] = cast_and_handle_numeric_strings(each_row[3])
-            each_row[4] = cast_and_handle_numeric_strings(each_row[4])
-            each_row[5] = cast_and_handle_numeric_strings(each_row[5])
-            each_row[6] = cast_and_handle_numeric_strings(each_row[6])
-            each_row[10] = cast_and_handle_numeric_strings(each_row[10])
+            each_row["grant_code"] = cast_and_handle_numeric_strings(each_row["grant_code"])
+            each_row["budget_line_code"] = cast_and_handle_numeric_strings(each_row["budget_line_code"])
+            each_row["account_code"] = cast_and_handle_numeric_strings(each_row["account_code"])
+            each_row["site_code"] = cast_and_handle_numeric_strings(each_row["site_code"])
+            each_row["sector_code"] = cast_and_handle_numeric_strings(each_row["sector_code"])
+            each_row["budget_line_description"] = cast_and_handle_numeric_strings(
+                each_row["budget_line_description"]
+            )
 
-            each_row[2] = str(each_row[2]).upper()
-            if str(each_row[2]) not in grant_codes:
+            each_row["grant_code"] = str(each_row["grant_code"]).upper()
+            if str(each_row["grant_code"]) not in grant_codes:
                 continue
 
             if country_codes:
-                if each_row[1] not in country_codes:
+                if each_row["country_code"] not in country_codes:
                     continue
-            if isinstance(each_row[0], str):
-                date = datetime.datetime.strptime(each_row[0], "%Y-%m-%d").date()
-            elif isinstance(each_row[0], datetime.date):
-                date = each_row[0]
+            if isinstance(each_row["transaction_date"], str):
+                date = datetime.datetime.strptime(each_row["transaction_date"], "%Y-%m-%d").date()
+            elif isinstance(each_row["transaction_date"], datetime.date):
+                date = each_row["transaction_date"]
             else:
-                raise ValueError(f"Invalid date on row {i}: {each_row[0]}")
+                raise ValueError(f"Invalid date on row {i}: {each_row['transaction_date']}")
 
             if date_start > date:
                 continue
@@ -106,8 +91,8 @@ def transaction_filter(
             if date_end < date:
                 continue
 
-            each_row[11] = Decimal(each_row[11])
-            yield zip_longest(headers, each_row, fillvalue=None)
+            each_row["amount"] = Decimal(each_row["amount"])
+            yield each_row
 
     def chunks(iterable, size):
         for first in iterable:
@@ -146,18 +131,52 @@ def transactions_batcher(
         )
 
 
-def validate_uploaded_transaction_file(file_data: list[list[str]], analysis: Analysis | None) -> list[str]:
+def validate_uploaded_transaction_file(
+    file_data: list[dict[str, str]],
+    analysis: Analysis | None,
+    field_labels: dict[str, str],
+    first_data_row: int,
+) -> list[str]:
     errors = []
     if len(file_data) > 200_000:
         errors.append(ERROR_MESSAGES["file_too_large_transactions"]())
         # If the file is too large we leave immediately.
         return errors
 
-    for i, row in enumerate(file_data):
-        results = validate_transaction_row(i, row, analysis)
+    for i, row in enumerate(file_data, first_data_row):
+        results = validate_transaction_row(i, row, analysis, field_labels=field_labels)
         if results.full_message():
             errors.append(results.full_message())
     return errors
+
+
+def normalize_uploaded_transaction_file(
+    file_data: list[list[str]],
+    analysis: Analysis,
+    transaction_template_id: str | None = None,
+) -> tuple[bool, list[dict[str, str]] | list[str]]:
+    try:
+        transaction_template = get_transaction_template(transaction_template_id)
+        source_rows = transaction_template.source_rows_from_upload(file_data)
+        normalized_data = transaction_template.normalize_rows(source_rows, analysis)
+    except ImproperlyConfigured as e:
+        return False, [str(e)]
+    except TransactionTemplateError as e:
+        return False, e.errors
+
+    fixed_data = []
+    for row in normalized_data:
+        fixed_row = canonical_transaction_row(row)
+        # Excel stores all numbers as floats. This causes grants with values
+        # like "9116" to be saved as "9116.0". Validation checks grant codes
+        # before transaction_filter gets a chance to do the broader casting.
+        try:
+            fixed_row["grant_code"] = str(int(float(fixed_row["grant_code"])))
+        except (TypeError, ValueError):
+            pass
+        fixed_data.append(fixed_row)
+
+    return True, fixed_data
 
 
 @stopwatch.trace()
@@ -166,6 +185,7 @@ def load_transactions(
     f: IO[AnyStr] | None = None,
     from_datastore: bool = False,
     filter_by_country: bool = False,
+    transaction_template_id: str | None = None,
 ) -> tuple[bool, dict]:
     """
     If transactions are being loaded from a file `fp` can be populated with a Path
@@ -183,24 +203,29 @@ def load_transactions(
     file_data = None
     if f:
         file_data = excel_file_to_array(f)
+        try:
+            transaction_template = get_transaction_template(transaction_template_id)
+            field_labels = transaction_template.get_validation_field_labels(file_data)
+            first_data_row = transaction_template.get_first_data_row_number(file_data)
+        except ImproperlyConfigured as e:
+            return False, {"errors": [str(e)]}
 
-        fixed_data = []
+        succeeded, normalized_result = normalize_uploaded_transaction_file(
+            file_data,
+            analysis,
+            transaction_template_id=transaction_template_id,
+        )
+        if not succeeded:
+            return False, {"errors": normalized_result}
+        file_data = normalized_result
 
-        # Excel stores all numbers as floats.   This causes grants with values like "9116"
-        #  to be save as "9116.0" in Excel.  This attempts to remedy the issue.   This
-        #  could lead to a bug if there are ever grants that should be in the
-        #  format "9116.0".   If that is ever the case we will need to enforce the Cell Format
-        #  in excel.
-        for row in file_data:
-            try:
-                row[2] = str(int(float(row[2])))
-            except ValueError:
-                pass
-            fixed_data.append(row)
-
-        file_data = fixed_data
         # Validate the file data
-        errors = validate_uploaded_transaction_file(file_data, analysis)
+        errors = validate_uploaded_transaction_file(
+            file_data,
+            analysis,
+            field_labels=field_labels,
+            first_data_row=first_data_row,
+        )
         if errors:
             return False, {"errors": errors}
 

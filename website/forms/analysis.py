@@ -3,12 +3,12 @@ import json
 import re
 from typing import TYPE_CHECKING
 
-from ckeditor.widgets import CKEditorWidget
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
 from django.utils.translation import gettext_lazy as _l
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 from ombucore.admin.forms.base import ModelFormBase
 from ombucore.admin.templatetags.panels_extras import jsonattr
@@ -358,7 +358,7 @@ class AnalysisLessonsEditorForm(forms.Form):
         help_text="",
         label="",
         required=False,
-        widget=CKEditorWidget(config_name="help_text_limitless"),
+        widget=CKEditor5Widget(config_name="help_text_limitless"),
     )
 
 

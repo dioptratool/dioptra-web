@@ -2,6 +2,10 @@ from django.core.validators import validate_image_file_extension
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from website.data_loading.transaction_templates.registry import (
+    DEFAULT_TRANSACTION_TEMPLATE_ID,
+    get_transaction_template_choices,
+)
 from website.validators import FileSizeValidator
 
 
@@ -26,6 +30,14 @@ class Settings(models.Model):
         verbose_name=_("Budget Upload Template"),
         null=True,
         blank=True,
+    )
+
+    transaction_data_template = models.CharField(
+        verbose_name=_("Transaction Import Template"),
+        help_text=_("The transaction upload template available on the Load Data step."),
+        max_length=100,
+        choices=get_transaction_template_choices,
+        default=DEFAULT_TRANSACTION_TEMPLATE_ID,
     )
 
     instance_logo = models.ImageField(

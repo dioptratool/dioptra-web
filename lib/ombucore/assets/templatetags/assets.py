@@ -1,4 +1,5 @@
 import json
+import logging
 
 from bs4 import BeautifulSoup
 from django import template
@@ -8,6 +9,7 @@ from ombucore.assets.models import DocumentAsset, ImageAsset
 from ombucore.assets.renderers import DocumentRenderer, ImageRenderer
 
 register = template.Library()
+logger = logging.getLogger(__name__)
 
 ASSET_TYPES = (
     {
@@ -47,8 +49,33 @@ def assets_expand_asset(source_html, asset_types=ASSET_TYPES):
                 obj = model.objects.filter(id=object_id).get()
                 html = obj.render_embedded(settings, asset_type["render_fn"])
                 to_replace.append({"element": element, "html": html})
-            except Exception as e:
-                pass
+            except (json.JSONDecodeError, TypeError, KeyError, ValueError):
+                logger.warning(
+                    "Failed to parse embedded asset placeholder",
+                    extra={
+                        "asset_attr": attr,
+                        "asset_model": model.__name__,
+                        "placeholder": element.attrs.get(attr),
+                    },
+                )
+            except model.DoesNotExist:
+                logger.warning(
+                    "Embedded asset target does not exist",
+                    extra={
+                        "asset_attr": attr,
+                        "asset_model": model.__name__,
+                        "placeholder": element.attrs.get(attr),
+                    },
+                )
+            except Exception:
+                logger.exception(
+                    "Unexpected error expanding embedded asset",
+                    extra={
+                        "asset_attr": attr,
+                        "asset_model": model.__name__,
+                        "placeholder": element.attrs.get(attr),
+                    },
+                )
 
     # Replace each item.
     for item in to_replace:

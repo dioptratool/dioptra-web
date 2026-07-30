@@ -1,6 +1,9 @@
 {% load panels_extras %}
+{{ payload|json_script:payload_script_id }}
 <script type="text/javascript">
     $(function() {
-        Panels.current.{{ panel_method }}({{ payload|jsonify|safe }});
+        const payload = JSON.parse(document.getElementById("{{ payload_script_id|escapejs }}").textContent);
+        const panelMethod = "{{ panel_method|escapejs }}";
+        Panels.current[panelMethod](payload);
     });
 </script>

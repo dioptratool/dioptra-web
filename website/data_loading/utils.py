@@ -1,5 +1,6 @@
 import contextlib
 import csv
+import datetime
 import io
 import logging
 from collections import Counter
@@ -29,8 +30,13 @@ def excel_file_to_array(f: IO[AnyStr]) -> list[list[str]]:
     buf = io.BytesIO(data)
 
     if is_xlsx(buf):
-        wb = load_workbook(buf, data_only=True)
-        raw_rows = [[cell.value for cell in row] for row in wb.active.iter_rows()]
+        # In read-only mode worksheet XML is loaded lazily, so iterating the active
+        # worksheet does not deserialize every hidden or inactive worksheet first.
+        wb = load_workbook(buf, data_only=True, read_only=True, keep_links=False)
+        try:
+            raw_rows = [list(row) for row in wb.active.iter_rows(values_only=True)]
+        finally:
+            wb.close()
 
     elif is_xls(buf):
         wb = xlrd.open_workbook(file_contents=data)
@@ -55,9 +61,19 @@ def excel_file_to_array(f: IO[AnyStr]) -> list[list[str]]:
     for row in raw_rows:
         if not any(cell not in (None, "") for cell in row):
             continue
-        cleaned.append([str(cell) if cell is not None else "" for cell in row])
+        cleaned.append([_cell_to_upload_string(cell) for cell in row])
 
     return cleaned
+
+
+def _cell_to_upload_string(cell) -> str:
+    if cell is None:
+        return ""
+    if isinstance(cell, datetime.datetime):
+        return cell.date().isoformat()
+    if isinstance(cell, datetime.date):
+        return cell.isoformat()
+    return str(cell)
 
 
 def excel_file_to_dict(f: IO[AnyStr], normalize_headers=True) -> list[dict]:

@@ -125,15 +125,20 @@
 {% block extrascript %}
     <script type="text/javascript">
         $(function () {
-            $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
+            $('.analysis__main').on('click', 'a[data-subcomponent-apply-to-all]', function (e) {
                 e.preventDefault();
                 var $link = $(e.currentTarget);
-                var inputName = $link.data('apply-to-all');
-                var value = $('[name="' + inputName + '"]').val();
-                $link
-                    .parents('form')
-                    .find('input[name^="cost_line_item_allocation_"]')
-                    .val(value);
+                var inputName = $link.data('subcomponent-apply-to-all');
+                var subcomponentAllocationIndex = $link.data('subcomponent-allocation-index');
+                var $form = $link.closest('form');
+                var value = $form.find('[name="' + inputName + '"]').val();
+                $form
+                    .find('input.analysis-table__subcomponent-allocate-input[data-subcomponent-allocation-index="' + subcomponentAllocationIndex + '"]')
+                    .not(':disabled')
+                    .each(function () {
+                        $(this).val(value);
+                        updateAllocationTotal(this);
+                    });
             });
 
             $('.analysis-table').on('click', 'a[data-allocation]', function (e) {

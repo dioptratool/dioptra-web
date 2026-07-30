@@ -38,12 +38,14 @@ class LoadData(Step):
         filter_by_country: bool = False,
         from_datastore: bool = False,
         f: IO[AnyStr] | None = None,
+        transaction_template_id: str | None = None,
     ) -> tuple[bool, dict]:
         succeeded, result = load_transactions(
             self.analysis,
             filter_by_country=filter_by_country,
             from_datastore=from_datastore,
             f=f,
+            transaction_template_id=transaction_template_id,
         )
         if succeeded:
             self.analysis.create_cost_line_items_from_transactions(result["imported_transactions"])

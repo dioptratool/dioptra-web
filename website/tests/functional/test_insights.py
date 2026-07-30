@@ -89,6 +89,13 @@ class InsightsTestCase(TestCase):
             # To compare strings, we must split to avoid \n and \t differences
             assert bar_chart_data[cost_type]["label"].split() == expected_data[cost_type]["label"].split()
 
+    def test_get_formatted_parameter_values_formats_cash_as_currency(self):
+        intervention_instance = self.analysis.interventioninstance_set.first()
+
+        parameter_values = self.insights_view._get_formatted_parameter_values()
+
+        assert parameter_values[intervention_instance.id]["Value of Cash Distributed"] == "$10.00"
+
 
 class InterventionInsightsTestCase(TestCase):
     def setUp(self) -> None:

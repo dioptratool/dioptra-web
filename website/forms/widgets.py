@@ -1,6 +1,7 @@
 import json
 
 from django import forms
+from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
@@ -81,6 +82,7 @@ class SortableSelectMultipleAnalysisInterventionsWidget(forms.Widget):
     def get_context(self, name: str, value: str, attrs: dict | None = None) -> dict:
         context = super().get_context(name, value, attrs)
         json_value = json.loads(value) or []
+        context["max_analysis_interventions"] = settings.MAX_ANALYSIS_INTERVENTIONS
         context["json"] = json_value
         for idx, intervention in enumerate(json_value):
             intervention["change_url"] = reverse("analysis-define-interventions-edit")

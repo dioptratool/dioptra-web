@@ -750,8 +750,8 @@ $localization-list-padding: 25px;
   display: flex;
   padding-left: 1em;
 
-  html.is-in-panel &:hover:not(.cke_dialog_ui_button),
-  html.is-in-panel &:focus:not(.cke_dialog_ui_button),
+  html.is-in-panel &:hover,
+  html.is-in-panel &:focus,
   .localization-menu--link:hover &,
   .localization-menu--link:focus &,
   .localization-menu--link:hover + .localization-menu--operations &:first-child,

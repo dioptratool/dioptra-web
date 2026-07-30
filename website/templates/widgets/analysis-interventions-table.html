@@ -1,6 +1,6 @@
 {% load panels_extras %}
 
-<p class="help_text">Select “Create” to add an intervention, up to a maximum of five.</p>
+<p class="help_text">Select “Create” to add an intervention, up to a maximum of {{ max_analysis_interventions }}.</p>
 <div class="panels-relation-widget panels-relation-widget--multiple">
     <ul class="panels-relation-widget--results">
         {% for obj_info in objects_info %}

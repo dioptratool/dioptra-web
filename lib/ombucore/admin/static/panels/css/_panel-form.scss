@@ -609,7 +609,7 @@ ul.any_urlfield-url_type.inline {
   }
 }
 
-// Override for ckeditor focus state
-.cke_focus {
+// Override for CKEditor focus state
+.ck-focused {
   @include default-focus();
 }

@@ -1,5 +1,5 @@
 {% extends "analysis/base.html" %}
-{% load analysis help humanize i18n panels_form_extras static website_tags %}
+{% load analysis help humanize i18n panels_form_extras website_tags %}
 
 {% block extrastyle %}
     {{ form.media.css }}
@@ -137,9 +137,16 @@
                             {% endif %}
                         </div>
                         <div class="analysis__load-data-details" data-section="transactions">
-                            <a class="analysis__load-data-download-link" 
-                            href="{% static 'website/transactions.csv' %}"
-                            download>{% translate "Download Template" %}</a>
+                            {% for transaction_template in transaction_templates %}
+                                <a class="analysis__load-data-download-link"
+                                   href="{{ transaction_template.download_url }}"
+                                   download>
+                                    {% translate "Download Template" %}
+                                </a>
+                                {% if not forloop.last %}
+                                    <br>
+                                {% endif %}
+                            {% endfor %}
                             {% help 'load_data__download_template' %}
                         </div>
                     </div>

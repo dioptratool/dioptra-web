@@ -1,0 +1,40 @@
+.ombu-image {
+    display: block;
+    margin-bottom: 1em;
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+.ombu-image img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.ombu-image__caption {
+    display: block;
+    margin-top: 4px;
+    padding: 2px 4px;
+    color: #666;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.ombu-image--center {
+    display: block;
+    text-align: center;
+}
+
+.ombu-image--left {
+    float: left;
+    max-width: 50%;
+    margin: 0 1em 1em 0;
+}
+
+.ombu-image--right {
+    float: right;
+    max-width: 50%;
+    margin: 0 0 1em 1em;
+}

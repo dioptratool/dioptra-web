@@ -126,15 +126,20 @@
 {% block extrascript %}
     <script type="text/javascript">
         $(function () {
-            $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
+            $('.analysis__main').on('click', 'a[data-subcomponent-apply-to-all]', function (e) {
                 e.preventDefault();
                 var $link = $(e.currentTarget);
-                var inputName = $link.data('apply-to-all');
-                var value = $('[name="' + inputName + '"]').val();
-                $link
-                    .parents('form')
-                    .find('input[name^="cost_line_item_allocation_"]')
-                    .val(value);
+                var inputName = $link.data('subcomponent-apply-to-all');
+                var subcomponentAllocationIndex = $link.data('subcomponent-allocation-index');
+                var $form = $link.closest('form');
+                var value = $form.find('[name="' + inputName + '"]').val();
+                $form
+                    .find('input.analysis-table__subcomponent-allocate-input[data-subcomponent-allocation-index="' + subcomponentAllocationIndex + '"]')
+                    .not(':disabled')
+                    .each(function () {
+                        $(this).val(value);
+                        updateAllocationTotal(this);
+                    });
             });
 
             $('.analysis-table').on('click', 'a[data-allocation]', function (e) {
@@ -146,6 +151,57 @@
                     allocation = $link.data()?.allocation || '';
                     $(this).val(allocation.replace('%', ''));
                 });
+            });
+        });
+
+        const updateAllocationTotal = (allocation) => {
+            const row = allocation.closest('tr')
+            let total = 0;
+            if (!row.classList.contains("skipped")) {
+                row.querySelectorAll('.analysis-table__subcomponent-allocate-input').forEach(input => {
+                    if (input.value) {
+                        const val = Number.parseFloat(input.value)
+                        if (val) total = total + val;
+                    }
+                });
+
+                row.querySelector('.analysis-table__subcomponent-total').innerHTML = total.toFixed(4) + "%"
+
+                if (total.toFixed(4) != 100) {
+                    row.classList.add("error")
+                    row.querySelector('.analysis-table__skip-input').removeAttribute("disabled")
+                    row.querySelector('.analysis-table__skip-input').removeAttribute("checked")
+                } else {
+                    row.classList.remove("error")
+                    row.querySelector('.analysis-table__skip-input').setAttribute("disabled", true)
+                    row.querySelector('.analysis-table__skip-input').removeAttribute("checked")
+                }
+            }
+        }
+        document.querySelectorAll('.analysis-table__subcomponent-allocate-input').forEach(allocation => {
+            allocation.addEventListener('input', (e) => {
+                updateAllocationTotal(allocation);
+            });
+            updateAllocationTotal(allocation);
+        });
+
+        document.querySelectorAll('.analysis-table__skip-input').forEach(button => {
+            button.addEventListener('change', (e) => {
+                const row = e.target.closest('tr')
+                if (row.classList.contains("skipped")) {
+                    row.classList.remove("skipped")
+                    row.querySelectorAll(".analysis-table__subcomponent-allocate-input").forEach((input) => {
+                        input.removeAttribute("disabled")
+                    });
+                    updateAllocationTotal(button)
+                } else {
+                    row.classList.add("skipped")
+                    row.classList.remove("error")
+                    row.querySelector('.analysis-table__subcomponent-total').innerHTML = "0%"
+                    row.querySelectorAll(".analysis-table__subcomponent-allocate-input").forEach((input) => {
+                        input.setAttribute("disabled", true)
+                    });
+                }
             });
         });
     </script>

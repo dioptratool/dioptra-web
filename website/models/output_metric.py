@@ -31,6 +31,7 @@ class OutputMetric:
     output_as_currency: bool | None = False
     metric_name: str | None = None
     metric_equation: str | None = None
+    cost_efficiency_unit_label: str | None = None
     parameters: dict[str, PositiveFixedDecimalField] = {}
 
     @property
@@ -39,6 +40,12 @@ class OutputMetric:
 
     def __str__(self) -> str:
         return str(self.output_name)
+
+    @property
+    def cost_efficiency_unit(self) -> str:
+        if self.cost_efficiency_unit_label is None:
+            raise NotImplementedError(f"{self.id} must define cost_efficiency_unit_label")
+        return str(self.cost_efficiency_unit_label)
 
     def get_slug(self) -> str:
         return slugify(str(self.output_name))
@@ -132,6 +139,7 @@ class NumberOfPeople(OutputMetric):
     output_name = _("Number of People")
     output_unit = _("People")
     metric_name = _("Cost Per Person")
+    cost_efficiency_unit_label = _("Person")
     metric_equation = "cost_output_sum / number_of_people"
     parameters = {"number_of_people": PositiveFixedDecimalField(label=_("Number of People"))}
 
@@ -148,6 +156,7 @@ class NumberOfPersonYearsOfWaterAccess(OutputMetric):
     output_name = _("Number of Person-Years of Water Access")
     output_unit = _("Person-Years of Water Access")
     metric_name = _("Cost per Person per Year of Water Access")
+    cost_efficiency_unit_label = _("Person-Year of Water Access")
     metric_equation = "cost_output_sum / (number_of_people * number_of_years_of_water_access)"
     parameters = {
         "number_of_people": PositiveFixedDecimalField(label=_("Number of People")),
@@ -173,6 +182,7 @@ class NumberOfPersonYearsOfSanitationAccess(OutputMetric):
     output_name = _("Number of Person-Years of Sanitation Access")
     output_unit = _("Person-Years of Sanitation Access")
     metric_name = _("Cost per Person per Year of Sanitation Access")
+    cost_efficiency_unit_label = _("Person-Year of Sanitation Access")
     metric_equation = "cost_output_sum / (number_of_people * number_of_years_a_latrine_can_last)"
     parameters = {
         "number_of_people": PositiveFixedDecimalField(label=_("Number of People Served")),
@@ -198,6 +208,7 @@ class NumberOfDoses(OutputMetric):
     output_name = _("Number of Doses")
     output_unit = _("Doses")
     metric_name = _("Cost per Dose")
+    cost_efficiency_unit_label = _("Dose")
     metric_equation = "cost_output_sum / number_of_doses"
     parameters = {
         "number_of_doses": PositiveFixedDecimalField(label=_("Number of Doses")),
@@ -211,6 +222,7 @@ class NumberOfChildren(OutputMetric):
     output_name = _("Number of Children")
     output_unit = _("Children")
     metric_name = _("Cost per Child")
+    cost_efficiency_unit_label = _("Child")
     metric_equation = "cost_output_sum / number_of_children"
     parameters = {
         "number_of_children": PositiveFixedDecimalField(label=_("Number of Children")),
@@ -224,6 +236,7 @@ class NumberOfParticipants(OutputMetric):
     output_name = _("Number of Participants")
     output_unit = _("Participant")
     metric_name = _("Cost per Participant")
+    cost_efficiency_unit_label = _("Participant")
     metric_equation = "cost_output_sum / number_of_participants"
     parameters = {
         "number_of_participants": PositiveFixedDecimalField(label=_("Number of Participants")),
@@ -237,6 +250,7 @@ class NumberOfWomen(OutputMetric):
     output_name = _("Number of Women")
     output_unit = _("Women")
     metric_name = _("Cost per Woman")
+    cost_efficiency_unit_label = _("Woman")
     metric_equation = "cost_output_sum / number_of_women"
     parameters = {
         "number_of_women": PositiveFixedDecimalField(label=_("Number of Women")),
@@ -250,6 +264,7 @@ class NumberOfChildrenRecovered(OutputMetric):
     output_name = _("Number of Children Recovered")
     output_unit = _("Children Recovered")
     metric_name = _("Cost per Child Recovered")
+    cost_efficiency_unit_label = _("Child Recovered")
     metric_equation = "cost_output_sum / number_of_children_recovered"
     parameters = {
         "number_of_children_recovered": PositiveFixedDecimalField(label=_("Number of Children Recovered")),
@@ -263,6 +278,7 @@ class NumberOfCommunities(OutputMetric):
     output_name = _("Number of Communities")
     output_unit = _("Communities")
     metric_name = _("Cost per Community")
+    cost_efficiency_unit_label = _("Community")
     metric_equation = "cost_output_sum / number_of_communities"
     parameters = {
         "number_of_communities": PositiveFixedDecimalField(label=_("Number of Communities")),
@@ -276,6 +292,7 @@ class NumberOfCoupleYearsOfProtection(OutputMetric):
     output_name = _("Number of Couple-Years of Protection (CYPs)")
     output_unit = _("Couple-Years of Protection (CYPs)")
     metric_name = _("Cost per Couple per Year of Protection")
+    cost_efficiency_unit_label = _("Couple-Year of Protection (CYP)")
     metric_equation = "cost_output_sum / number_of_CYPs_provided"
     parameters = {
         "number_of_CYPs_provided": PositiveFixedDecimalField(
@@ -292,6 +309,7 @@ class ValueOfItemsDistributed(OutputMetric):
     output_unit = _(f"Items Distributed")
     output_as_currency = True
     metric_name = _(f"Cost per Monetary Unit Distributed")
+    cost_efficiency_unit_label = _("Monetary Unit Distributed")
     metric_equation = "(cost_output_sum - value_items_distributed) / value_items_distributed"
     parameters = {
         "value_items_distributed": PositiveFixedDecimalField(label=_(f"Value of Items Distributed")),
@@ -306,6 +324,7 @@ class NumberOfOutputs(OutputMetric):
     output_name = _("Number of Outputs")
     output_unit = _("Outputs")
     metric_name = _("Cost per Output")
+    cost_efficiency_unit_label = _("Output")
     metric_equation = "cost_output_sum / number_of_outputs"
     parameters = {
         "number_of_outputs": PositiveFixedDecimalField(label=_("Number of Outputs")),
@@ -319,6 +338,7 @@ class NumberOfConsultations(OutputMetric):
     output_name = _("Number of Consultations")
     output_unit = _("Consultations")
     metric_name = _("Cost per Consultation")
+    cost_efficiency_unit_label = _("Consultation")
     metric_equation = "cost_output_sum / number_of_consultations"
     parameters = {
         "number_of_consultations": PositiveFixedDecimalField(label=_("Number of Consultations")),
@@ -332,6 +352,7 @@ class NumberOfClients(OutputMetric):
     output_name = _("Number of Clients")
     output_unit = _("Clients")
     metric_name = _("Cost per Client")
+    cost_efficiency_unit_label = _("Client")
     metric_equation = "cost_output_sum / number_of_clients"
     parameters = {
         "number_of_clients": PositiveFixedDecimalField(label=_("Number of Clients")),
@@ -345,6 +366,7 @@ class NumberOfHouseholds(OutputMetric):
     output_name = _("Number of Households")
     output_unit = _("Households")
     metric_name = _("Cost per Household")
+    cost_efficiency_unit_label = _("Household")
     metric_equation = "cost_output_sum / number_of_households"
     parameters = {
         "number_of_households": PositiveFixedDecimalField(label=_("Number of Households")),
@@ -358,6 +380,7 @@ class NumberOfTeacherDaysOfTraining(OutputMetric):
     output_name = _("Number of Teacher-Days of Training")
     output_unit = _("Teacher-Days of Training")
     metric_name = _("Cost per Teacher per Day of Training")
+    cost_efficiency_unit_label = _("Teacher-Day of Training")
     metric_equation = "cost_output_sum / (number_of_teachers * number_of_days_of_training)"
     parameters = {
         "number_of_teachers": PositiveFixedDecimalField(label=_("Number of Teachers")),
@@ -375,6 +398,7 @@ class NumberOfDaysOfTraining(OutputMetric):
     output_name = _("Number of Days of Training")
     output_unit = _("Days of Training")
     metric_name = _("Cost per Person per Day of Training")
+    cost_efficiency_unit_label = _("Person-Day of Training")
     metric_equation = "cost_output_sum / (number_of_people * number_of_days_of_training)"
     parameters = {
         "number_of_people": PositiveFixedDecimalField(label=_("Number of People")),
@@ -392,6 +416,7 @@ class NumberOfTeacherYearsOfSupport(OutputMetric):
     output_name = _("Number of Teacher-Years of Support")
     output_unit = _("Teacher-Years of Support")
     metric_name = _("Cost per Teacher per Year  of Support")
+    cost_efficiency_unit_label = _("Teacher-Year of Support")
     metric_equation = "cost_output_sum / (number_of_teachers * number_of_years_of_support)"
     parameters = {
         "number_of_teachers": PositiveFixedDecimalField(label=_("Number of Teachers")),
@@ -409,6 +434,7 @@ class NumberOfChildrenTreated(OutputMetric):
     output_name = _("Number of Children Treated (Excluding Defaulters)")
     output_unit = _("Children Treated (Excluding Defaulters)")
     metric_name = _("Cost per Child Treated")
+    cost_efficiency_unit_label = _("Child Treated")
     metric_equation = "cost_output_sum / number_of_children_treated"
     parameters = {
         "number_of_children_treated": PositiveFixedDecimalField(
@@ -425,6 +451,7 @@ class ValueOfCashDistributed(OutputMetric):
     output_unit = _(f"Cash Distributed")
     output_as_currency = True
     metric_name = _(f"Cost per Cash Distributed")
+    cost_efficiency_unit_label = _("Cash Distributed")
     metric_equation = "(cost_output_sum - value_of_cash_distributed) / value_of_cash_distributed"
     parameters = {
         "value_of_cash_distributed": PositiveFixedDecimalField(
@@ -442,6 +469,7 @@ class ValueOfBusinessGrantAmount(OutputMetric):
     output_unit = _(f"Amount Provided")
     output_as_currency = True
     metric_name = _(f"Cost per Grant Cash Provided")
+    cost_efficiency_unit_label = _("Grant Cash Provided")
     metric_equation = "(cost_output_sum - value_of_business_grant_amount) / value_of_business_grant_amount"
     parameters = {
         "value_of_business_grant_amount": PositiveFixedDecimalField(
@@ -458,6 +486,7 @@ class NumberOfHectares(OutputMetric):
     output_name = _("Number of Hectares")
     output_unit = _("Hectares")
     metric_name = _("Cost per Hectare")
+    cost_efficiency_unit_label = _("Hectare")
     metric_equation = "cost_output_sum / number_of_hectares"
     parameters = {
         "number_of_hectares": PositiveFixedDecimalField(label=_("Number of Hectares")),
@@ -471,6 +500,7 @@ class NumberOfCaregivers(OutputMetric):
     output_name = _("Number of Caregivers")
     output_unit = _("Caregivers")
     metric_name = _("Cost per Caregiver")
+    cost_efficiency_unit_label = _("Caregiver")
     metric_equation = "cost_output_sum / number_of_caregivers"
     parameters = {
         "number_of_caregivers": PositiveFixedDecimalField(label=_("Number of Caregivers")),
@@ -484,6 +514,7 @@ class NumberOfMeals(OutputMetric):
     output_name = _("Number of Meals")
     output_unit = _("Meals")
     metric_name = _("Cost per Meal")
+    cost_efficiency_unit_label = _("Meal")
     metric_equation = "cost_output_sum / number_of_meals"
     parameters = {
         "number_of_meals": PositiveFixedDecimalField(label=_("Number of Meals")),
@@ -497,6 +528,7 @@ class NumberOfGroups(OutputMetric):
     output_name = _("Number of Groups")
     output_unit = _("Groups")
     metric_name = _("Cost per Group")
+    cost_efficiency_unit_label = _("Group")
     metric_equation = "cost_output_sum / number_of_groups"
     parameters = {
         "number_of_groups": PositiveFixedDecimalField(label=_("Number of Groups")),

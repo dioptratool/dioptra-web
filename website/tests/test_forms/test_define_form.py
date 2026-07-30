@@ -1,7 +1,10 @@
+import json
+
 import pytest
+from django.conf import settings as django_settings
 from django.contrib.auth import get_user_model
 
-from website.forms.analysis import DefineForm
+from website.forms.analysis import DefineForm, DefineInterventionsForm
 from website.models import InterventionInstance, Settings
 from website.tests.factories import AnalysisFactory, CountryFactory, InterventionFactory, UserFactory
 
@@ -37,9 +40,43 @@ def define_form(a_user, form_data):
     return DefineForm(data=form_data, user=a_user)
 
 
+def _intervention_entries(count):
+    return [
+        {
+            "id": index + 1,
+            "instance_pk": -(index + 1),
+            "title": f"Intervention {index + 1}",
+            "intervention_name": f"Intervention {index + 1}",
+            "params": [],
+        }
+        for index in range(count)
+    ]
+
+
 @pytest.mark.django_db
 def test_define_form_valid_data(define_form):
     assert define_form.is_valid(), define_form.errors
+
+
+def test_define_interventions_form_allows_maximum_interventions():
+    form = DefineInterventionsForm(
+        data={"interventions": json.dumps(_intervention_entries(django_settings.MAX_ANALYSIS_INTERVENTIONS))}
+    )
+
+    assert form.is_valid(), form.errors
+
+
+def test_define_interventions_form_rejects_more_than_maximum_interventions():
+    form = DefineInterventionsForm(
+        data={
+            "interventions": json.dumps(_intervention_entries(django_settings.MAX_ANALYSIS_INTERVENTIONS + 1))
+        }
+    )
+
+    assert not form.is_valid()
+    assert form.errors["interventions"] == [
+        f"No more than {django_settings.MAX_ANALYSIS_INTERVENTIONS} interventions are allowed."
+    ]
 
 
 @pytest.mark.django_db

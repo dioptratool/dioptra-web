@@ -2,13 +2,22 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured
+from django.http import Http404, HttpResponse
+from django.urls import reverse
 from django.utils.translation import gettext as _, gettext_lazy as _l
 from django.views.generic import DetailView
+from django.views.generic.base import View
 
 from website.app_log import loggers as app_loggers
+from website.data_loading.transaction_templates import (
+    get_enabled_transaction_templates,
+    get_transaction_template,
+)
 from website.data_loading.transactions import get_transactions_data_store_count
 from website.models import Settings
 from website.views.mixins import (
+    AnalysisObjectMixin,
     AnalysisPermissionRequiredMixin,
     AnalysisStepMixin,
     PostActionHandlerMixin,
@@ -43,6 +52,16 @@ class LoadData(
         context["import_transaction_limit"] = settings.IMPORTED_TRANSACTION_LIMIT
         context["transaction_country_filter"] = self.settings.transaction_country_filter
         analysis = self.analysis
+        transaction_templates = get_enabled_transaction_templates()
+        for transaction_template in transaction_templates:
+            transaction_template.download_url = reverse(
+                "transaction-template-download",
+                kwargs={
+                    "pk": analysis.pk,
+                    "template_id": transaction_template.id,
+                },
+            )
+        context["transaction_templates"] = transaction_templates
 
         if not self.step.is_complete:
             context["transactions_count"] = None
@@ -141,6 +160,7 @@ class LoadData(
         succeeded, result = self.step.load_transactions(
             filter_by_country=self.settings.transaction_country_filter,
             f=f,
+            transaction_template_id=self.settings.transaction_data_template,
         )
         if (not succeeded) and ("errors" in result):
             errors += result["errors"]
@@ -186,3 +206,28 @@ class LoadData(
         self.object.needs_transaction_resync = False
         self.object.save()
         messages.success(self.request, _("Transactions have been synced successfully."))
+
+
+class TransactionTemplateDownload(
+    AnalysisPermissionRequiredMixin, AnalysisStepMixin, AnalysisObjectMixin, View
+):
+    step_name = "load-data"
+    title = _l("Load cost data")
+    help_text = _("")
+    permission_required = "website.change_analysis"
+
+    def get(self, request, *args, **kwargs):
+        template_id = kwargs["template_id"]
+        try:
+            transaction_template = get_transaction_template(template_id)
+        except ImproperlyConfigured as e:
+            raise Http404(str(e)) from e
+
+        response = HttpResponse(
+            transaction_template.get_download_content(),
+            content_type=transaction_template.get_download_content_type(),
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="{transaction_template.get_download_filename()}"'
+        )
+        return response
