@@ -6,6 +6,7 @@ from django.forms.models import model_to_dict
 from django.urls import reverse
 
 from website.forms.cost_line_item import InKindCostLineItemForm
+from website.models.cost_type import Support
 from website.models import (
     AnalysisCostType,
     CostLineItem,
@@ -147,6 +148,56 @@ class TestInsights:
         response_form = response.context_data["form"]
         assert response_form.ANALYSIS_COST_TYPE == AnalysisCostType.OTHER_HQ
         assert response_form.initial == {"analysis": insights_analysis}
+
+    @pytest.mark.django_db
+    def test_get_cost_line_items_other_hq_with_renamed_cost_types(self, rf, defaults, insights_analysis):
+        # Admins can rename cost types (the Sandbox renamed them to the singular
+        # form), so the default may not be looked up by name.
+        for cost_type in CostType.objects.all():
+            CostType.objects.filter(pk=cost_type.pk).update(name=cost_type.name.rstrip("s"))
+
+        request = rf.get(
+            reverse(
+                "cost-line-item-create",
+                kwargs={
+                    "pk": insights_analysis.id,
+                    "cost_type": int(AnalysisCostType.OTHER_HQ),
+                },
+            )
+        )
+        request.user = insights_analysis.owner
+        response = CostLineItemUpsertView.as_view()(
+            request,
+            pk=insights_analysis.id,
+            cost_type=int(AnalysisCostType.OTHER_HQ),
+        )
+
+        assert response.status_code == 200
+        response_form = response.context_data["form"]
+        assert response_form.fields["cost_type"].initial == CostType.objects.get(type=Support.id)
+
+    @pytest.mark.django_db
+    def test_get_cost_line_items_other_hq_without_support_cost_type(self, rf, defaults, insights_analysis):
+        CostType.objects.filter(type=Support.id).delete()
+
+        request = rf.get(
+            reverse(
+                "cost-line-item-create",
+                kwargs={
+                    "pk": insights_analysis.id,
+                    "cost_type": int(AnalysisCostType.OTHER_HQ),
+                },
+            )
+        )
+        request.user = insights_analysis.owner
+        response = CostLineItemUpsertView.as_view()(
+            request,
+            pk=insights_analysis.id,
+            cost_type=int(AnalysisCostType.OTHER_HQ),
+        )
+
+        assert response.status_code == 200
+        assert response.context_data["form"].fields["cost_type"].initial is None
 
     @pytest.mark.django_db
     def test_create_cost_line_items_in_kind(self, rf, insights_analysis):

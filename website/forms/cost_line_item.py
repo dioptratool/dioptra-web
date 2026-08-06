@@ -17,6 +17,7 @@ from website.models import (
     SubcomponentCostAllocation,
 )
 from website.models.cost_line_item import CostLineItemInterventionAllocation
+from website.models.cost_type import Support
 
 COMMON_COST_LINE_ITEM_FIELDS = [
     "analysis",
@@ -197,8 +198,10 @@ class OtherHQCostLineItemForm(AddCostLineItemForm):
             self.fields["cost_type"].initial = self.instance.config.cost_type
         else:
             # The Default Cost Type for Other HQ costs is different from the one set in the
-            #   Settings file for the rest of the CostLineItems
-            self.fields["cost_type"].initial = CostType.objects.get(name="Support Costs")
+            #   Settings file for the rest of the CostLineItems. Cost type names are
+            #   admin-editable, so look it up by its fixed type; without a match the user
+            #   simply picks one manually.
+            self.fields["cost_type"].initial = CostType.objects.filter(type=Support.id).first()
 
     def save(self, commit=True):
         cost_line_item = super().save(commit=commit)
