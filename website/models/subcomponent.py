@@ -82,11 +82,13 @@ class SubcomponentCostAnalysis(models.Model):
                 continue
             each_cost_item = cli_config.cost_line_item
 
-            # Get the value of each subcomponent allocation
+            # Get the value of each subcomponent allocation. Index by label so a
+            # partial row cannot truncate every column via zip(*...) below.
+            allocated_cost = self._allocated_cost_for_intervention(each_cost_item)
             subcomponent_allocations.append(
                 [
-                    Decimal(v) / 100 * self._allocated_cost_for_intervention(each_cost_item)
-                    for v in allocations.values()
+                    Decimal(allocations.get(str(idx), "0")) / 100 * allocated_cost
+                    for idx in range(len(self.subcomponent_labels or []))
                 ]
             )
 
@@ -139,10 +141,12 @@ class SubcomponentCostAnalysis(models.Model):
                 continue
 
             intervention_allocated_cost = self._allocated_cost_for_intervention(each_cost_item)
+            # Index by label so a partial row cannot truncate every column via
+            # zip(*...) below.
             subcomponent_allocations.append(
                 [
-                    (Decimal(allocation_percentage) / 100) * intervention_allocated_cost
-                    for allocation_percentage in allocations.values()
+                    (Decimal(allocations.get(str(idx), "0")) / 100) * intervention_allocated_cost
+                    for idx in range(len(self.subcomponent_labels or []))
                 ]
             )
             total_cost_for_clis_with_subcomponent_value += intervention_allocated_cost

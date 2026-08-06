@@ -141,7 +141,8 @@
                 totalEl.textContent = formatPercent(total);
 
                 const skipped = !!(skipInput && skipInput.checked);
-                const valid = skipped || roundPercent(total) === 100;
+                // Partial totals are saveable; only over-allocation blocks Save.
+                const valid = skipped || roundPercent(total) <= 100;
                 totalEl.classList.toggle('error', !valid);
                 row.classList.toggle('subcomponent-error', !valid);
                 row.classList.toggle('error', !valid);

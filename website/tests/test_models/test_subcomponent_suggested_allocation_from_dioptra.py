@@ -164,9 +164,12 @@ def test_simplified_example_of_the_suggested_allocation_from_dioptra(defaults):
         grant="Unknown",
     )
 
-    # Now we do the Subcomponent and test our actual values
+    # Now we do the Subcomponent and test our actual values. The labels must
+    # match the intervention's ["A", "B"] — the factory default would invent 5
+    # unrelated labels, and per-label averages are indexed against the labels.
     subcomponent_cost_analysis = SubcomponentCostAnalysisFactory(
         analysis=analysis_wf.analysis,
+        subcomponent_labels=["A", "B"],
     )
 
     SubcomponentCostAllocationFactory(

@@ -74,7 +74,7 @@ class TestAllocateSubcomponentFormSubmissions:
             == cost_line_items.count()
         )
 
-    def test_subcomponent_allocations_must_total_100(
+    def test_subcomponent_allocations_cannot_exceed_100(
         self,
         analysis_workflow_with_allocations,
         client_with_admin,
@@ -87,7 +87,7 @@ class TestAllocateSubcomponentFormSubmissions:
 
         data = {
             f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_0": "60",
-            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "30",
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "50",
         }
 
         response = client_with_admin.post(
@@ -100,7 +100,81 @@ class TestAllocateSubcomponentFormSubmissions:
             subcomponent_analysis=subcomponent_analysis,
             cli_config=cost_line_item.config,
         ).exists()
-        assert b"Allocations must total 100%" in response.content
+        assert b"Allocations cannot total more than 100%" in response.content
+
+    def test_partial_allocation_saves_and_substep_stays_incomplete(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        intervention_instance, subcomponent_analysis, grant, cost_line_items = self._setup_subcomponents(
+            analysis
+        )
+        cost_line_item = cost_line_items.first()
+
+        data = {
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_0": "40",
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "",
+        }
+
+        response = client_with_admin.post(
+            self._url(analysis, intervention_instance, grant),
+            data=data,
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        allocation = SubcomponentCostAllocation.objects.get(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+        )
+        assert allocation.allocations == {"0": "40"}
+        assert allocation.skipped is False
+
+        workflow = AnalysisWorkflow(Analysis.objects.get(pk=analysis.pk))
+        substep = next(
+            step
+            for step in workflow.get_step("allocate-subcomponents").steps
+            if step.intervention_instance.id == intervention_instance.id and step.grant == grant
+        )
+        assert not substep.is_complete
+
+    def test_blank_row_saves_empty_and_clears_previous_values(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        intervention_instance, subcomponent_analysis, grant, cost_line_items = self._setup_subcomponents(
+            analysis
+        )
+        cost_line_item = cost_line_items.first()
+        SubcomponentCostAllocation.objects.create(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+            allocations={"0": "60", "1": "40"},
+            skipped=False,
+        )
+
+        data = {
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_0": "",
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "",
+        }
+
+        response = client_with_admin.post(
+            self._url(analysis, intervention_instance, grant),
+            data=data,
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        allocation = SubcomponentCostAllocation.objects.get(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+        )
+        assert allocation.allocations == {}
+        assert allocation.skipped is False
 
     def test_skip_excludes_cost_line_item(
         self,
@@ -132,6 +206,100 @@ class TestAllocateSubcomponentFormSubmissions:
         )
         assert allocation.skipped
         assert allocation.allocations == {}
+
+    def test_unskip_persists_with_blank_allocations(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        """
+        Un-skipping re-enables the (blank) inputs; the resulting POST has no
+        _skip key and all-blank values, which must persist skipped=False.
+        """
+        analysis = analysis_workflow_with_allocations.analysis
+        intervention_instance, subcomponent_analysis, grant, cost_line_items = self._setup_subcomponents(
+            analysis
+        )
+        cost_line_item = cost_line_items.first()
+        SubcomponentCostAllocation.objects.create(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+            allocations={},
+            skipped=True,
+        )
+
+        data = {
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_0": "",
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "",
+        }
+
+        response = client_with_admin.post(
+            self._url(analysis, intervention_instance, grant),
+            data=data,
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        allocation = SubcomponentCostAllocation.objects.get(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+        )
+        assert allocation.skipped is False
+        assert allocation.allocations == {}
+
+    def test_unskip_with_values_saves_allocations(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        intervention_instance, subcomponent_analysis, grant, cost_line_items = self._setup_subcomponents(
+            analysis
+        )
+        cost_line_item = cost_line_items.first()
+        SubcomponentCostAllocation.objects.create(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+            allocations={},
+            skipped=True,
+        )
+
+        data = {
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_0": "70",
+            f"cost_line_item_subcomponent_allocation_{cost_line_item.id}_{subcomponent_analysis.id}_1": "30",
+        }
+
+        response = client_with_admin.post(
+            self._url(analysis, intervention_instance, grant),
+            data=data,
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        allocation = SubcomponentCostAllocation.objects.get(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+        )
+        assert allocation.skipped is False
+        assert allocation.allocations == {"0": "70", "1": "30"}
+
+    def test_page_renders_skip_and_skipped_labels(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        intervention_instance, subcomponent_analysis, grant, cost_line_items = self._setup_subcomponents(
+            analysis
+        )
+
+        response = client_with_admin.get(self._url(analysis, intervention_instance, grant))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert ">Skip</label>" in content
+        assert "analysis-table__subcomponent-skip__label--skipped" in content
+        assert ">Skipped</label>" in content
 
     def test_allocate_completes_without_subcomponents_but_new_step_does_not(
         self,

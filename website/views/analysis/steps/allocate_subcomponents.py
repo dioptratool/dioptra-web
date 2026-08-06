@@ -215,11 +215,16 @@ class AllocateSubcomponentsInterventionGrant(
         return data
 
     def _validate_subcomponent_data(self, data):
+        """
+        Partial rows are valid and saved (completeness still requires every
+        label present and a total of exactly 100 — see
+        subcomponent_allocation_complete); only over-allocation is rejected.
+        Blank inputs are not stored, so an all-blank row saves as
+        allocations={} and clears previously saved values.
+        """
         valid_data = {}
         errors = {}
         allowed_ids = {cli.id for cli in self.object_list}
-        labels = self.step.subcomponent_analysis.subcomponent_labels or []
-        expected_indexes = {str(idx) for idx in range(len(labels))}
 
         for cost_line_item_id, submitted in data.items():
             if cost_line_item_id not in allowed_ids:
@@ -234,7 +239,7 @@ class AllocateSubcomponentsInterventionGrant(
             for idx, allocation in submitted["allocations"].items():
                 allocation = str(allocation).strip().replace("%", "")
                 if allocation == "":
-                    allocation = "0"
+                    continue
                 try:
                     allocation = Decimal(allocation)
                 except DecimalException:
@@ -245,10 +250,8 @@ class AllocateSubcomponentsInterventionGrant(
                 allocation_sum += allocation
                 allocations[str(idx)] = str(allocation)
 
-            if row_error is None and (
-                set(allocations.keys()) != expected_indexes or allocation_sum != Decimal(100)
-            ):
-                row_error = _("Allocations must total 100%")
+            if row_error is None and allocation_sum > Decimal(100):
+                row_error = _("Allocations cannot total more than 100%")
             if row_error:
                 errors[cost_line_item_id] = row_error
 

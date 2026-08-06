@@ -90,6 +90,45 @@ class TestSubcomponentCostAnalysis:
             Decimal("59.84"),
         ]
 
+    def test_allocated_totals_ignores_short_partial_rows(self, defaults):
+        subcomponent_cost_analysis = SubcomponentCostAnalysisFactory(
+            subcomponent_labels=["Treatment", "Outreach"]
+        )
+        intervention_instance = subcomponent_cost_analysis.intervention_instance
+        analysis = intervention_instance.analysis
+
+        full_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(analysis=analysis, total_cost=Decimal("1000")),
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=full_config,
+            intervention_instance=intervention_instance,
+            allocation=Decimal("50"),
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_cost_analysis,
+            cli_config=full_config,
+            allocations={"0": "60", "1": "40"},
+        )
+
+        partial_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(analysis=analysis, total_cost=Decimal("1000")),
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=partial_config,
+            intervention_instance=intervention_instance,
+            allocation=Decimal("50"),
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_cost_analysis,
+            cli_config=partial_config,
+            allocations={"0": "50"},
+        )
+
+        # The partial row must not truncate the totals to one column via
+        # zip(*...); its missing label contributes zero.
+        assert subcomponent_cost_analysis.allocated_totals() == [550.0, 200.0]
+
     def test_cost_line_item_average_with_skipped_items(
         self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
     ):

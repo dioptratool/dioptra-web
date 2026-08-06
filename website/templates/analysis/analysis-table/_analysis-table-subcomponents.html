@@ -134,6 +134,9 @@
                                            {% if subcomponent_data.skipped %}checked{% endif %}>
                                     <label class="analysis-table__subcomponent-skip__label"
                                            for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skip' %}</label>
+                                    {# Sibling order matters: the stylesheet swaps visibility via input:checked + label + .--skipped #}
+                                    <label class="analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
+                                           for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skipped' %}</label>
                                 </span>
                                 <button class="analysis-table__category-edit analysis-table__category-edit--note{% if cost_line_item.note %} analysis-table__category-edit--note-active {% endif %}">
                                     {% if cost_line_item.note %}{% translate 'View note' %} {% else %}
