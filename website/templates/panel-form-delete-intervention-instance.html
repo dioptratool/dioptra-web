@@ -1,0 +1,24 @@
+{% extends "panel-form-delete.html" %}
+{% load i18n %}
+
+{% block panel-body %}
+    {{ block.super }}
+    {% if post_load_warning %}
+        <div class="alert alert-warning">
+            <p><strong>{% translate 'Cost data has been loaded for this analysis. Deleting this intervention will also:' %}</strong></p>
+            <ul>
+                <li>{% translate 'Delete all cost allocations to this intervention — cost items may be left partially unallocated.' %}</li>
+                <li>{% translate 'Recalculate insight results — reported totals will change.' %}</li>
+                {% if has_subcomponents %}
+                    <li>{% translate 'Delete its sub-component labels and sub-component allocations.' %}</li>
+                {% endif %}
+                {% if client_time_items %}
+                    <li>
+                        {% translate 'Delete its Client Time items:' %}
+                        {% for item in client_time_items %}{{ item.budget_line_description }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock panel-body %}

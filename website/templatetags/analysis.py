@@ -115,7 +115,16 @@ def error_in_category(errors, category):
 
 @register.filter
 def lines_allocation_complete(cost_line_items):
-    return cost_line_items.filter(config__allocations__allocation__isnull=True).count() == 0
+    # The supporting-costs page passes a plain list (special lump-sum items);
+    # the cost-type pages pass a queryset. Same semantics either way: no
+    # allocation row may have a NULL allocation.
+    if hasattr(cost_line_items, "filter"):
+        return cost_line_items.filter(config__allocations__allocation__isnull=True).count() == 0
+    return not any(
+        allocation.allocation is None
+        for cost_line_item in cost_line_items
+        for allocation in cost_line_item.config.allocations.all()
+    )
 
 
 @register.filter

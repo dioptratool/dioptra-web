@@ -43,7 +43,7 @@ class AddOtherCosts(MultiStep):
     def is_enabled(self) -> bool:
         if not getattr(self.analysis, "pk", None):
             return False
-        return self.analysis.allows_other_costs
+        return self.analysis.allows_other_costs()
 
     def get_nav_title(self) -> str:
         title = "Add Other Costs"

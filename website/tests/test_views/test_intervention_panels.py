@@ -1,14 +1,24 @@
 import pytest
 from django.urls import reverse
 
-from website.models import InterventionInstance, SubcomponentCostAnalysis
+from website.models import (
+    AnalysisCostType,
+    CostLineItem,
+    CostLineItemInterventionAllocation,
+    InterventionInstance,
+    SubcomponentCostAnalysis,
+)
 from website.tests.factories import (
     AnalysisFactory,
+    CostLineItemConfigFactory,
+    CostLineItemFactory,
+    CostLineItemInterventionAllocationFactory,
     InterventionFactory,
     InterventionInstanceFactory,
     SubcomponentCostAnalysisFactory,
     UserFactory,
 )
+from website.workflows import AnalysisWorkflow
 
 
 def changelist_url(analysis):
@@ -29,6 +39,36 @@ def delete_url(instance):
 
 def reorder_url(analysis):
     return reverse("ombucore.admin:website_interventioninstance_reorder") + f"?analysis={analysis.pk}"
+
+
+def client_time_item(analysis, intervention_instance, description, others=()):
+    """
+    Mirror ClientTimeCostLineItemForm.save(): one 100% allocation to the chosen
+    intervention, 0% rows for every other intervention.
+    """
+    cost_line_item = CostLineItemFactory(
+        analysis=analysis,
+        budget_line_description=description,
+        grant_code="DF119",
+    )
+    config = CostLineItemConfigFactory(
+        cost_line_item=cost_line_item,
+        cost_type=None,
+        category=None,
+        analysis_cost_type=AnalysisCostType.CLIENT_TIME,
+    )
+    CostLineItemInterventionAllocationFactory(
+        cli_config=config,
+        intervention_instance=intervention_instance,
+        allocation=100,
+    )
+    for other in others:
+        CostLineItemInterventionAllocationFactory(
+            cli_config=config,
+            intervention_instance=other,
+            allocation=0,
+        )
+    return cost_line_item
 
 
 @pytest.mark.django_db
@@ -79,7 +119,7 @@ class TestInterventionInstanceChangelist:
 
         assert response.status_code == 403
 
-    def test_hides_delete_after_data_is_loaded(
+    def test_shows_delete_after_data_is_loaded(
         self, client_with_admin, analysis_workflow_with_loaddata_complete
     ):
         analysis = analysis_workflow_with_loaddata_complete.analysis
@@ -90,7 +130,7 @@ class TestInterventionInstanceChangelist:
         assert response.status_code == 200
         content = response.content.decode()
         for instance in instances:
-            assert delete_url(instance) not in content
+            assert delete_url(instance) in content
         assert ">Open</a>" in content
 
 
@@ -164,6 +204,39 @@ class TestInterventionInstanceChange:
 
         assert response.status_code == 403
 
+    def test_change_panel_shows_wipe_warning_with_dependent_data(
+        self, client_with_admin, analysis_workflow_with_allocations
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        instance = analysis.interventioninstance_set.first()
+
+        response = client_with_admin.get(change_url(instance))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "js-intervention-change-warning" in content
+        assert f'data-initial="{instance.intervention_id}"' in content
+
+    def test_change_panel_shows_wipe_warning_with_subcomponents_only(self, client_with_admin, defaults):
+        instance = InterventionInstanceFactory()
+        SubcomponentCostAnalysisFactory(
+            intervention_instance=instance,
+            subcomponent_labels=["Setup", "Delivery"],
+        )
+
+        response = client_with_admin.get(change_url(instance))
+
+        assert response.status_code == 200
+        assert "js-intervention-change-warning" in response.content.decode()
+
+    def test_change_panel_omits_wipe_warning_without_dependent_data(self, client_with_admin, defaults):
+        instance = InterventionInstanceFactory()
+
+        response = client_with_admin.get(change_url(instance))
+
+        assert response.status_code == 200
+        assert "js-intervention-change-warning" not in response.content.decode()
+
 
 @pytest.mark.django_db
 class TestInterventionInstanceDelete:
@@ -175,7 +248,7 @@ class TestInterventionInstanceDelete:
         assert response.status_code == 200
         assert not InterventionInstance.objects.filter(pk=instance.pk).exists()
 
-    def test_intervention_cannot_be_deleted_after_data_is_loaded(
+    def test_intervention_can_be_deleted_after_data_is_loaded(
         self, client_with_admin, analysis_workflow_with_loaddata_complete
     ):
         analysis = analysis_workflow_with_loaddata_complete.analysis
@@ -184,8 +257,127 @@ class TestInterventionInstanceDelete:
         response = client_with_admin.get(f"{delete_url(instance)}?confirmed")
 
         assert response.status_code == 200
+        assert not InterventionInstance.objects.filter(pk=instance.pk).exists()
+
+    def test_post_load_delete_cascades_and_recalculates(
+        self, client_with_admin, analysis_workflow_with_allocations
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        instances = list(analysis.interventioninstance_set.all())
+        target, survivors = instances[0], instances[1:]
+        SubcomponentCostAnalysisFactory(
+            intervention_instance=target,
+            subcomponent_labels=["Setup", "Delivery"],
+        )
+        assert str(target.pk) in analysis.output_costs
+
+        response = client_with_admin.get(f"{delete_url(target)}?confirmed")
+
+        assert response.status_code == 200
+        assert not InterventionInstance.objects.filter(pk=target.pk).exists()
+        assert not CostLineItemInterventionAllocation.objects.filter(
+            intervention_instance_id=target.pk
+        ).exists()
+        assert not SubcomponentCostAnalysis.objects.filter(intervention_instance_id=target.pk).exists()
+        analysis.refresh_from_db()
+        assert str(target.pk) not in analysis.output_costs
+        for survivor in survivors:
+            assert CostLineItemInterventionAllocation.objects.filter(intervention_instance=survivor).exists()
+
+    def test_post_load_delete_removes_orphaned_client_time_items(
+        self, client_with_admin, analysis_workflow_with_allocations
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        instances = list(analysis.interventioninstance_set.all())
+        target, survivors = instances[0], instances[1:]
+        orphan = client_time_item(analysis, target, "Orphaned Client Time", others=survivors)
+        keeper = None
+        if survivors:
+            keeper = client_time_item(
+                analysis,
+                survivors[0],
+                "Surviving Client Time",
+                others=[target, *survivors[1:]],
+            )
+
+        response = client_with_admin.get(f"{delete_url(target)}?confirmed")
+
+        assert response.status_code == 200
+        assert not CostLineItem.objects.filter(pk=orphan.pk).exists()
+        if keeper:
+            assert CostLineItem.objects.filter(pk=keeper.pk).exists()
+
+    def test_add_other_costs_page_renders_after_intervention_deleted(
+        self, client_with_admin, analysis_workflow_with_allocations
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        instances = list(analysis.interventioninstance_set.all())
+        target, survivors = instances[0], instances[1:]
+        client_time_item(analysis, target, "Orphaned Client Time", others=survivors)
+        client_with_admin.get(f"{delete_url(target)}?confirmed")
+
+        response = client_with_admin.get(
+            reverse(
+                "analysis-add-other-costs-detail",
+                kwargs={"pk": analysis.pk, "cost_type": int(AnalysisCostType.CLIENT_TIME)},
+            )
+        )
+
+        if survivors:
+            assert response.status_code == 200
+            assert "Orphaned Client Time" not in response.content.decode()
+        else:
+            # Deleting the only intervention rewinds the workflow, so the step
+            # guard redirects instead of rendering.
+            assert response.status_code == 302
+
+    def test_deleting_last_intervention_post_load_succeeds_and_rewinds_workflow(
+        self, client_with_admin, analysis_workflow_with_allocations
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+
+        for instance in list(analysis.interventioninstance_set.all()):
+            response = client_with_admin.get(f"{delete_url(instance)}?confirmed")
+            assert response.status_code == 200
+
+        assert not analysis.interventioninstance_set.exists()
+        analysis.refresh_from_db()
+        assert analysis.output_costs == {}
+        workflow = AnalysisWorkflow(analysis)
+        assert not workflow.get_step("interventions").is_complete
+        assert not workflow.get_step("load-data").is_complete
+        # Loaded data survives; re-adding an intervention restores the workflow.
+        assert analysis.cost_line_items.exists()
+
+    def test_delete_confirmation_shows_post_load_warning(
+        self, client_with_admin, analysis_workflow_with_loaddata_complete
+    ):
+        analysis = analysis_workflow_with_loaddata_complete.analysis
+        instance = analysis.interventioninstance_set.first()
+        others = list(analysis.interventioninstance_set.exclude(pk=instance.pk))
+        SubcomponentCostAnalysisFactory(
+            intervention_instance=instance,
+            subcomponent_labels=["Setup", "Delivery"],
+        )
+        client_time_item(analysis, instance, "Named Client Time Item", others=others)
+
+        response = client_with_admin.get(delete_url(instance))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Cost data has been loaded" in content
+        assert "sub-component labels" in content
+        assert "Named Client Time Item" in content
         assert InterventionInstance.objects.filter(pk=instance.pk).exists()
-        assert "Interventions cannot be deleted after cost data has been loaded." in response.content.decode()
+
+    def test_delete_confirmation_omits_warning_pre_load(self, client_with_admin, defaults):
+        instance = InterventionInstanceFactory()
+
+        response = client_with_admin.get(delete_url(instance))
+
+        assert response.status_code == 200
+        assert "Cost data has been loaded" not in response.content.decode()
+        assert InterventionInstance.objects.filter(pk=instance.pk).exists()
 
     def test_delete_requires_analysis_permission(self, client, defaults):
         instance = InterventionInstanceFactory()

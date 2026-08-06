@@ -378,7 +378,10 @@ class CostLineItemConfig(models.Model):
         At the time of the commit the relevant code is in:
             website.views.analysis.steps.add_other_costs.AddOtherCostsDetail.get_context_data
         """
-        return self.get_sole_allocator().display_name()
+        sole_allocator = self.get_sole_allocator()
+        if sole_allocator is None:
+            return ""
+        return sole_allocator.display_name()
 
 
 class CostLineItemInterventionAllocation(models.Model):

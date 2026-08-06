@@ -199,12 +199,6 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
 
         return standard_cost_lines_cost / cost_denom
 
-    def _save_data(self, data):
-        for cost_line_item_id, allocation in data.items():
-            cost_line_item = self.analysis.cost_line_items.get(pk=cost_line_item_id)
-            cost_line_item.config.allocation = allocation
-            cost_line_item.config.save()
-
 
 class AllocateCostTypeGrant(
     FilterMixin,
@@ -431,35 +425,6 @@ class AllocateCostTypeGrant(
         if self.calc_item_totals() != 0:
             allocation = self.calc_item_costs() / self.calc_item_totals()
             return f"{allocation:.2%}"
-
-    def _save_data(self, data):
-        cost_line_items = {
-            cli.id: cli
-            for cli in self.analysis.cost_line_items.filter(pk__in=data.keys()).select_related("config")
-        }
-        intervention_instances = {
-            ii.id: ii
-            for ii in self.analysis.interventioninstance_set.select_related(
-                "subcomponent_cost_analysis"
-            ).all()
-        }
-        for cost_line_item_id, intervention_allocations in data.items():
-            cost_line_item: CostLineItem | None = cost_line_items.get(cost_line_item_id)
-            if cost_line_item is None:
-                continue
-            for intervention_instance_id, allocation in intervention_allocations.items():
-                intervention_instance = intervention_instances.get(intervention_instance_id)
-                if intervention_instance is None:
-                    continue
-                cost_line_item.set_allocation_for_intervention(
-                    intervention_instance=intervention_instance,
-                    allocation=allocation,
-                )
-                if not allocation and hasattr(intervention_instance, "subcomponent_cost_analysis"):
-                    SubcomponentCostAllocation.objects.filter(
-                        cli_config=cost_line_item.config,
-                        subcomponent_analysis=intervention_instance.subcomponent_cost_analysis,
-                    ).delete()
 
 
 class AllocateInterventionBulk(

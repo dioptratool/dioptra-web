@@ -1,4 +1,15 @@
 {% extends 'panel-form.html' %}
+{% load i18n %}
+
+{% block panel-body %}
+    {% if has_dependent_data %}
+        <div class="alert alert-warning js-intervention-change-warning hidden"
+             data-initial="{{ form.instance.intervention_id }}">
+            {% translate 'Changing the intervention will delete its cost allocations and sub-component data for this analysis.' %}
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock panel-body %}
 
 {% block form-start %}
     <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form-add-intervention"

@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import ProtectedError
 from django.forms.models import model_to_dict
 from django.http import Http404
@@ -43,10 +44,19 @@ def _check_analysis_permission(request, analysis):
         raise PermissionDenied
 
 
-def _can_delete_intervention_instance(intervention_instance):
-    analysis = intervention_instance.analysis
-    workflow = AnalysisWorkflow(analysis)
-    return not workflow.get_step("load-data").is_complete
+def _orphaned_client_time_items(intervention_instance):
+    """
+    Client Time cost line items are created 100%-allocated to a single
+    intervention (ClientTimeCostLineItemForm.save), so they are meaningless
+    once that intervention is gone. Both allocation conditions must stay in
+    ONE .filter() call so they apply to the same joined allocation row.
+    """
+    return website_models.CostLineItem.objects.filter(
+        analysis=intervention_instance.analysis,
+        config__analysis_cost_type=website_models.AnalysisCostType.CLIENT_TIME,
+        config__allocations__intervention_instance=intervention_instance,
+        config__allocations__allocation=100,
+    ).distinct()
 
 
 class InterventionInstanceFilterSet(FilterSet):
@@ -129,6 +139,20 @@ class InterventionInstanceChangeView(ChangeView):
         _check_analysis_permission(request, self.get_object().analysis)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # InterventionInstanceForm.save() wipes allocations and the
+        # sub-component analysis when the intervention changes; the template
+        # shows a warning (revealed by intervention-edit-form.js) when there is
+        # data to lose.
+        context["has_dependent_data"] = (
+            hasattr(self.object, "subcomponent_cost_analysis")
+            or website_models.CostLineItemInterventionAllocation.objects.filter(
+                intervention_instance=self.object
+            ).exists()
+        )
+        return context
+
     def form_valid(self, form):
         response = super().form_valid(form)
         recalculate_analysis(self.object.analysis)
@@ -136,18 +160,25 @@ class InterventionInstanceChangeView(ChangeView):
 
 
 class InterventionInstanceDeleteView(DeleteView):
+    template_name = "panel-form-delete-intervention-instance.html"
+
     def dispatch(self, request, *args, **kwargs):
         _check_analysis_permission(request, self.get_object().analysis)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # After a delete the object's pk is gone; the confirmation context is
+        # only meaningful (and queryable) before it.
+        if self.object and not self.deleted:
+            workflow = AnalysisWorkflow(self.object.analysis)
+            context["post_load_warning"] = workflow.get_step("load-data").is_complete
+            context["client_time_items"] = list(_orphaned_client_time_items(self.object))
+            context["has_subcomponents"] = hasattr(self.object, "subcomponent_cost_analysis")
+        return context
+
     def delete(self):
         analysis = self.object.analysis
-        if not _can_delete_intervention_instance(self.object):
-            messages.error(
-                self.request,
-                _("Interventions cannot be deleted after cost data has been loaded."),
-            )
-            return
 
         # Log before deleting; app_log can't reference an already-deleted object.
         obj_dict = model_to_dict(self.object)
@@ -160,7 +191,11 @@ class InterventionInstanceDeleteView(DeleteView):
 
         try:
             success_message = self.get_success_message(obj_dict)
-            self.object.delete()
+            with transaction.atomic():
+                # The rows identifying orphaned Client Time items cascade away
+                # with the intervention, so they must be deleted first.
+                _orphaned_client_time_items(self.object).delete()
+                self.object.delete()
             self.deleted = True
             if success_message:
                 messages.success(self.request, success_message)
@@ -230,7 +265,7 @@ class InterventionInstanceAdmin(ModelAdmin):
                 "class": "intervention-action",
             }
         delete_route = self.url_for("delete")
-        if delete_route and _can_delete_intervention_instance(obj):
+        if delete_route:
             action_links.append(
                 ActionLink(
                     text="Delete",
