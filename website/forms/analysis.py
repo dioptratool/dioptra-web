@@ -9,7 +9,7 @@ from django_ckeditor_5.widgets import CKEditor5Widget
 
 from ombucore.admin.forms.base import ModelFormBase
 from ombucore.admin.widgets import FlatpickrDateWidget
-from website.forms.fields import SubcomponentLabelField
+from website.forms.fields import PositiveFixedDecimalField, SubcomponentLabelField
 from website.forms.widgets import TagEditorWidget
 from website.models import (
     Analysis,
@@ -158,12 +158,13 @@ class AllocateInterventionBulkForm(forms.Form):
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
         for intervention_instance in analysis.interventioninstance_set.all():
-            self.fields[f"allocation_{intervention_instance.id}"] = forms.DecimalField(
+            self.fields[f"allocation_{intervention_instance.id}"] = PositiveFixedDecimalField(
                 label=intervention_instance.display_name(),
                 max_value=100,
                 min_value=0,
                 initial=0,
-                widget=forms.NumberInput(attrs={"class": "bulk-allocation-input"}),
+                allow_zero=True,
+                widget=forms.TextInput(attrs={"class": "bulk-allocation-input", "inputmode": "decimal"}),
             )
         self.fields["notes"] = forms.CharField(
             label=_l("Notes"),
@@ -205,12 +206,13 @@ class AllocateSubcomponentsBulkForm(forms.Form):
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
         for idx, label in enumerate(subcomponent_labels):
-            self.fields[f"subcomponent_allocation_{idx}"] = forms.DecimalField(
+            self.fields[f"subcomponent_allocation_{idx}"] = PositiveFixedDecimalField(
                 label=label,
                 max_value=100,
                 min_value=0,
                 initial=0,
-                widget=forms.NumberInput(attrs={"class": "bulk-allocation-input"}),
+                allow_zero=True,
+                widget=forms.TextInput(attrs={"class": "bulk-allocation-input", "inputmode": "decimal"}),
             )
 
     def clean(self):

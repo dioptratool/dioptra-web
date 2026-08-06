@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 from django import forms
@@ -16,6 +17,9 @@ class PositiveFixedDecimalField(DecimalField):
         super().__init__(*args, **kwargs)
 
     def to_python(self, value):
+        if isinstance(value, str):
+            # Ignore spurious characters ("40%", "1,000", "$50") — keep digits and the decimal point.
+            value = re.sub(r"[^0-9.]", "", value)
         value = super().to_python(value)
         if value:
             value = value.quantize(settings.DECIMAL_PRECISION)

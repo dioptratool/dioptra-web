@@ -25,6 +25,14 @@ from website.views.mixins import (
 from website.workflows import AnalysisWorkflow
 
 
+def _allocation_str(value: Decimal) -> str:
+    """JSON-friendly string without trailing zeros (Decimal("60.0000") -> "60")."""
+    text = f"{value:f}"
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text or "0"
+
+
 class AllocateSubcomponents(AnalysisPermissionRequiredMixin, AnalysisStepDetailMixin):
     """
     Redirects to the first intervention/grant to allocate sub-components for.
@@ -320,7 +328,7 @@ class AllocateSubcomponentsBulk(
         config_ids = form.cleaned_data["config_ids"]
         prefix = "subcomponent_allocation_"
         allocations = {
-            name[len(prefix) :]: str(value)
+            name[len(prefix) :]: _allocation_str(value)
             for name, value in form.cleaned_data.items()
             if name.startswith(prefix)
         }

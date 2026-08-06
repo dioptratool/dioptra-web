@@ -80,6 +80,31 @@ class TestAllocateInterventionBulkPanel:
             for each_allocation in allocations:
                 assert each_allocation.allocation == allocation
 
+    def test_post_ignores_spurious_characters(
+        self,
+        analysis_workflow_with_confirmed_categories_cost_line_item,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_confirmed_categories_cost_line_item.analysis
+        url, cost_line_items = self._setup(analysis)
+        intervention_instances = list(analysis.interventioninstance_set.all())
+        allocation = Decimal(100 // len(intervention_instances))
+
+        data = {
+            "config_ids": [str(cli.config.id) for cli in cost_line_items],
+        }
+        for intervention_instance in intervention_instances:
+            data[f"allocation_{intervention_instance.id}"] = f" {allocation}% "
+
+        response = client_with_admin.post(url, data=data)
+
+        assert response.status_code == 200
+        for cli in cost_line_items:
+            allocations = CostLineItemInterventionAllocation.objects.filter(cli_config=cli.config)
+            assert allocations.count() == len(intervention_instances)
+            for each_allocation in allocations:
+                assert each_allocation.allocation == allocation
+
     def test_post_rejects_invalid_allocation(
         self,
         analysis_workflow_with_confirmed_categories_cost_line_item,
@@ -213,6 +238,30 @@ class TestAllocateSubcomponentsBulkPanel:
             "config_ids": [str(cli.config.id) for cli in cost_line_items],
             "subcomponent_allocation_0": "60",
             "subcomponent_allocation_1": "40",
+        }
+
+        response = client_with_admin.post(url, data=data)
+
+        assert response.status_code == 200
+        assert SubcomponentCostAllocation.objects.filter(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config__cost_line_item__in=cost_line_items,
+            allocations={"0": "60", "1": "40"},
+            skipped=False,
+        ).count() == len(cost_line_items)
+
+    def test_post_ignores_spurious_characters(
+        self,
+        analysis_workflow_with_allocations,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_allocations.analysis
+        url, subcomponent_analysis, cost_line_items = self._setup(analysis)
+
+        data = {
+            "config_ids": [str(cli.config.id) for cli in cost_line_items],
+            "subcomponent_allocation_0": "60%",
+            "subcomponent_allocation_1": " 40% ",
         }
 
         response = client_with_admin.post(url, data=data)

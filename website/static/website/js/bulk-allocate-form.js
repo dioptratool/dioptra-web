@@ -33,7 +33,13 @@ $(function() {
       el.addEventListener('focusin', function () {
         el.select();
       });
-      el.addEventListener('input', updateBulkAllocationTotal);
+      el.addEventListener('input', function () {
+        var cleaned = el.value.replace(/[^0-9.]/g, '');
+        if (cleaned !== el.value) {
+          el.value = cleaned;
+        }
+        updateBulkAllocationTotal();
+      });
       el.addEventListener('blur', (e) => {if (!el.value.length) el.value = 0})
     });
 
