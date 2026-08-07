@@ -18,7 +18,7 @@
                     {% with in_kind_percentage=in_kind_chart_data|dict_get:label %}
                         {% if in_kind_percentage != None %}
                             <span class="subcomponent-chart__list-item__inkind">
-                                <strong>In-Kind Contributions {{ in_kind_percentage|floatformat:"0"|intcomma }}%</strong>
+                                <strong>In-Kind Contributions</strong>
                                 ({% calculate_subcomponent_cost in_kind_total_cost in_kind_percentage analysis.currency_code %})
                             </span>
                         {% endif %}

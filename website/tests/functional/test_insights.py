@@ -196,8 +196,7 @@ class InsightsTestCase(TestCase):
                 "in_kind_total_cost": 20,
             },
         )
-        assert "In-Kind Contributions 25%" in rendered
-        assert "In-Kind Contributions 75%" in rendered
+        assert "In-Kind Contributions" in rendered
 
 
 class InterventionInsightsTestCase(TestCase):

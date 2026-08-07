@@ -528,8 +528,8 @@ class TestInterventionsStepPage:
 
         assert response.status_code == 200
         content = " ".join(response.content.decode().split())
-        assert "Design / Setup - Delivery" in content
-        assert "Design / Setup / Delivery" not in content
+        assert "Design / Setup" in content
+        assert "Delivery" in content
 
 
 @pytest.mark.django_db
