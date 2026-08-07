@@ -64,7 +64,7 @@
                                 <div class="insights__subcomponent">
                                     <h3 class="insights__subtitle">Cost of Each Sub-component,
                                         per {{ metric.output_metric }}</h3>
-                                    {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_direct_only in_kind_chart_data=subcomponent_analysis_breakdown.in_kind_chart_data in_kind_total_cost=metric.output_cost_in_kind|default:0 %}
+                                    {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_all in_kind_chart_data=subcomponent_analysis_breakdown.in_kind_chart_data in_kind_total_cost=metric.output_cost_in_kind|default:0 %}
                                 </div>
                             {% endif %}
 

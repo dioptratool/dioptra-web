@@ -22,10 +22,12 @@ from website.tests.factories import (
     SubcomponentCostAnalysisFactory,
     UserFactory,
 )
+from website.models.cost_type import Indirect, Support
 from website.utils.documents import _write_cost_efficiency_table, _write_other_cost_model_table
 from website.views.documents import full_cost_model_spreadsheet
 from website.utils.documents import (
     _write_cost_of_each_subcomponent_per_output_metric_table,
+    _write_full_cost_model_table,
     _write_metadata_table,
 )
 
@@ -164,7 +166,11 @@ def spreadsheet_analysis(defaults):
 
 class TestAnalysisSpreadsheet:
     @pytest.mark.django_db
-    def test_subcomponent_metric_metadata_references_program_costs(self, spreadsheet_analysis):
+    def test_subcomponent_metric_metadata_references_full_costs(self, spreadsheet_analysis):
+        """
+        Sub-component costs apply the derived split to the full output cost
+        (Program + Support + Indirect), matching Insights and print.
+        """
         worksheet = Workbook().active
         intervention_instance = spreadsheet_analysis.interventioninstance_set.first()
         metric_metadata = {}
@@ -177,12 +183,113 @@ class TestAnalysisSpreadsheet:
         )
 
         for metric in intervention_instance.intervention.output_metric_objects():
-            program_cost_row = next(
+            all_costs_row = next(
                 row
                 for row in range(1, worksheet.max_row + 1)
-                if worksheet[f"A{row}"].value == f"{metric.metric_name} Program Costs only"
+                if worksheet[f"A{row}"].value
+                == f"{metric.metric_name} including Program Costs, Support Costs, Indirect Costs"
             )
-            assert metric_metadata[metric.metric_name] == f"B{program_cost_row}"
+            assert metric_metadata[metric.metric_name] == f"B{all_costs_row}"
+
+    @pytest.mark.django_db
+    def test_full_cost_model_derives_shared_and_skipped_subcomponent_rows(self, spreadsheet_analysis):
+        intervention_instance = spreadsheet_analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        line_item_1 = spreadsheet_analysis.cost_line_items.get(
+            budget_line_description="My Budget Line Description 1"
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=line_item_1.config,
+            allocations={"0": "60", "1": "40"},
+        )
+        # A skipped Program row with leftover values falls back to the derived split.
+        line_item_2 = spreadsheet_analysis.cost_line_items.get(
+            budget_line_description="My Budget Line Description 2"
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=line_item_2.config,
+            allocations={"0": "100", "1": "0"},
+            skipped=True,
+        )
+        # A Support row with a stale stored allocation (migrated 2.1 data) is
+        # ignored in favor of the derived split.
+        support_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=spreadsheet_analysis,
+                budget_line_description="Support Line Item",
+                total_cost=10000.00,
+            ),
+            cost_type=CostType.objects.get(type=Support.id),
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=support_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=support_config,
+            allocations={"0": "100", "1": "0"},
+        )
+        # An Indirect row with no stored allocation at all.
+        indirect_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=spreadsheet_analysis,
+                budget_line_description="Indirect Line Item",
+                total_cost=5000.00,
+            ),
+            cost_type=CostType.objects.get(type=Indirect.id),
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=indirect_config,
+            intervention_instance=intervention_instance,
+            allocation=40,
+        )
+
+        worksheet = Workbook().active
+        last_row = _write_full_cost_model_table(worksheet, spreadsheet_analysis, 1, intervention_instance)
+
+        rows_by_description = {worksheet[f"C{row}"].value: row for row in range(3, last_row)}
+        assert "In Kind Line Item" not in rows_by_description
+        assert "Client Time Line Item" not in rows_by_description
+
+        # The explicitly allocated Program row keeps the entered split.
+        explicit_row = rows_by_description["My Budget Line Description 1"]
+        assert worksheet[f"K{explicit_row}"].value == Decimal("0.6")
+        assert worksheet[f"M{explicit_row}"].value == Decimal("0.4")
+
+        # Shared and skipped rows carry the derived Program Cost split.
+        for description in ["My Budget Line Description 2", "Support Line Item", "Indirect Line Item"]:
+            row = rows_by_description[description]
+            assert worksheet[f"K{row}"].value == Decimal("0.6"), description
+            assert worksheet[f"M{row}"].value == Decimal("0.4"), description
+            assert worksheet[f"L{row}"].value == f"=J{row} * K{row}", description
+            assert worksheet[f"N{row}"].value == f"=J{row} * M{row}", description
+
+        # The workbook's per-output formulas compute:
+        #   all-costs cell * SUM(label totals) / SUMIFS(item totals with values)
+        # With every row carrying a split, the denominator is the full cost
+        # basis and the ratio is the derived split, so the result equals the
+        # Insights amount (split * full output cost).
+        item_totals = []
+        treatment_totals = []
+        for row in range(3, last_row):
+            if worksheet[f"K{row}"].value is None:
+                continue
+            item_total = (
+                Decimal(str(worksheet[f"G{row}"].value)) * Decimal(str(worksheet[f"H{row}"].value)) / 100
+            )
+            item_totals.append(item_total)
+            treatment_totals.append(item_total * worksheet[f"K{row}"].value)
+        assert sum(item_totals) == Decimal(
+            str(spreadsheet_analysis.get_cost_output_sums_all()[intervention_instance.id])
+        )
+        assert sum(treatment_totals) / sum(item_totals) == Decimal("0.6")
 
     @pytest.mark.django_db
     def test_other_cost_table_includes_in_kind_subcomponent_allocations(self, spreadsheet_analysis):

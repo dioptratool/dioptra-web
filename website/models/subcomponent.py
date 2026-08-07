@@ -172,6 +172,22 @@ class SubcomponentCostAnalysis(models.Model):
 
         return averages
 
+    def full_cost_percentages(self) -> list[Decimal]:
+        """
+        The sub-component split to apply against the intervention's full
+        output cost (Program + Support + Indirect Costs).
+
+        Users only enter sub-component allocations for Program Cost rows.
+        Shared costs — Support, Indirect, and skipped rows — follow the
+        weighted Program Cost split, so the full-cost split equals the
+        Program Cost weighted average. The shared-cost derivation happens
+        here at calculation time and is never persisted, so recalculation
+        cannot leave stale derived rows (stored allocations on non-Program
+        rows, e.g. migrated 2.1 data, are ignored). Insights, print, and the
+        spreadsheet all read this method so their outputs cannot disagree.
+        """
+        return self.cost_line_item_average()
+
     def reset_cost_line_items(self):
         self.allocations.all().delete()
 

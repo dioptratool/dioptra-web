@@ -315,7 +315,7 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             chart_data = dict(
                 zip(
                     subcomponent_analysis.subcomponent_labels,
-                    subcomponent_analysis.cost_line_item_average(),
+                    subcomponent_analysis.full_cost_percentages(),
                 )
             )
             if self.analysis.in_kind_contributions:

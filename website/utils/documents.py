@@ -192,12 +192,15 @@ def _write_cost_efficiency_table(
 
         ws[f"B{row}"] = output_costs[each_metric.id]["direct_only"]
         ws[f"B{row}"].border = _black_border
-        metrics_all_costs_metadata[each_metric.metric_name] = f"B{row}"
 
         row += 1
 
         ws[f"A{row}"] = f"{each_metric.metric_name} including Program Costs, Support Costs, Indirect Costs"
         ws[f"A{row}"].border = _black_border
+
+        # Sub-component costs are calculated against the full output cost
+        # (Program + Support + Indirect), matching Insights and print.
+        metrics_all_costs_metadata[each_metric.metric_name] = f"B{row}"
 
         ws[f"B{row}"] = output_costs[each_metric.id]["all"]
         ws[f"B{row}"].border = _black_border
@@ -251,7 +254,7 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
         ws[f"A{row}"].font = Font(bold=True)
 
         row += 1
-        percentages = subcomponent_analysis.cost_line_item_average()
+        percentages = subcomponent_analysis.full_cost_percentages()
         for idx, each_percentage in enumerate(percentages):
             ws[f"A{row}"] = f"{subcomponent_analysis.subcomponent_labels[idx]}"
             ws[f"A{row}"].border = _black_border
@@ -543,6 +546,7 @@ def _write_full_cost_model_table(
 
     subcomponent_analysis = None
     subcomponent_allocations_by_config = {}
+    derived_subcomponent_percentages = []
     if hasattr(intervention_instance, "subcomponent_cost_analysis"):
         subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
         subcomponent_allocations_by_config = {
@@ -553,6 +557,10 @@ def _write_full_cost_model_table(
         for each_label in subcomponent_analysis.subcomponent_labels:
             header_row.append(each_label)
             header_row.append(each_label + " Total")
+        derived_subcomponent_percentages = subcomponent_analysis.full_cost_percentages()
+        if len(derived_subcomponent_percentages) != len(subcomponent_analysis.subcomponent_labels):
+            # No allocated Program Cost rows to derive from; leave shared rows blank.
+            derived_subcomponent_percentages = []
 
     _write_header_row(ws, row, header_row)
 
@@ -617,28 +625,40 @@ def _write_full_cost_model_table(
         ws[f"H{row}"].number_format = "#,##0.00"
         ws[f"J{row}"].number_format = "#,##0.00"
 
-        subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
-        if (
-            subcomponent_analysis
-            and subcomponent_analysis.subcomponent_labels
-            and subcomponent_allocation
-            and each_cost_line_item.config.cost_type
-            and each_cost_line_item.config.cost_type.type == ProgramCost.id
-        ):
+        if subcomponent_analysis and subcomponent_analysis.subcomponent_labels:
+            subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
+            is_explicit_program_row = (
+                subcomponent_allocation is not None
+                and not subcomponent_allocation.skipped
+                and subcomponent_allocation.allocations
+                and each_cost_line_item.config.cost_type
+                and each_cost_line_item.config.cost_type.type == ProgramCost.id
+            )
+            if is_explicit_program_row:
+                percentages_by_idx = {
+                    int(idx): Decimal(each_subcomponent_allocation) / 100
+                    for idx, each_subcomponent_allocation in subcomponent_allocation.allocations.items()
+                }
+            else:
+                # Shared costs (Support, Indirect, Other HQ) and skipped rows
+                # follow the weighted Program Cost split. Derived at export
+                # time and never persisted, so recalculation cannot leave
+                # stale derived rows.
+                percentages_by_idx = {
+                    idx: Decimal(each_percentage) / 100
+                    for idx, each_percentage in enumerate(derived_subcomponent_percentages)
+                }
             subcomponent_analysis_start_column = len(row_data) + 1
-            for (
-                idx,
-                each_subcomponent_allocation,
-            ) in subcomponent_allocation.allocations.items():
+            for idx, each_percentage in percentages_by_idx.items():
                 percentage = ws.cell(
                     row=row,
-                    column=subcomponent_analysis_start_column + (int(idx) * 2),
-                    value=Decimal(each_subcomponent_allocation) / 100,
+                    column=subcomponent_analysis_start_column + (idx * 2),
+                    value=each_percentage,
                 )
                 total = ws.cell(
                     row=row,
-                    column=subcomponent_analysis_start_column + ((int(idx) * 2) + 1),
-                    value=f"={get_column_letter(len(row_data))}{row} * {get_column_letter(subcomponent_analysis_start_column + (int(idx) * 2))}{row}",
+                    column=subcomponent_analysis_start_column + ((idx * 2) + 1),
+                    value=f"={get_column_letter(len(row_data))}{row} * {get_column_letter(subcomponent_analysis_start_column + (idx * 2))}{row}",
                 )
                 percentage.number_format = "0.00%"
                 total.number_format = "#,##0.00"
