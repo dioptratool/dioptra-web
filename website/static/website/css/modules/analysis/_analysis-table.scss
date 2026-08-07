@@ -34,7 +34,7 @@
   .analysis-table__table > thead {
     position: sticky;
     top: 0;
-    z-index: 11;
+    z-index: 3;
   }
   .analysis-table__table > thead > tr > th:last-child {
     border-right: 1px solid $color-white;
@@ -46,6 +46,7 @@
 }
 .analysis-table__category-content--freeze-col {
   position: relative;
+  overflow: hidden;
 
   .analysis-table__table>thead>tr:first-child:not(.analysis-table__transaction-row),
   .analysis-table__table>tbody>tr:first-child:not(.analysis-table__transaction-row) {
@@ -55,7 +56,7 @@
       position: sticky;
       left: 0;
       width: 25rem;
-      z-index: 10;
+      z-index: 2;
     }
 
     &>th:first-child {
@@ -110,7 +111,7 @@
         position: sticky;
         left: 4rem;
         width: 25rem;
-        z-index: 10;
+        z-index: 2;
       }
 
       &>td:nth-child(2) {
@@ -1111,7 +1112,7 @@ input[type="text"].analysis-table__allocated-input {
   align-items: center;
   position: absolute;
   margin-left: -0.5rem;
-  padding: 0.6rem 0 0.6rem 8.5rem;
+  padding: 0.6rem 0.5rem 0.6rem 8.5rem;
   background-color: $color-lapis;
   border-radius: 0.4rem;
   box-shadow: 0px 4px 4px 0px rgba(16, 69, 122, 0.2);
@@ -1121,11 +1122,11 @@ input[type="text"].analysis-table__allocated-input {
   .help__button svg {
     background: white;
     border-radius: 0.4rem;
-    margin-inline: 0.4rem;
+    margin-inline-end: 0.4rem;
   }
 }
 
-:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within {
   .analysis-table__allocated-apply-all-link-wrapper {
     display: inline-flex;
   }
@@ -1142,6 +1143,10 @@ input[type="text"].analysis-table__allocated-input {
       color: white;
       z-index: 2;
     }
+  }
+  &:after {
+    color: white;
+    z-index: 2;
   }
 }
 

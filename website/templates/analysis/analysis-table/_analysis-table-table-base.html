@@ -41,7 +41,7 @@
                     </th>
                 {% elif allocateEdit == 'true' %}
                     <th class="analysis-table__edit-cell">
-                        <span class="analysis-table__intervention-title">{{ intervention_instance.display_name }}</span>
+                        <span class="analysis-table__intervention-title" title="{{ intervention_instance.display_name }}">{{ intervention_instance.display_name|truncatechars:30 }}</span>
                     </th>
                 {% endif %}
             {% endfor %}

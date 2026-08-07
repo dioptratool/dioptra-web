@@ -24,6 +24,8 @@ $(function() {
       if (warningEl) {
         warningEl.style.display = invalid ? 'block' : 'none';
       }
+
+      return !invalid;
     }
 
     inputs.forEach(function (el) {
@@ -38,7 +40,17 @@ $(function() {
         if (cleaned !== el.value) {
           el.value = cleaned;
         }
-        updateBulkAllocationTotal();
+        if (updateBulkAllocationTotal()) {
+          // fill blank rows with 0 on valid total
+          var row = el.closest('tr');
+          if (row) {
+            row.querySelectorAll('input.bulk-allocation-input')?.forEach(function (input) {
+              if (!input.value.length) {
+                input.value = 0;
+              }
+            });
+          }
+        }
       });
       el.addEventListener('blur', (e) => {if (!el.value.length) el.value = 0})
     });

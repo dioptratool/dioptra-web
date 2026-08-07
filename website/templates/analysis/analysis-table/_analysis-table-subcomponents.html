@@ -21,7 +21,7 @@
         </tr>
         <tr>
             {% for subcomponent_label in step.subcomponent_analysis.subcomponent_labels %}
-                <th class="analysis-table__subcomponent-header">{{ subcomponent_label }}</th>
+                <th class="analysis-table__subcomponent-header" title="{{ subcomponent_label }}">{{ subcomponent_label|truncatechars:30 }}</th>
             {% endfor %}
         </tr>
         </thead>

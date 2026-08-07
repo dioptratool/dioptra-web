@@ -340,6 +340,7 @@
       color: #333;
       font-size: 1.3rem;
       margin: 0;
+      overflow-wrap: break-word;
     }
     h4 {
       margin-bottom: 0.5rem;
@@ -364,19 +365,27 @@
       }
     }
     .intervention-subcomponent-analysis {
-      align-items: center;
       background-color: #D7EAFB;
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
+      border-radius: inherit;
+      display: inline-block;
       margin-top: 0.75rem;
       padding: 0.6rem 1rem;
+    }
+    .intervention-subcomponent-analysis__header {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
     }
     .intervention-subcomponent-analysis__title {
       font-weight: $font-weight-bold;
     }
     .intervention-subcomponent-analysis__labels {
-      flex: 1 1 auto;
+      margin-block: 0.5rem 0;
+      padding-left: 2rem;
+    }
+    .intervention-subcomponent-analysis__label {
+      margin-bottom: 0.25lh;
+      padding-left: 0;
     }
     .intervention-subcomponent-analysis__actions {
       display: flex;

@@ -269,6 +269,8 @@ class CostLineItemUpsertView(AnalysisPermissionRequiredMixin, AnalysisObjectMixi
         self._set_form_class()
         if self.form_class == InKindCostLineItemForm:
             return ["panel-form-in-kind-cost-line-item.html"]
+        elif self.form_class == OtherHQCostLineItemForm:
+            return ["panel-form-analysis.html"]
         return super().get_template_names()
 
     def get_supertitle(self):

@@ -16,9 +16,9 @@
 
     <div class="row">
       <div class="col-md-12">
-        <ul class="analysis-interventions">
+        <div class="analysis-interventions">
             {% for row in intervention_rows %}
-                <li class="analysis-intervention">
+                <div class="analysis-intervention">
                     <div class="intervention-info">
                         <h4>{{ row.instance.display_name }}</h4>
                         <p class="intervention-subtitle">
@@ -37,18 +37,20 @@
                     </div>
                     {% if row.subcomponent_labels %}
                         <div class="intervention-subcomponent-analysis">
-                            <strong class="intervention-subcomponent-analysis__title">{% translate 'Sub-Component Analysis' %}</strong>
-                            <span class="intervention-subcomponent-analysis__labels">
+                            <div class="intervention-subcomponent-analysis__header">
+                                <strong class="intervention-subcomponent-analysis__title">{% translate 'Sub-Component Analysis' %}</strong>
+                                <span class="intervention-subcomponent-analysis__actions">
+                                    | <a href="{{ row.subcomponent_labels_url }}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
+                                    {% if not labels_locked %}
+                                        <a href="{{ row.subcomponent_delete_url }}" data-panels-trigger data-panels-reload-on="deleted">{% translate 'Delete' %}</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <ul class="intervention-subcomponent-analysis__labels">
                                 {% for label in row.subcomponent_labels %}
-                                    {{ label }}{% if not forloop.last %} - {% endif %}
+                                    <li class="intervention-subcomponent-analysis__label">{{ label }}</li>
                                 {% endfor %}
-                            </span>
-                            <span class="intervention-subcomponent-analysis__actions">
-                                | <a href="{{ row.subcomponent_labels_url }}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
-                                {% if not labels_locked %}
-                                    <a href="{{ row.subcomponent_delete_url }}" data-panels-trigger data-panels-reload-on="deleted">{% translate 'Delete' %}</a>
-                                {% endif %}
-                            </span>
+                            </ul>
                         </div>
                     {% elif not labels_locked %}
                         <p class="intervention-actions">
@@ -57,9 +59,9 @@
                             </a>
                         </p>
                     {% endif %}
-                </li>
+                    </div>
             {% endfor %}
-        </ul>
+        </div>
 
         <button type="button" class="set-interventions manage-interventions" data-href="{{ manage_url }}">
             <span>

@@ -2,7 +2,7 @@
 {% load panels_extras panels_form_extras %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form-in-kind-cost-line-item"
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis panel-form-in-kind-cost-line-item"
           enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}"
           novalidate="novalidate"
           {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
@@ -31,13 +31,13 @@
 
         <!-- Intervention Allocations -->
         <div class="bulk-allocate-form" data-total-rule="max-100" id="in-kind-intervention-allocation">
-            <span class="control-label">How much did this contribute to each intervention?</span>
+            <span class="control-label">How much did this item contribute to each intervention?</span>
             <div class="allocation-input-table-wrapper">
                 <table class="allocation-input-table">
                     <thead>
                     <tr>
                         {% for group in form.allocation_groups %}
-                            <th class="allocation-input-table__intervention-header">{{ group.intervention.display_name }}</th>
+                            <th class="allocation-input-table__intervention-header" title="{{ group.intervention.display_name }}">{{ group.intervention.display_name|truncatechars:30 }}</th>
                         {% endfor %}
                     </tr>
                     </thead>
@@ -55,7 +55,7 @@
             </div>
         
             <div class="allocation-input-table__total">
-                <p class="allocation-total-title">Total Allocation Percentage</p>
+                <p class="allocation-total-title">Total Percentage Across Interventions</p>
                 <p class="allocation-total-subtitle bulk-allocate-form__warning">Cannot exceed 100%</p>
                 <p class="allocation-input-table__total-value">0%</p>
             </div>
@@ -64,7 +64,7 @@
         {% for group in form.allocation_groups %}
         {% if group.subcomponent_fields %}
             <div class="bulk-allocate-form" data-total-rule="equal-100" data-intervention-id="{{ group.intervention.pk }}">
-                <span class="control-label">{{ group.intervention.display_name }}: how much did this contribute to the sub-components?</span>
+                <span class="control-label">{{ group.intervention.display_name }}: how much did this item contribute to each sub-component?</span>
 
                 <div class="allocation-input-table-wrapper">
                     <table class="allocation-input-table">
@@ -89,7 +89,7 @@
                 </div>
 
                 <div class="allocation-input-table__total">
-                    <p class="allocation-total-title">Total Sub-Component Percentage</p>
+                    <p class="allocation-total-title">Total Percentage Across Sub-Components</p>
                     <p class="allocation-total-subtitle bulk-allocate-form__warning">Must Equal 100%</p>
                     <p class="allocation-input-table__total-value">0%</p>
                 </div>

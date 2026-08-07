@@ -5047,6 +5047,7 @@ body.loading .analysis__loading {
   color: #333;
   font-size: 1.3rem;
   margin: 0;
+  overflow-wrap: break-word;
 }
 .analysis-interventions .analysis-intervention h4 {
   margin-bottom: 0.5rem;
@@ -5070,19 +5071,27 @@ body.loading .analysis__loading {
   background-color: rgb(188, 217, 245);
 }
 .analysis-interventions .analysis-intervention .intervention-subcomponent-analysis {
-  align-items: center;
   background-color: #D7EAFB;
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  border-radius: inherit;
+  display: inline-block;
   margin-top: 0.75rem;
   padding: 0.6rem 1rem;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 .analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__title {
   font-weight: 700;
 }
 .analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__labels {
-  flex: 1 1 auto;
+  margin-block: 0.5rem 0;
+  padding-left: 2rem;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__label {
+  margin-bottom: 0.25lh;
+  padding-left: 0;
 }
 .analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions {
   display: flex;
@@ -5563,7 +5572,7 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table__category-content--freeze-row .analysis-table__table > thead {
   position: sticky;
   top: 0;
-  z-index: 11;
+  z-index: 3;
 }
 .analysis-table__category-content--freeze-row .analysis-table__table > thead > tr > th:last-child {
   border-right: 1px solid rgb(255, 255, 255);
@@ -5574,6 +5583,7 @@ a.analysis-navigation__prev-next:hover {
 
 .analysis-table__category-content--freeze-col {
   position: relative;
+  overflow: hidden;
 }
 .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > td:first-child, .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > th:first-child,
 .analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > td:first-child,
@@ -5581,7 +5591,7 @@ a.analysis-navigation__prev-next:hover {
   position: sticky;
   left: 0;
   width: 25rem;
-  z-index: 10;
+  z-index: 2;
 }
 .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > th:first-child,
 .analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > th:first-child {
@@ -5621,7 +5631,7 @@ a.analysis-navigation__prev-next:hover {
   position: sticky;
   left: 4rem;
   width: 25rem;
-  z-index: 10;
+  z-index: 2;
 }
 .analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:nth-child(2) {
   background-color: white;
@@ -6539,7 +6549,7 @@ input[type=text].analysis-table__allocated-input {
   align-items: center;
   position: absolute;
   margin-left: -0.5rem;
-  padding: 0.6rem 0 0.6rem 8.5rem;
+  padding: 0.6rem 0.5rem 0.6rem 8.5rem;
   background-color: rgb(16, 69, 122);
   border-radius: 0.4rem;
   box-shadow: 0px 4px 4px 0px rgba(16, 69, 122, 0.2);
@@ -6549,20 +6559,24 @@ input[type=text].analysis-table__allocated-input {
 .analysis-table__allocated-apply-all-link-wrapper .help__button svg {
   background: white;
   border-radius: 0.4rem;
-  margin-inline: 0.4rem;
+  margin-inline-end: 0.4rem;
 }
 
-:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within .analysis-table__allocated-apply-all-link-wrapper {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within .analysis-table__allocated-apply-all-link-wrapper {
   display: inline-flex;
 }
-:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
   position: relative;
   z-index: 2;
 }
-:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper):focus {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper):focus {
   outline: 2px solid -webkit-focus-ring-color;
 }
-:where(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) ~ .analysis-table__allocated-input-suffix {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) ~ .analysis-table__allocated-input-suffix {
+  color: white;
+  z-index: 2;
+}
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within:after {
   color: white;
   z-index: 2;
 }
@@ -7101,6 +7115,10 @@ input[type=text].analysis-table__allocated-input {
   color: rgb(172, 180, 191);
   display: inline;
   content: "%";
+  order: 1;
+}
+.analysis-table__subcomponent-allocate .analysis-table__allocated-apply-all-link-wrapper {
+  order: 2;
 }
 
 .analysis-table__cost-items.analysis-table__cost-items--confirmed {

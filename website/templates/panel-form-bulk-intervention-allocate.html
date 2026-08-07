@@ -10,7 +10,7 @@
 {% endblock extrastyle %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form bulk-allocate-form" data-total-rule="max-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="max-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
 {% endblock form-start %}
 
 {% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}
@@ -31,7 +31,7 @@
         <tr>
           {% for field in form %}
             {% if field.name != 'notes' and not field.is_hidden %}
-              <th class="allocation-input-table__intervention-header">{{ field.label }}</th>
+              <th class="allocation-input-table__intervention-header" title="{{ field.label }}">{{ field.label|truncatechars:30 }}</th>
             {% endif %}
           {% endfor %}
         </tr>

@@ -1,6 +1,10 @@
 {% extends "panel-form-delete.html" %}
 {% load i18n %}
 
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+{% endblock form-start %}
+
 {% block panel-body %}
     {{ block.super }}
     {% if post_load_warning %}

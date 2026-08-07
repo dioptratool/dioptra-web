@@ -10,7 +10,7 @@
 {% endblock extrastyle %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form bulk-allocate-form" data-total-rule="equal-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="equal-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
 {% endblock form-start %}
 
 {% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}

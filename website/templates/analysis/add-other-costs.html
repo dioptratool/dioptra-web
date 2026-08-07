@@ -25,7 +25,7 @@
         <th>{{ total_cost|format_currency:analysis.currency_code }}</th>
         {% if show_allocation %}
             {% for intervention_link in intervention_links_in_order %}
-              <th class="analysis-table__intervention-header">{{ intervention_link.display_name }}</th>
+              <th class="analysis-table__intervention-header" title="{{ intervention_link.display_name }}">{{ intervention_link.display_name|truncatechars:30 }}</th>
             {% endfor %}
         {% endif %}
         <th>Actions</th>

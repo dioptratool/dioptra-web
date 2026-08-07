@@ -6373,8 +6373,7 @@ input[type=file].clearable-file__upload {
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .title {
   font-weight: 700;
-  flex-grow: 0;
-  flex-shrink: 0;
+  flex: 1 1 auto;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .subtitle {
   padding-left: 10px;
@@ -6596,6 +6595,29 @@ html.is-in-panel .allocation-total-subtitle {
   background: rgb(247, 231, 231);
 }
 
+/* General form class for overriding ombucore to look more like app theme */
+.panel-form.panel-form--analysis .form-group {
+  margin-bottom: 24px;
+}
+.panel-form.panel-form--analysis .control-label,
+.panel-form.panel-form--analysis .form-group .control-label {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: break-word;
+  text-transform: none;
+  color: rgb(51, 51, 51);
+}
+.panel-form.panel-form--analysis .control-label span,
+.panel-form.panel-form--analysis .form-group .control-label span {
+  font-weight: inherit;
+}
+.panel-form.panel-form--analysis .input-group-text {
+  padding: 9px;
+}
+.panel-form.panel-form--analysis .currency-wrapper {
+  align-items: stretch;
+}
+
 .analysis-interventions {
   padding: 0;
   margin: 0;
@@ -6622,6 +6644,7 @@ html.is-in-panel .allocation-total-subtitle {
   font-size: 13px;
   margin: 0;
   line-height: 1.15;
+  overflow-wrap: break-word;
 }
 .analysis-interventions .analysis-intervention h4 {
   margin-bottom: 5px;
