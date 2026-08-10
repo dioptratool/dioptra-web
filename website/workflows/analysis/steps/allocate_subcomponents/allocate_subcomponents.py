@@ -44,7 +44,7 @@ class AllocateSubcomponents(MultiStep):
     def is_enabled(self) -> bool:
         if not getattr(self.analysis, "pk", None):
             return False
-        return bool(self.analysis.subcomponent_cost_analyses())
+        return self.analysis.has_subcomponent_labels()
 
     @cached_property
     def dependencies_met(self) -> bool:
