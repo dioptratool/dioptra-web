@@ -240,13 +240,21 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
     """
     Write the "Cost of Each Sub-component, per OUTPUT METRIC UNIT" table to the provided worksheet
 
+    Each label row shows the allocation amount (column B) and the full-cost
+    allocation percentage (column C); both are filled in as formulas by
+    `_fill_in_subcomponent_cost_efficiency_functions`.
+
     Returns the last row with data on it to position other things on the page.
     """
 
     row = starting_row
 
     if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
-        return row
+        # Explicit empty state so multi-intervention workbooks make clear the
+        # section was not simply lost for interventions without sub-components.
+        ws[f"A{row}"] = "No sub-component analysis for this intervention"
+        ws[f"A{row}"].font = Font(italic=True)
+        return row + 1
     subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
 
     for output_metric in intervention_instance.intervention.output_metric_objects():
@@ -263,6 +271,7 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
             # excel functions in `_fill_in_subcomponent_cost_efficiency_functions`
             ws[f"B{row}"] = str(output_metric.metric_name)
             ws[f"B{row}"].border = _black_border
+            ws[f"C{row}"].border = _black_border
 
             row += 1
 
@@ -451,67 +460,76 @@ def _fill_in_subcomponent_cost_efficiency_functions(
     full_cost_model_last_data_row: int,
 ):
     """
-    The sum of the subcomponent costs / the Item Total
+    Fill in the allocation percentage (column C) and amount (column B) for
+    each sub-component label row.
 
-    This is a complex function needing to know the location of a number of dynamic values.
+    The percentage is the label's share of the full cost model:
+      SUM(label Total column) / SUMIFS(Item Totals that carry a split)
+    Since item 7.1 every cost model row carries a split (explicit on Program
+    rows, derived on shared/skipped rows), so the denominator is the full
+    cost basis and the amount — the metric's full output cost times the
+    percentage cell — matches Insights.
+
+    Label rows are matched to their cost model columns by position within
+    each "Cost of Each Sub-component" block, never by label text, so long or
+    duplicate labels cannot produce a wrong or ambiguous reference. The
+    column base is read from the cost model's own header row: the label
+    (percent, total) pairs start immediately after its "Item Total" column.
     """
 
-    row = first_data_row
+    item_total_column = None
+    first_label_pair_column = None
 
-    # Get a list of strings that are the header values.   This is used to lookup a value used in the excel function
-    full_cost_model_headers = [c.value for c in ws[full_cost_model_first_data_row - 1]]
-
-    while row < last_data_row:
-        # Find which column has the Subcomponent Total for the Subcomponent in this Row
-        try:
-            subcomponent_column = get_column_letter(
-                full_cost_model_headers.index(ws[f"A{row}"].value + " Total") + 1
-            )
-        except ValueError:
-            # We can assume when this happens it has hit a header for one of the Subcomponent Sub Sections.
-            # Something that looks like the following.  Where "Person" and "Person-Day of Training" are
-            # the two Output Metrics for an intervention.  The ValueError is raised when it hits A27 which
-            # doesn't have a value to lookup in the subcomponent label list.  We can just skip it
-            # since the value is blank on that row.   We are filling in column B for this sub section.
-            #
-            # Example layout:
-            #
-            #   Row#    A
-            #   24      Cost of Each Sub-component, per Person
-            #   25      subcomponentlabel1
-            #   26      subcomponentlabel2
-            #   27      Cost of Each Sub-component, per Person-Day of Training
-            #   28      subcomponentlabel1
-            #   29      subcomponentlabel2
-            #
-            row += 1
+    label_idx = 0
+    for row in range(first_data_row, last_data_row):
+        # Label rows hold their metric's name in column B as a placeholder; a
+        # blank B is a "Cost of Each Sub-component, per ..." header row and
+        # starts a new block.
+        placeholder = ws[f"B{row}"].value
+        if placeholder is None:
+            label_idx = 0
             continue
-        # Create a function that takes the percentage of the Subcomponent to the relevant Cost Total
-        #   and applies that percentage to relevant metric's Efficiency Cost
-        if ws[f"B{row}"].value in metrics_all_costs_metadata:
-            v = (
-                "="
-                + metrics_all_costs_metadata[ws[f"B{row}"].value]
-                + " * "
-                + f"SUM({subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row})"
-                + " / "
-                + f"SUMIFS("
-                f"J{full_cost_model_first_data_row}:J{full_cost_model_last_data_row},"
+
+        if first_label_pair_column is None:
+            # The first "Item Total" occurrence is always the fixed column —
+            # label columns only come after it — so a label named
+            # "Item Total" cannot mislead this, and a renamed or missing
+            # header fails loudly instead of desyncing silently.
+            full_cost_model_headers = [c.value for c in ws[full_cost_model_first_data_row - 1]]
+            item_total_index = full_cost_model_headers.index("Item Total") + 1
+            item_total_column = get_column_letter(item_total_index)
+            first_label_pair_column = item_total_index + 1
+
+        subcomponent_column = get_column_letter(first_label_pair_column + 1 + (label_idx * 2))
+        label_idx += 1
+
+        metric_reference = metrics_all_costs_metadata.get(placeholder)
+        if metric_reference is None:
+            # The metric has no calculated output cost; clear the placeholder.
+            ws.cell(row=row, column=2, value="")
+            continue
+
+        percentage_cell = ws.cell(
+            row=row,
+            column=3,
+            value=(
+                f"=SUM({subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row})"
+                " / "
+                f"SUMIFS("
+                f"{item_total_column}{full_cost_model_first_data_row}:{item_total_column}{full_cost_model_last_data_row},"
                 f"{subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row}, "
                 '"<>"'
                 f")"
-            )
-        else:
-            v = ""
-        c = ws.cell(
+            ),
+        )
+        percentage_cell.number_format = "0.00%"
+
+        amount_cell = ws.cell(
             row=row,
             column=2,
-            value=v,
+            value=f"={metric_reference} * C{row}",
         )
-
-        c.number_format = "$#,##0.00"
-
-        row += 1
+        amount_cell.number_format = "$#,##0.00"
 
 
 def _write_full_cost_model_table(
