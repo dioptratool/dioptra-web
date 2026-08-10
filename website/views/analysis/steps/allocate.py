@@ -1,5 +1,4 @@
 from decimal import Decimal
-from urllib.parse import quote
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -217,12 +216,22 @@ class AllocateCostTypeGrant(
 
     def setup_step(self):
         super().setup_step()
+        # Match on the URL kwargs rather than the quoted request path: reverse()
+        # leaves sub-delimiters like "," in grant codes unescaped, so hrefs for
+        # those grants never equal the re-quoted path.
         self.step = None
         for substep in self.parent_step.steps:
-            encoded_request_path = quote(self.request.path)
-            if substep.get_href() == encoded_request_path:
+            if (
+                substep.name == "allocate-cost_type-grant"
+                and substep.cost_type.pk == self.kwargs["cost_type_pk"]
+                and substep.grant == self.kwargs["grant"]
+            ):
                 self.step = substep
                 break
+
+        if self.step is None:
+            # No such cost_type/grant sub-step for this analysis; dispatch() redirects.
+            return
 
         self.cost_type_category_grants = (
             self.analysis.cost_type_category_grants.filter(

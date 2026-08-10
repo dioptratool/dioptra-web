@@ -1,5 +1,4 @@
 from decimal import Decimal, DecimalException
-from urllib.parse import quote
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
@@ -72,9 +71,15 @@ class AllocateSubcomponentsInterventionGrant(
         self.step = None
         if self.parent_step is None:
             return
+        # Match on the URL kwargs rather than the quoted request path: reverse()
+        # leaves sub-delimiters like "," in grant codes unescaped, so hrefs for
+        # those grants never equal the re-quoted path.
         for substep in self.parent_step.steps:
-            encoded_request_path = quote(self.request.path)
-            if substep.get_href() == encoded_request_path:
+            if (
+                substep.name == "allocate-subcomponents-intervention-grant"
+                and substep.intervention_instance.pk == self.kwargs["intervention_instance_pk"]
+                and substep.grant == self.kwargs["grant"]
+            ):
                 self.step = substep
                 break
 

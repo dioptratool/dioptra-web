@@ -1130,6 +1130,9 @@ class Analysis(models.Model):
         for cost_type_category_grant in self.cost_type_category_grants:
             cost_type = cost_type_category_grant.cost_type_category.cost_type
 
+            if cost_type is None:  # The cost_type FK is nullable; nothing to suggest without one
+                continue
+
             if isinstance(cost_type.type_obj(), ProgramCost):  # We don't ever suggest for this type of Sector
                 continue
 
