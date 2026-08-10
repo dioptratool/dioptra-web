@@ -12,7 +12,7 @@ set -euo pipefail
 # Set Django settings (adjust as needed for your environment)
 export DJANGO_SETTINGS_MODULE="website.settings.local"
 
-BACKUP_DIR="backups"
+BACKUP_DIR="${BACKUP_DIR:-backups}"
 STATUSES_DIR="statuses"
 
 # Create output directory for status files

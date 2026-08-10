@@ -1,10 +1,61 @@
 import csv
+import json
 import os
 
 from django.core.management.base import BaseCommand
 
 from website.management.commands.utils import _get_last_completed_step_name
 from website.models import Analysis
+
+
+def _first_intervention_metrics(analysis):
+    """
+    The output_costs metrics dict for the first intervention instance.
+
+    Handles all three shapes without misrouting: v1.14+ instance-keyed dicts,
+    the legacy v1.13 single-activity shape (metric ids at the top level —
+    detected by non-digit keys), and analyses with no interventions at all
+    (a legal state: the last intervention can be deleted).
+    """
+    output_costs = analysis.output_costs or {}
+    first_instance = analysis.interventioninstance_set.first()
+    if first_instance is not None and str(first_instance.id) in output_costs:
+        return output_costs[str(first_instance.id)]
+    if output_costs and not all(key.isdigit() for key in output_costs):
+        return output_costs
+    return None
+
+
+def _average_row(subcomponent_analysis):
+    # Error-guarded so one bad analysis can't kill a snapshot.
+    try:
+        return [str(value) for value in subcomponent_analysis.cost_line_item_average()]
+    except Exception as e:
+        return f"ERROR: {e}"
+
+
+def _subcomponent_averages(analysis):
+    """
+    {instance_id: cost_line_item_average()} for every subcomponent analysis —
+    the live-computed numbers shown in Insights and the XLSX, which output_costs
+    does not capture.
+
+    Dual-shape on purpose, so this command can be cherry-picked onto pre-2.2
+    refs and produce snapshots comparable across the upgrade:
+    - 2.2+: one SubcomponentCostAnalysis per InterventionInstance.
+    - pre-2.2: one per Analysis (same accessor name, different model). Keyed by
+      the FIRST instance by (order, id) — exactly where migration
+      0002_intervention_subcomponents attaches it during the upgrade.
+    """
+    averages = {}
+    for instance in analysis.interventioninstance_set.all():
+        if hasattr(instance, "subcomponent_cost_analysis"):
+            averages[str(instance.id)] = _average_row(instance.subcomponent_cost_analysis)
+    if not averages and hasattr(analysis, "subcomponent_cost_analysis"):
+        first_instance = analysis.interventioninstance_set.order_by("order", "id").first()
+        if first_instance is not None:
+            averages[str(first_instance.id)] = _average_row(analysis.subcomponent_cost_analysis)
+    return averages
 
 
 class Command(BaseCommand):
@@ -41,19 +92,22 @@ class Command(BaseCommand):
 
     def save_statuses(self, filename):
         with open(filename, "w") as csvfile:
-            fieldnames = ["id", "status", "last_updated", "output_cost"]
+            fieldnames = [
+                "id",
+                "status",
+                "last_updated",
+                "output_cost",
+                "output_costs_all",
+                "subcomponent_averages",
+            ]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
             for analysis in Analysis.objects.all().order_by("id"):
-                try:
-                    # This is for v1.14 and above with Multi-Activity
-                    output_metrics = analysis.output_costs.get(
-                        str(analysis.interventioninstance_set.first().id)
-                    )
-                except AttributeError as e:
-                    # This is for v1.13 which was still single activity
-                    output_metrics = analysis.output_costs
+                output_metrics = _first_intervention_metrics(analysis)
+                # Selection deliberately preserved from the original code (the
+                # LAST metric in iteration order) so snapshots stay comparable
+                # to CSVs written by older versions.
                 output_cost = None
                 if output_metrics:
                     for k, v in output_metrics.items():
@@ -65,6 +119,8 @@ class Command(BaseCommand):
                         "status": _get_last_completed_step_name(analysis),
                         "last_updated": analysis.updated.isoformat(),
                         "output_cost": output_cost,
+                        "output_costs_all": json.dumps(analysis.output_costs or {}, sort_keys=True),
+                        "subcomponent_averages": json.dumps(_subcomponent_averages(analysis), sort_keys=True),
                     }
                 )
 
