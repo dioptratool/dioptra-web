@@ -7,7 +7,7 @@ from website.workflows._steps_base import Step
 
 class Interventions(Step):
     name: str = "interventions"
-    nav_title: str = _l("Interventions")
+    nav_title: str = _l("Define Interventions")
 
     @cached_property
     def is_complete(self) -> bool:

@@ -22,7 +22,7 @@ from website.workflows.utils import recalculate_analysis
 
 class Interventions(AnalysisPermissionRequiredMixin, AnalysisStepMixin, AnalysisObjectMixin, TemplateView):
     step_name = "interventions"
-    title = _l("Interventions")
+    title = _l("Define Interventions")
     help_text = _l("Create the interventions being analyzed and their sub-components.")
     template_name = "analysis/interventions.html"
     permission_required = "website.change_analysis"
