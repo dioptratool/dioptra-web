@@ -128,7 +128,7 @@
                                                                data-cost-line-item-id="{{ cost_line_item.id }}"
                                                                data-cost-line-item-total-cost="{{ cost_line_item.total_cost }}">
                                                         <span class="analysis-table__allocated-input-suffix">%</span>
-                                                        {% if forloop.parentloop.first %}
+                                                        {% if forloop.parentloop.first and cost_line_items|length > 1 %}
                                                             <div class="analysis-table__allocated-apply-all-link-wrapper" tabindex="-1">
                                                                 <a class="analysis-table__allocated-apply-all-link" href="#"
                                                                 data-apply-to-all="cost_line_item_allocation_{{ cost_line_item.id }}_{{ intervention_instance.id }}"

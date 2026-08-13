@@ -5572,7 +5572,7 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table__category-content--freeze-row .analysis-table__table > thead {
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: 4;
 }
 .analysis-table__category-content--freeze-row .analysis-table__table > thead > tr > th:last-child {
   border-right: 1px solid rgb(255, 255, 255);
@@ -5591,7 +5591,7 @@ a.analysis-navigation__prev-next:hover {
   position: sticky;
   left: 0;
   width: 25rem;
-  z-index: 2;
+  z-index: 3;
 }
 .analysis-table__category-content--freeze-col .analysis-table__table > thead > tr:first-child:not(.analysis-table__transaction-row) > th:first-child,
 .analysis-table__category-content--freeze-col .analysis-table__table > tbody > tr:first-child:not(.analysis-table__transaction-row) > th:first-child {
@@ -5631,7 +5631,7 @@ a.analysis-navigation__prev-next:hover {
   position: sticky;
   left: 4rem;
   width: 25rem;
-  z-index: 2;
+  z-index: 3;
 }
 .analysis-table__category-content--freeze-col:has(.analysis-table__bulk-update-checkbox) .analysis-table__table > :is(tbody, thead) > tr:first-child:not(.analysis-table__transaction-row) > td:nth-child(2) {
   background-color: white;
@@ -6562,21 +6562,21 @@ input[type=text].analysis-table__allocated-input {
   margin-inline-end: 0.4rem;
 }
 
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within .analysis-table__allocated-apply-all-link-wrapper {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within .analysis-table__allocated-apply-all-link-wrapper {
   display: inline-flex;
 }
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within input {
   position: relative;
   z-index: 2;
 }
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper):focus {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within input:focus {
   outline: 2px solid -webkit-focus-ring-color;
 }
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within input:has(~ .analysis-table__allocated-apply-all-link-wrapper) ~ .analysis-table__allocated-input-suffix {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within input ~ .analysis-table__allocated-input-suffix {
   color: white;
   z-index: 2;
 }
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within:after {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within:after {
   color: white;
   z-index: 2;
 }

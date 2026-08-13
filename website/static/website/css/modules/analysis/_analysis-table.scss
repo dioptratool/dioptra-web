@@ -34,7 +34,7 @@
   .analysis-table__table > thead {
     position: sticky;
     top: 0;
-    z-index: 3;
+    z-index: 4;
   }
   .analysis-table__table > thead > tr > th:last-child {
     border-right: 1px solid $color-white;
@@ -56,7 +56,7 @@
       position: sticky;
       left: 0;
       width: 25rem;
-      z-index: 2;
+      z-index: 3;
     }
 
     &>th:first-child {
@@ -111,7 +111,7 @@
         position: sticky;
         left: 4rem;
         width: 25rem;
-        z-index: 2;
+        z-index: 3;
       }
 
       &>td:nth-child(2) {
@@ -1126,12 +1126,12 @@ input[type="text"].analysis-table__allocated-input {
   }
 }
 
-:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):focus-within {
+:is(.analysis-table__allocated-input-group, .analysis-table__subcomponent-allocate):has(.analysis-table__allocated-apply-all-link-wrapper):focus-within {
   .analysis-table__allocated-apply-all-link-wrapper {
     display: inline-flex;
   }
 
-  input:has(~ .analysis-table__allocated-apply-all-link-wrapper) {
+  input {
     position: relative;
     z-index: 2;
 
