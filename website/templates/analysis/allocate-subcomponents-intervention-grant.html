@@ -147,6 +147,12 @@
                 row.classList.toggle('subcomponent-error', !valid);
                 row.classList.toggle('error', !valid);
                 setErrorStatus(row.closest('form'));
+
+                if (total == 100) {
+                    row.querySelectorAll('input.analysis-table__subcomponent-allocate-input').forEach(function (input) {
+                        if (!input.value.length) input.value = 0;
+                    });
+                }
             }
 
             function parseNumber(value) {
