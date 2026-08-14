@@ -142,30 +142,53 @@ input[type="file"].clearable-file__upload {
     color: #555;
     background-color: #F1F7FD;
     border-radius: 3px;
-    padding: 15px;
+    padding: 8px;
     font-size: 13px;
-    line-height: 16px;
+    line-height: 1.15;
     box-shadow: 0 1px 0 0 #C0C0C0;
     border-bottom: none;
     margin-bottom: 5px;
     align-items: center;
+    overflow: visible;
 
     h4, p, .title, .subtitle {
       color: #333;
       font-size: 13px;
       margin: 0;
+      line-height: 1.15;
     }
     h4 {
-      margin-bottom: 5px;
+      margin-top: 1px;
+      margin-bottom: 0;
+      font-weight: $font-weight-bold;
+      line-height: 1.2;
     }
     .handle {
       font-size: 16px;
-      font-size: $font-weight-bold;
+      font-weight: $font-weight-bold;
+      margin-inline-end: 6px;
+      padding: 6px;
+      border-radius: 4px;
+      width: auto;
+      line-height: 1;
+      color: #555;
+
+      &:hover {
+        background-color: rgba(0,0,0,0.1);
+      }
+    }
+    .intervention-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .intervention-subtitle {
+      color: #555;
     }
     .title {
       font-weight: $font-weight-bold;
-      flex-grow: 0;
-      flex-shrink: 0;
+      flex: 1 1 auto;
     }
     .subtitle {
       padding-left: 10px;
@@ -175,10 +198,21 @@ input[type="file"].clearable-file__upload {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .operations a {
-      font-size: 13px;
+    .operations {
+      margin-left: auto;
+      a {
+        font-size: 13px;
+      }
+    }
+    &.sortable-ghost > * {
+      visibility: hidden;
     }
   }
+
+  .panels-relation-widget--results {
+    margin-bottom: 20px;
+  }
+
   .btn.btn-primary {
     background-color: $color-green;
     border: none;
@@ -193,7 +227,18 @@ input[type="file"].clearable-file__upload {
       background-color: darken($color-green, 10%);
     }
   }
-  html.is-in-panel & a.btn.btn-cancel {
+
+  .btn.btn-cancel {
+    border: none;
+    border-radius: 2px;
+    color: $color-black;
+    font-weight: $font-weight-bold;
+    padding: 15px 30px;
+    min-width: 112px;
+    transition: all $transition-duration-default;
+    font-size: 16px;
+  }
+  .btn.btn-alt-cancel {
     background-color: #F1F4F8;
     border: none;
     border-radius: 2px;
@@ -207,6 +252,12 @@ input[type="file"].clearable-file__upload {
       background-color: darken(#F1F4F8, 10%);
     }
   }
+
+  .btn.btn-sm {
+    font-size: 13px;
+    padding: 8px 30px;
+  }
+
 }
 
 .panel-form-add-intervention {

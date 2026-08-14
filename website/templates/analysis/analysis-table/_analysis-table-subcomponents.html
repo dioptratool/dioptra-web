@@ -1,0 +1,235 @@
+{% load analysis help humanize i18n website_tags %}
+<div class="analysis-table__wrapper analysis-table__wrapper--allocate">
+    <table class="analysis-table__table">
+        <thead>
+        <tr>
+            <th rowspan="2" colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
+            <th rowspan="2">{{ 'Site'|label_override:'ci_site_code' }}</th>
+            <th rowspan="2">{% translate 'Sector Code' %}</th>
+            <th rowspan="2">{% translate 'Account Code Description' %}</th>
+            <th rowspan="2" class="analysis-table__amount-cell">
+                {% if not cost_line_items|contains_sensitive_data %}
+                    {{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}
+                {% endif %}
+            </th>
+            <th rowspan="2" class="analysis-table__edit-cell">{% translate '% to Intervention' %}</th>
+            <th rowspan="2" class="analysis-table__edit-cell">{% translate 'Total to Intervention' %}</th>
+            <th class="analysis-table__subcomponent-header" colspan="{{ step.subcomponent_analysis.subcomponent_labels|length }}">{% translate 'Sub-Components' %}</th>
+            <th class="analysis-table__subcomponent-header--total" rowspan="2">
+                {% translate 'Sub-Component Total' %}<br/><small><em>{% translate 'Must equal 100%' %}</em></small>
+            </th>
+        </tr>
+        <tr>
+            {% for subcomponent_label in step.subcomponent_analysis.subcomponent_labels %}
+                <th class="analysis-table__subcomponent-header" title="{{ subcomponent_label }}">{{ subcomponent_label|truncatechars:30 }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        {% for cost_line_item in cost_line_items %}
+            <tbody class="analysis-table__tbody">
+            {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
+                {% with transactions_count=cost_line_item.transactions.count %}
+                    {% with allocation=cost_line_item.config.allocations_by_intervention_id|dict_get:step.intervention_instance.id %}
+                    {% with subcomponent_data=cost_line_item|subcomponent_allocation_for_intervention:step.intervention_instance %}
+                    <tr>
+                        <td class="analysis-table__bulk-update-checkbox">
+                            <div class="form__checkbox form__checkbox--simple form__checkbox--no-label">
+                                <label>
+                                    <input type="checkbox" class="bulk-checkbox"
+                                       {# No name attribute so it isn't submitted with the form, only used via JS #}
+                                           value="{{ cost_line_item.config.id }}" aria-label="{% translate 'Select' %}">
+                                    <span></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td class="analysis-table__cost-item-cell">
+                            <div class="analysis-table__cost-item-summary">
+                                {% if dioptra_settings.show_transactions %}
+                                    {% if transactions_count > 0 %}
+                                        <button class="analysis-table__transactions-toggle"
+                                                aria-label="{% translate 'Toggle transactions' %}"
+                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                                data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
+                                        <div class="analysis-table__transactions-toggle-inner">
+                                          <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
+                                           {% render_icon 'triangle-right' %}
+                                          </span>
+                                            <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--collapse">
+                                            {% render_icon 'triangle-down' %}
+                                          </span>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                                <div class="analysis-table__cost-item-title">{{ cost_line_item.budget_line_description }}</div>
+
+                                {% if dioptra_settings.show_transactions %}
+                                    {% if transactions_count > 0 %}
+                                        <div class="analysis-table__cost-item-transactions-summary">
+                                            {% blocktranslate %}{{ transactions_count }}
+                                                transactions{% endblocktranslate %}</div>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td class="analysis-table__site-cell">{{ cost_line_item.site_code }}</td>
+                        <td class="analysis-table__sector_code-cell">{{ cost_line_item.sector_code }}</td>
+                        <td class="analysis-table__description-cell">
+                            {% if account_code_descriptions|dict_get:cost_line_item.account_code %}
+                                {{ account_code_descriptions|dict_get:cost_line_item.account_code|attr:'account_description' }}{% else %}
+                                {{ cost_line_item.account_code }}{% endif %}</td>
+                        <td class="analysis-table__amount-cell">{% if not sensitive_data %}
+                            {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
+                        <td class="analysis-table__edit-cell analysis-table__intervention-percent-cell">{{ allocation|floatformat:"-2" }}%</td>
+                        <td class="analysis-table__intervention-subtotal-cell">
+                            <span class="analysis-table__intervention-subtotal"
+                                  data-cost-line-item-id="{{ cost_line_item.id }}"
+                                  data-intervention-id="{{ step.intervention_instance.id }}">
+                                {{ cost_line_item|allocated_cost_for_percentage:allocation|format_currency:analysis.currency_code }}
+                            </span>
+                        </td>
+                        {% for subcomponent_label in subcomponent_data.labels %}
+                            <td class="analysis-table__subcomponent-input-cell">
+                                <div class="analysis-table__subcomponent-allocate">
+                                    <input class="analysis-table__subcomponent-allocate-input"
+                                           type="text"
+                                           name="cost_line_item_subcomponent_allocation_{{ cost_line_item.id }}_{{ subcomponent_data.analysis.id }}_{{ subcomponent_label.idx }}"
+                                           value="{{ subcomponent_label.value }}"
+                                           data-cost-line-item-id="{{ cost_line_item.id }}"
+                                           data-subcomponent-idx="{{ subcomponent_label.idx }}"
+                                           data-subcomponent-analysis-id="{{ subcomponent_data.analysis.id }}"
+                                           {% if subcomponent_data.skipped %}disabled{% endif %}>
+                                    {% if forloop.parentloop.first and cost_line_items|length > 1 %}
+                                        <div class="analysis-table__allocated-apply-all-link-wrapper" tabindex="-1">
+                                            <a class="analysis-table__allocated-apply-all-link" href="#"
+                                            data-apply-to-all="cost_line_item_subcomponent_allocation_{{ cost_line_item.id }}_{{ subcomponent_data.analysis.id }}_{{ subcomponent_label.idx }}"
+                                            data-subcomponent-idx="{{ subcomponent_label.idx }}">
+                                                <span id="apply-all-subcomponent-{{ cost_line_item.id }}_{{ subcomponent_label.idx }}">{% translate 'Apply to all' %}</span>
+                                                <svg aria-labelledby="apply-all-subcomponent-{{ cost_line_item.id }}_{{ subcomponent_label.idx }}" width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M9 2V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    <path d="M15 10L9 16L3 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </a>
+                                            {% help 'allocate_costs__apply_to_all' %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        {% endfor %}
+                        <td class="analysis-table__subcomponent-input-cell analysis-table__total-cell">
+                            <div class="analysis-table__subcomponent-total-wrapper">
+                                <span class="analysis-table__subcomponent-total"
+                                      data-cost-line-item-id="{{ cost_line_item.id }}"
+                                      data-subcomponent-analysis-id="{{ subcomponent_data.analysis.id }}">
+                                    {% if subcomponent_data.skipped %}0{% elif subcomponent_data.total != None %}{{ subcomponent_data.total }}{% else %}0{% endif %}%
+                                </span>
+                                <span class="analysis-table__subcomponent-skip">
+                                    <input type="checkbox"
+                                           id="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip"
+                                           name="cost_line_item_subcomponent_allocation_{{ cost_line_item.id }}_{{ subcomponent_data.analysis.id }}_skip"
+                                           data-cost-line-item-id="{{ cost_line_item.id }}"
+                                           data-subcomponent-analysis-id="{{ subcomponent_data.analysis.id }}"
+                                           {% if subcomponent_data.skipped %}checked{% endif %}>
+                                    <label class="analysis-table__subcomponent-skip__label"
+                                           for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skip' %}</label>
+                                    {# Sibling order matters: the stylesheet swaps visibility via input:checked + label + .--skipped #}
+                                    <label class="analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
+                                           for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skipped' %}</label>
+                                </span>
+                                <button class="analysis-table__category-edit analysis-table__category-edit--note{% if cost_line_item.note %} analysis-table__category-edit--note-active {% endif %}">
+                                    {% if cost_line_item.note %}{% translate 'View note' %} {% else %}
+                                        {% translate 'Add note' %}{% endif %}
+                                </button>
+                                <span class="analysis-table__category-edit-active-label analysis-table__category-edit-active-label--note">{% translate 'Editing' %}</span>
+                                {% if errors|dict_get:cost_line_item.id %}
+                                    <div class="form__errors form__errors--left form__errors--subcomponent">
+                                        <ul class="form__errors-list">
+                                            <li class="form__errors-list-item">
+                                                <em><strong>{{ errors|dict_get:cost_line_item.id }}</strong></em>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% if dioptra_settings.show_transactions %}
+                        {% if transactions_count > 0 %}
+                            <tr class="analysis-table__transaction-row">
+                                <td colspan="8" class="analysis-table__transaction-cell">
+                                    <div class="analysis-table__transactions-detail">
+                                        <table class="analysis-table__transaction-table analysis-table__transaction-table--with-sector-code">
+                                            <thead>
+                                            <tr>
+                                                <th class="analysis-table__transaction-table-summary">
+                                                    {% blocktranslate %}{{ transactions_count }}
+                                                        Transactions{% endblocktranslate %}</th>
+                                                <th>{{ 'Site'|label_override:'tr_site_code' }}</th>
+                                                <th>{{ 'Date'|label_override:'tr_date' }}</th>
+                                                <th class="analysis-table__amount-cell">{{ 'Amount'|label_override:'tr_amount' }}</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody data-cost-line-item-transactions="{{ cost_line_item.id }}">
+                                            <tr>
+                                                <td class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">{% translate "Loading..." %}</td>
+                                                <td class="analysis-table__site-cell"></td>
+                                                <td class="analysis-table__description-cell"></td>
+                                                <td class="analysis-table__amount-cell"></td>
+                                                <td class="analysis-table__edit-cell"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endif %}
+
+                    <tr class="analysis-table__edit-row allocate-costs">
+                        <td colspan="99" class="analysis-table__edit-row-cell">
+                            {# Not a nested <form>: the save button posts to the note endpoint via JS. #}
+                            <div>
+                                {% csrf_token %}
+                                <table class="analysis-table__edit-table">
+                                    <tbody>
+                                    <tr>
+                                        <td class="analysis-table__edit-sector_code-cell">
+                                        </td>
+                                        <td class="analysis-table__edit-category-cell analysis-table__edit-category-cell--note">
+                                            <label for="id_category"
+                                                   class="analysis-table__edit-row-label">{% translate 'Note' %}</label>
+                                            <textarea name="note"
+                                                      class="analysis-table__edit-note-input">{{ cost_line_item.note }}</textarea>
+                                            <div class="form__help-text">Provide a note explaining how you
+                                                arrived at the
+                                                allocation percent for this cost line item
+                                            </div>
+                                        </td>
+                                        <td class="analysis-table__edit-actions-cell">
+                                            <button class="analysis-table__edit-action analysis-table__edit-action--save"
+                                                    type="submit" data-object-id="{{ cost_line_item.id }}"
+                                                    data-endpoint="{% url 'api--costlineitem--add-note' pk=cost_line_item.id %}"
+                                                    name="action"
+                                                    value="save_cost_line_item_config">{% translate 'Save' %}</button>
+                                            <button class="analysis-table__edit-action analysis-table__edit-action--cancel"
+                                                    type="submit" name="action"
+                                                    value="cancel">{% translate 'Cancel' %}</button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+            </tbody>
+        {% endfor %}
+    </table>
+</div>

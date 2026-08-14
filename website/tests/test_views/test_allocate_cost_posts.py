@@ -6,6 +6,11 @@ from django.urls import reverse
 
 from website.models import Analysis
 from website.tests.factories import InterventionFactory
+from website.tests.factories import SubcomponentCostAnalysisFactory
+from website.workflows import AnalysisWorkflow
+from website.tests.factories import SubcomponentCostAnalysisFactory
+from website.workflows import AnalysisWorkflow
+from website.tests.factories import InterventionFactory
 
 
 @pytest.mark.django_db

@@ -13,7 +13,7 @@ from .substeps import AllocateCostTypeGrant, AllocateSupportingCosts
 
 class Allocate(MultiStep):
     name = "allocate"
-    nav_title = _l("Allocate Costs")
+    nav_title = _l("Allocate Intervention Costs")
 
     def __init__(self, workflow: Workflow):
         super().__init__(workflow)
@@ -72,10 +72,13 @@ class Allocate(MultiStep):
 
     def invalidate(self) -> None:
         self.workflow.invalidate_step("insights")
+        # Intervention allocations are meaningless to the subcomponent step once
+        # cleared, so cascade the invalidation before deleting them.
+        self.workflow.invalidate_step("allocate-subcomponents")
+
         cost_line_item_configs = CostLineItemConfig.objects.filter(
             cost_line_item__in=self.analysis.cost_line_items.all()
         )
-
         allocations = CostLineItemInterventionAllocation.objects.filter(cli_config__in=cost_line_item_configs)
 
         allocations.delete()

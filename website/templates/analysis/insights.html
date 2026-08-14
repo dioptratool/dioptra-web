@@ -27,44 +27,6 @@
                             <a href="{% url 'analysis-define-update' analysis.pk %}" class="insights__action_edit">
                                 Edit Analysis
                             </a>
-                            {% if analysis.interventioninstance_set.count == 1 %}
-                            <details class="analysis__dropdown">
-                                <summary>
-                                    Sub-components {% include "icons/dropdown-arrow.svg" %}
-                                </summary>
-                                <ul>
-                                    {% if analysis.subcomponent_cost_analysis.pk and not subcomponent_analysis_complete %}
-                                        <li class="has-progress">
-                                            <a href="{% url 'subcomponent-cost-analysis' analysis.pk analysis.subcomponent_cost_analysis.pk %}">
-                                                Continue Sub-component Analysis
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{% url 'subcomponent-cost-analysis-delete' analysis.pk analysis.subcomponent_cost_analysis.pk %}"
-                                               data-panels-trigger="" data-panels-reload-on="deleted">
-                                                Remove Sub-component Analysis
-                                            </a>
-                                        </li>
-                                    {% elif analysis.subcomponent_cost_analysis.pk and subcomponent_analysis_complete %}
-                                        <li class="has-progress">
-                                            <a href="{% url 'subcomponent-cost-analysis' analysis.pk analysis.subcomponent_cost_analysis.pk %}">
-                                                Edit Sub-component Analysis
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{% url 'subcomponent-cost-analysis-delete' analysis.pk analysis.subcomponent_cost_analysis.pk %}"
-                                               data-panels-trigger="" data-panels-reload-on="deleted">
-                                                Remove Sub-component Analysis
-                                            </a>
-                                        </li>
-                                    {% else %}
-                                        <li><a href="{% url 'subcomponent-cost-analysis-create' analysis.pk %}">
-                                            Add Sub-component Analysis
-                                        </a></li>
-                                    {% endif %}
-                                </ul>
-                            </details>
-                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -106,6 +68,7 @@
                         {% endfor %}
                     {% endwith %}
                     {% with output_metrics=output_metrics_by_intervention|dict_get:intervention_instance.id %}
+                    {% with subcomponent_analysis_breakdown=subcomponent_analysis_breakdown_by_intervention|dict_get:intervention_instance.id %}
                         <div class="insights__group">
                             <h2 class="insights__heading">{% translate 'Cost Efficiency' %}</h2>
                             {% for metric in output_metrics %}
@@ -124,7 +87,7 @@
                                         <h3 class="insights__subtitle">
                                             Cost of Each Sub-component, per {{ metric.output_metric.cost_efficiency_unit }}
                                         </h3>
-                                        {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_all %}
+                                        {% include 'insights/_subcomponent-chart.html' with chart_data=subcomponent_analysis_breakdown.chart_data total_cost=metric.output_cost_all in_kind_chart_data=subcomponent_analysis_breakdown.in_kind_chart_data in_kind_total_cost=metric.output_cost_in_kind|default:0 %}
                                     </div>
                                 {% endif %}
 
@@ -147,6 +110,7 @@
                                 </div>
                             {% endif %}
                         </div>
+                    {% endwith %}
                     {% endwith %}
                     <div class="insights__group">
                         <h2 class="insights__heading">{% translate 'Cost Breakdown' %}</h2>

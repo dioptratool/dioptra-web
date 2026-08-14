@@ -1,4 +1,9 @@
 {% load help i18n rules %}
+{% comment %}
+Render nothing when there is no HelpItem for the identifier, or when the item has no
+content: blank items must not show a help icon (see HelpItem.help_text's help_text).
+{% endcomment %}
+{% if item %}{% if help_text or link %}
 {% if item.type == 'step' %}
 <div class="step-help step-help--open">
     <button class="step-help__button" type="button" aria-expanded="true" id="step-help__button" aria-controls="step-help__modal">
@@ -43,3 +48,4 @@
     </div>
 </div>
 {% endif %}
+{% endif %}{% endif %}

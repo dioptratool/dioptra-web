@@ -5,6 +5,9 @@
  * Should be included in panel content pages.
  */
 /**
+ * Constants
+ */
+/**
  * Panels styles for panels contents.
  *
  * Should be included in panel content pages.
@@ -332,8 +335,8 @@ html {
 
 body {
   font-family: "Arial", sans-serif;
-  font-size: 14px;
-  line-height: 1.428571429;
+  font-size: 18px;
+  line-height: 1.75;
   color: rgb(51, 51, 51);
   background-color: #fff;
 }
@@ -380,7 +383,7 @@ img {
 
 .img-thumbnail {
   padding: 4px;
-  line-height: 1.428571429;
+  line-height: 1.75;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -397,8 +400,8 @@ img {
 }
 
 hr {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 31px;
+  margin-bottom: 31px;
   border: 0;
   border-top: 1px solid rgb(238.425, 238.425, 238.425);
 }
@@ -456,8 +459,8 @@ h6 .small,
 h1, .h1,
 h2, .h2,
 h3, .h3 {
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin-top: 31px;
+  margin-bottom: 15.5px;
 }
 h1 small,
 h1 .small, .h1 small,
@@ -474,8 +477,8 @@ h3 .small, .h3 small,
 h4, .h4,
 h5, .h5,
 h6, .h6 {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 15.5px;
+  margin-bottom: 15.5px;
 }
 h4 small,
 h4 .small, .h4 small,
@@ -490,48 +493,48 @@ h6 .small, .h6 small,
 }
 
 h1, .h1 {
-  font-size: 36px;
+  font-size: 46px;
 }
 
 h2, .h2 {
-  font-size: 30px;
+  font-size: 38px;
 }
 
 h3, .h3 {
-  font-size: 24px;
+  font-size: 31px;
 }
 
 h4, .h4 {
-  font-size: 18px;
+  font-size: 23px;
 }
 
 h5, .h5 {
-  font-size: 14px;
+  font-size: 18px;
 }
 
 h6, .h6 {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 p {
-  margin: 0 0 10px;
+  margin: 0 0 15.5px;
 }
 
 .lead {
-  margin-bottom: 20px;
-  font-size: 16px;
+  margin-bottom: 31px;
+  font-size: 20px;
   font-weight: 300;
   line-height: 1.4;
 }
 @media (min-width: 768px) {
   .lead {
-    font-size: 21px;
+    font-size: 27px;
   }
 }
 
 small,
 .small {
-  font-size: 85%;
+  font-size: 88%;
 }
 
 mark,
@@ -671,15 +674,15 @@ a.bg-danger:focus {
 }
 
 .page-header {
-  padding-bottom: 9px;
-  margin: 40px 0 20px;
+  padding-bottom: 14.5px;
+  margin: 62px 0 31px;
   border-bottom: 1px solid rgb(238.425, 238.425, 238.425);
 }
 
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 15.5px;
 }
 ul ul,
 ul ol,
@@ -706,12 +709,12 @@ ol ol {
 
 dl {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 31px;
 }
 
 dt,
 dd {
-  line-height: 1.428571429;
+  line-height: 1.75;
 }
 
 dt {
@@ -754,9 +757,9 @@ abbr[data-original-title] {
 }
 
 blockquote {
-  padding: 10px 20px;
-  margin: 0 0 20px;
-  font-size: 17.5px;
+  padding: 15.5px 31px;
+  margin: 0 0 31px;
+  font-size: 22.5px;
   border-left: 5px solid rgb(238.425, 238.425, 238.425);
 }
 blockquote p:last-child,
@@ -769,7 +772,7 @@ blockquote small,
 blockquote .small {
   display: block;
   font-size: 80%;
-  line-height: 1.428571429;
+  line-height: 1.75;
   color: rgb(119.085, 119.085, 119.085);
 }
 blockquote footer:before,
@@ -804,9 +807,9 @@ blockquote.pull-right .small:after {
 }
 
 address {
-  margin-bottom: 20px;
+  margin-bottom: 31px;
   font-style: normal;
-  line-height: 1.428571429;
+  line-height: 1.75;
 }
 
 .container {
@@ -1591,7 +1594,7 @@ th {
 .table {
   width: 100%;
   max-width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 31px;
 }
 .table > thead > tr > th,
 .table > thead > tr > td,
@@ -1600,7 +1603,7 @@ th {
 .table > tfoot > tr > th,
 .table > tfoot > tr > td {
   padding: 8px;
-  line-height: 1.428571429;
+  line-height: 1.75;
   vertical-align: top;
   border-top: 1px solid #ddd;
 }
@@ -1753,7 +1756,7 @@ th {
 @media screen and (max-width: 767px) {
   .table-responsive {
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 23.25px;
     overflow-y: hidden;
     -ms-overflow-style: -ms-autohiding-scrollbar;
     border: 1px solid #ddd;
@@ -1807,8 +1810,8 @@ legend {
   display: block;
   width: 100%;
   padding: 0;
-  margin-bottom: 20px;
-  font-size: 21px;
+  margin-bottom: 31px;
+  font-size: 27px;
   line-height: inherit;
   color: #333333;
   border: 0;
@@ -1867,18 +1870,18 @@ input[type=checkbox]:focus {
 output {
   display: block;
   padding-top: 7px;
-  font-size: 14px;
-  line-height: 1.428571429;
+  font-size: 18px;
+  line-height: 1.75;
   color: rgb(85.425, 85.425, 85.425);
 }
 
 .form-control {
   display: block;
   width: 100%;
-  height: 34px;
+  height: 45px;
   padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.428571429;
+  font-size: 18px;
+  line-height: 1.75;
   color: rgb(85.425, 85.425, 85.425);
   background-color: #fff;
   background-image: none;
@@ -1927,7 +1930,7 @@ textarea.form-control {
   input[type=time].form-control,
   input[type=datetime-local].form-control,
   input[type=month].form-control {
-    line-height: 34px;
+    line-height: 45px;
   }
   input[type=date].input-sm, .input-group-sm input[type=date],
   input[type=time].input-sm,
@@ -1936,7 +1939,7 @@ textarea.form-control {
   .input-group-sm input[type=datetime-local],
   input[type=month].input-sm,
   .input-group-sm input[type=month] {
-    line-height: 30px;
+    line-height: 36px;
   }
   input[type=date].input-lg, .input-group-lg input[type=date],
   input[type=time].input-lg,
@@ -1945,7 +1948,7 @@ textarea.form-control {
   .input-group-lg input[type=datetime-local],
   input[type=month].input-lg,
   .input-group-lg input[type=month] {
-    line-height: 46px;
+    line-height: 53px;
   }
 }
 .form-group {
@@ -1966,7 +1969,7 @@ fieldset[disabled] .checkbox label {
 }
 .radio label,
 .checkbox label {
-  min-height: 20px;
+  min-height: 31px;
   padding-left: 20px;
   margin-bottom: 0;
   font-weight: 400;
@@ -2010,7 +2013,7 @@ fieldset[disabled] .checkbox-inline {
 }
 
 .form-control-static {
-  min-height: 34px;
+  min-height: 49px;
   padding-top: 7px;
   padding-bottom: 7px;
   margin-bottom: 0;
@@ -2021,16 +2024,16 @@ fieldset[disabled] .checkbox-inline {
 }
 
 .input-sm {
-  height: 30px;
+  height: 36px;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
   border-radius: 3px;
 }
 
 select.input-sm {
-  height: 30px;
-  line-height: 30px;
+  height: 36px;
+  line-height: 36px;
 }
 
 textarea.input-sm,
@@ -2039,39 +2042,39 @@ select[multiple].input-sm {
 }
 
 .form-group-sm .form-control {
-  height: 30px;
+  height: 36px;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
   border-radius: 3px;
 }
 .form-group-sm select.form-control {
-  height: 30px;
-  line-height: 30px;
+  height: 36px;
+  line-height: 36px;
 }
 .form-group-sm textarea.form-control,
 .form-group-sm select[multiple].form-control {
   height: auto;
 }
 .form-group-sm .form-control-static {
-  height: 30px;
-  min-height: 32px;
+  height: 36px;
+  min-height: 47px;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
 .input-lg {
-  height: 46px;
+  height: 53px;
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 23px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
 
 select.input-lg {
-  height: 46px;
-  line-height: 46px;
+  height: 53px;
+  line-height: 53px;
 }
 
 textarea.input-lg,
@@ -2080,25 +2083,25 @@ select[multiple].input-lg {
 }
 
 .form-group-lg .form-control {
-  height: 46px;
+  height: 53px;
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 23px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
 .form-group-lg select.form-control {
-  height: 46px;
-  line-height: 46px;
+  height: 53px;
+  line-height: 53px;
 }
 .form-group-lg textarea.form-control,
 .form-group-lg select[multiple].form-control {
   height: auto;
 }
 .form-group-lg .form-control-static {
-  height: 46px;
-  min-height: 38px;
+  height: 53px;
+  min-height: 54px;
   padding: 11px 16px;
-  font-size: 18px;
+  font-size: 23px;
   line-height: 1.3333333;
 }
 
@@ -2106,7 +2109,7 @@ select[multiple].input-lg {
   position: relative;
 }
 .has-feedback .form-control {
-  padding-right: 42.5px;
+  padding-right: 56.25px;
 }
 
 .form-control-feedback {
@@ -2115,9 +2118,9 @@ select[multiple].input-lg {
   right: 0;
   z-index: 2;
   display: block;
-  width: 34px;
-  height: 34px;
-  line-height: 34px;
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
   text-align: center;
   pointer-events: none;
 }
@@ -2125,17 +2128,17 @@ select[multiple].input-lg {
 .input-lg + .form-control-feedback,
 .input-group-lg + .form-control-feedback,
 .form-group-lg .form-control + .form-control-feedback {
-  width: 46px;
-  height: 46px;
-  line-height: 46px;
+  width: 53px;
+  height: 53px;
+  line-height: 53px;
 }
 
 .input-sm + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
 }
 
 .has-success .help-block,
@@ -2220,7 +2223,7 @@ select[multiple].input-lg {
 }
 
 .has-feedback label ~ .form-control-feedback {
-  top: 25px;
+  top: 36px;
 }
 .has-feedback label.sr-only ~ .form-control-feedback {
   top: 0;
@@ -2294,7 +2297,7 @@ select[multiple].input-lg {
 }
 .form-horizontal .radio,
 .form-horizontal .checkbox {
-  min-height: 27px;
+  min-height: 38px;
 }
 .form-horizontal .form-group {
   margin-right: -15px;
@@ -2320,13 +2323,13 @@ select[multiple].input-lg {
 @media (min-width: 768px) {
   .form-horizontal .form-group-lg .control-label {
     padding-top: 11px;
-    font-size: 18px;
+    font-size: 23px;
   }
 }
 @media (min-width: 768px) {
   .form-horizontal .form-group-sm .control-label {
     padding-top: 6px;
-    font-size: 12px;
+    font-size: 16px;
   }
 }
 
@@ -2342,8 +2345,8 @@ select[multiple].input-lg {
   background-image: none;
   border: 1px solid transparent;
   padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.428571429;
+  font-size: 18px;
+  line-height: 1.75;
   border-radius: 4px;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -2611,21 +2614,21 @@ a.btn.disabled, html.is-in-panel .form-group ul.as-selections a.disabled.as-sele
 
 .btn-lg, .btn-group-lg > .btn, html.is-in-panel .form-group ul.as-selections .btn-group-lg > .as-selection-item {
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 23px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
 
 .btn-sm, .btn-group-sm > .btn, html.is-in-panel .form-group ul.as-selections .btn-group-sm > .as-selection-item {
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
   border-radius: 3px;
 }
 
 .btn-xs, .btn-group-xs > .btn, html.is-in-panel .form-group ul.as-selections .btn-group-xs > .as-selection-item {
   padding: 1px 5px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
   border-radius: 3px;
 }
@@ -2897,7 +2900,7 @@ html.is-in-panel .form-group ul.as-selections [data-toggle=buttons] > .btn-group
   min-width: 160px;
   padding: 5px 0;
   margin: 2px 0 0;
-  font-size: 14px;
+  font-size: 18px;
   text-align: left;
   list-style: none;
   background-color: #fff;
@@ -2914,7 +2917,7 @@ html.is-in-panel .form-group ul.as-selections [data-toggle=buttons] > .btn-group
 }
 .dropdown-menu .divider, html.is-in-panel .form-group .as-results .as-list .divider {
   height: 1px;
-  margin: 9px 0;
+  margin: 14.5px 0;
   overflow: hidden;
   background-color: #e5e5e5;
 }
@@ -2923,7 +2926,7 @@ html.is-in-panel .form-group ul.as-selections [data-toggle=buttons] > .btn-group
   padding: 3px 20px;
   clear: both;
   font-weight: 400;
-  line-height: 1.428571429;
+  line-height: 1.75;
   color: #333333;
   white-space: nowrap;
 }
@@ -2971,8 +2974,8 @@ html.is-in-panel .form-group ul.as-selections [data-toggle=buttons] > .btn-group
 .dropdown-header {
   display: block;
   padding: 3px 20px;
-  font-size: 12px;
-  line-height: 1.428571429;
+  font-size: 16px;
+  line-height: 1.75;
   color: rgb(119.085, 119.085, 119.085);
   white-space: nowrap;
 }
@@ -3019,7 +3022,7 @@ html.is-in-panel .form-group .as-results .navbar-fixed-bottom .dropdown .as-list
 }
 .alert {
   padding: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 31px;
   border: 1px solid transparent;
   border-radius: 4px;
 }
@@ -3100,7 +3103,7 @@ html.is-in-panel .form-group .as-results .navbar-fixed-bottom .dropdown .as-list
 
 .close {
   float: right;
-  font-size: 21px;
+  font-size: 27px;
   font-weight: bold;
   line-height: 1;
   color: #000;
@@ -4736,7 +4739,7 @@ html.is-in-panel .help-block.errors li em {
 }
 .panel-form .error-msg {
   display: inline-block;
-  margin-left: 34px;
+  margin-left: 45px;
 }
 
 @media screen and (min-width: 768px) {
@@ -4788,7 +4791,7 @@ html.is-in-panel .help-block.errors li em {
   }
   .panel-form .error-msg {
     display: inline-block;
-    margin-left: 34px;
+    margin-left: 45px;
   }
 }
 html.is-in-panel a.btn, html.is-in-panel .form-group ul.as-selections a.as-selection-item {
@@ -5308,7 +5311,7 @@ html.is-in-panel .panel-page-management--action-list a {
   padding: 3px 20px;
   clear: both;
   font-weight: normal;
-  line-height: 1.428571429;
+  line-height: 1.75;
   color: #333333;
   white-space: nowrap;
 }
@@ -6325,30 +6328,52 @@ input[type=file].clearable-file__upload {
   color: #555;
   background-color: #F1F7FD;
   border-radius: 3px;
-  padding: 15px;
+  padding: 8px;
   font-size: 13px;
-  line-height: 16px;
+  line-height: 1.15;
   box-shadow: 0 1px 0 0 #C0C0C0;
   border-bottom: none;
   margin-bottom: 5px;
   align-items: center;
+  overflow: visible;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result h4, .panel-analysis-intervention .panel-body .panels-relation-widget--result p, .panel-analysis-intervention .panel-body .panels-relation-widget--result .title, .panel-analysis-intervention .panel-body .panels-relation-widget--result .subtitle {
   color: #333;
   font-size: 13px;
   margin: 0;
+  line-height: 1.15;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result h4 {
-  margin-bottom: 5px;
+  margin-top: 1px;
+  margin-bottom: 0;
+  font-weight: 700;
+  line-height: 1.2;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .handle {
   font-size: 16px;
-  font-size: 700;
+  font-weight: 700;
+  margin-inline-end: 6px;
+  padding: 6px;
+  border-radius: 4px;
+  width: auto;
+  line-height: 1;
+  color: #555;
+}
+.panel-analysis-intervention .panel-body .panels-relation-widget--result .handle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.panel-analysis-intervention .panel-body .panels-relation-widget--result .intervention-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.panel-analysis-intervention .panel-body .panels-relation-widget--result .intervention-subtitle {
+  color: #555;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .title {
   font-weight: 700;
-  flex-grow: 0;
-  flex-shrink: 0;
+  flex: 1 1 auto;
 }
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .subtitle {
   padding-left: 10px;
@@ -6358,8 +6383,17 @@ input[type=file].clearable-file__upload {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.panel-analysis-intervention .panel-body .panels-relation-widget--result .operations {
+  margin-left: auto;
+}
 .panel-analysis-intervention .panel-body .panels-relation-widget--result .operations a {
   font-size: 13px;
+}
+.panel-analysis-intervention .panel-body .panels-relation-widget--result.sortable-ghost > * {
+  visibility: hidden;
+}
+.panel-analysis-intervention .panels-relation-widget--results {
+  margin-bottom: 20px;
 }
 .panel-analysis-intervention .btn.btn-primary, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-primary.as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-primary.as-selection-item {
   background-color: rgb(74, 163, 91);
@@ -6375,7 +6409,17 @@ input[type=file].clearable-file__upload {
 .panel-analysis-intervention .btn.btn-primary:hover, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-primary.as-selection-item:hover, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-primary.as-selection-item:hover {
   background-color: rgb(58.0759493671, 127.9240506329, 71.417721519);
 }
-html.is-in-panel .panel-analysis-intervention a.btn.btn-cancel, html.is-in-panel .panel-analysis-intervention .form-group ul.as-selections a.btn-cancel.as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention a.btn-cancel.as-selection-item {
+.panel-analysis-intervention .btn.btn-cancel, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-cancel.as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-cancel.as-selection-item {
+  border: none;
+  border-radius: 2px;
+  color: rgb(0, 0, 0);
+  font-weight: 700;
+  padding: 15px 30px;
+  min-width: 112px;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+.panel-analysis-intervention .btn.btn-alt-cancel, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-alt-cancel.as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-alt-cancel.as-selection-item {
   background-color: #F1F4F8;
   border: none;
   border-radius: 2px;
@@ -6386,8 +6430,12 @@ html.is-in-panel .panel-analysis-intervention a.btn.btn-cancel, html.is-in-panel
   transition: all 0.2s;
   font-size: 16px;
 }
-html.is-in-panel .panel-analysis-intervention a.btn.btn-cancel:hover, html.is-in-panel .panel-analysis-intervention .form-group ul.as-selections a.btn-cancel.as-selection-item:hover, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention a.btn-cancel.as-selection-item:hover {
+.panel-analysis-intervention .btn.btn-alt-cancel:hover, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-alt-cancel.as-selection-item:hover, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-alt-cancel.as-selection-item:hover {
   background-color: rgb(207, 217.2857142857, 231);
+}
+.panel-analysis-intervention .btn.btn-sm, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-sm.as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-sm.as-selection-item, .panel-analysis-intervention .btn-group-sm > .btn, .panel-analysis-intervention html.is-in-panel .form-group ul.as-selections .btn-group-sm > .as-selection-item, html.is-in-panel .form-group ul.as-selections .panel-analysis-intervention .btn-group-sm > .as-selection-item {
+  font-size: 13px;
+  padding: 8px 30px;
 }
 
 .panel-form-add-intervention .panel-body-contents {
@@ -6403,4 +6451,251 @@ html.is-in-panel .panel-analysis-intervention a.btn.btn-cancel:hover, html.is-in
 }
 .panel-form-add-intervention .panel-body-contents .form-group:has([required]) {
   order: 4;
+}
+
+html.is-in-panel .allocation-input-table-title,
+.panel-form.bulk-allocate-form .control-label {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 25px;
+  color: rgb(51, 51, 51);
+  text-transform: none;
+}
+html.is-in-panel .allocation-input-table-title span,
+.panel-form.bulk-allocate-form .control-label span {
+  font-weight: 700;
+}
+
+html.is-in-panel .allocation-total-title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 25px;
+  margin-bottom: 0;
+}
+
+html.is-in-panel .allocation-total-subtitle {
+  font-weight: 400;
+  font-style: Italic;
+  font-size: 14px;
+  color: rgb(155, 155, 155);
+  margin-bottom: 0;
+}
+
+.allocation-input-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-block: 10px 20px;
+}
+
+.allocation-input-table {
+  border: 1px solid rgb(155, 155, 155);
+  border-collapse: separate;
+  border-radius: 2px;
+  margin: 0;
+  text-align: left;
+  overflow: hidden;
+}
+.allocation-input-table .form-group.changed::after {
+  display: none;
+}
+.allocation-input-table th, .allocation-input-table td {
+  padding: 6px;
+  font-size: 13px;
+  line-height: 1.153846154;
+  border-bottom: 1px solid rgb(255, 255, 255);
+  border-right: 1px solid rgb(255, 255, 255);
+  vertical-align: text-top;
+  width: 120px;
+}
+.allocation-input-table th:last-child, .allocation-input-table td:last-child {
+  border-right: none;
+}
+.allocation-input-table th {
+  background-color: rgb(53, 112, 171);
+  color: rgb(255, 255, 255);
+  font-weight: 700;
+  vertical-align: middle;
+  height: 44px;
+}
+.allocation-input-table tr:last-child > td {
+  border-bottom: none;
+}
+.allocation-input-table .allocation-input-table__subcomponent-header,
+.allocation-input-table .allocation-input-table__subcomponent-total-header {
+  background-color: rgb(197, 222, 246);
+  color: rgb(51, 51, 51);
+}
+.allocation-input-table .allocation-input-table__subcomponent-total-header,
+.allocation-input-table .allocation-input-table__subcomponent-total-cell {
+  text-align: right;
+}
+.allocation-input-table .allocation-input-table__subcomponent-total-cell {
+  background-color: rgb(250, 250, 251);
+}
+.allocation-input-table .allocation-input-table__subcomponent-total-cell .allocation-input-table__subcomponent-total {
+  min-width: 60px;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 700;
+  padding: 6px 8px;
+  text-align: right;
+}
+.allocation-input-table .allocation-input-table__subcomponent-total-cell .allocation-input-table__subcomponent-total.error {
+  background-color: rgb(253, 232, 232);
+  color: rgb(183, 87, 87);
+}
+.allocation-input-table .allocation-input-table__input-cell {
+  background-color: rgb(241, 244, 248);
+  /* Chrome, Safari, Edge, Opera */
+}
+.allocation-input-table .allocation-input-table__input-cell input[type=number]::-webkit-outer-spin-button,
+.allocation-input-table .allocation-input-table__input-cell input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.allocation-input-table .allocation-input-table__input-cell {
+  /* Firefox */
+}
+.allocation-input-table .allocation-input-table__input-cell input[type=number] {
+  -moz-appearance: textfield;
+}
+.allocation-input-table .allocation-input-table__input-cell .form-control, .allocation-input-table .allocation-input-table__input-cell .bulk-allocation-input {
+  width: 72px;
+  padding: 6px 8px;
+  text-align: right;
+  font-size: 15px;
+  line-height: 1.1428;
+  height: auto;
+  border: 1px solid rgb(155, 155, 155);
+  border-radius: 2px !important;
+}
+.allocation-input-table .allocation-input-table__input-cell .input-group-text__after {
+  background: none;
+  border: none;
+  color: rgb(155, 155, 155);
+}
+
+.allocation-input-table__total {
+  margin-block: 10px 20px;
+}
+
+.allocation-input-table__total-value {
+  display: inline-block;
+  min-width: 80px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  background: #EBEBEB;
+  font-size: 14px;
+  font-weight: 700 !important;
+  text-align: right;
+}
+.allocation-input-table__total-value.error {
+  color: rgb(183, 87, 87);
+  background: rgb(247, 231, 231);
+}
+
+/* General form class for overriding ombucore to look more like app theme */
+.panel-form.panel-form--analysis .form-group {
+  margin-bottom: 24px;
+}
+.panel-form.panel-form--analysis .control-label,
+.panel-form.panel-form--analysis .form-group .control-label {
+  font-size: 16px;
+  font-weight: 700;
+  overflow-wrap: break-word;
+  text-transform: none;
+  color: rgb(51, 51, 51);
+}
+.panel-form.panel-form--analysis .control-label span,
+.panel-form.panel-form--analysis .form-group .control-label span {
+  font-weight: inherit;
+}
+.panel-form.panel-form--analysis .input-group-text {
+  padding: 9px;
+}
+.panel-form.panel-form--analysis .currency-wrapper {
+  align-items: stretch;
+}
+
+.analysis-interventions {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  margin-bottom: 10px;
+}
+.analysis-interventions .analysis-intervention {
+  color: #555;
+  background-color: #F1F7FD;
+  border-radius: 3px;
+  padding: 15px;
+  font-size: 13px;
+  box-shadow: 0 1px 0 0 #C0C0C0;
+  margin-bottom: 5px;
+}
+.analysis-interventions .analysis-intervention:has(.intervention-actions) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+.analysis-interventions .analysis-intervention h4, .analysis-interventions .analysis-intervention p {
+  color: #333;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+}
+.analysis-interventions .analysis-intervention h4 {
+  margin-bottom: 5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.analysis-interventions .analysis-intervention .intervention-info {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+.analysis-interventions .analysis-intervention .intervention-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.analysis-interventions .analysis-intervention .intervention-action {
+  background-color: rgb(213, 231, 249);
+  border-radius: 2px;
+  padding: 8px 10px;
+  text-decoration: none;
+  text-wrap: nowrap;
+  font-weight: bold;
+  color: rgb(51, 51, 51);
+  transition: all 0.2s ease;
+}
+.analysis-interventions .analysis-intervention .intervention-action:hover {
+  background-color: rgb(188, 217, 245);
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis {
+  align-items: center;
+  background-color: #D7EAFB;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-top: 7.5px;
+  padding: 6px 10px;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__title {
+  font-weight: 700;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__labels {
+  flex: 1 1 auto;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions {
+  display: flex;
+  gap: 5px 10px;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions a {
+  text-decoration: none;
+}
+.analysis-interventions .analysis-intervention .intervention-subcomponent-analysis__actions a:hover {
+  text-decoration: underline;
 }

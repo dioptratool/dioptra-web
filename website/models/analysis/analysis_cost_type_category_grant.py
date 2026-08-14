@@ -1,10 +1,10 @@
 from decimal import Decimal
 
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from website.models.query_utils import require_prefetch
+from website.models.subcomponent import requires_subcomponent_allocation, subcomponent_allocation_complete
 
 
 class AnalysisCostTypeCategoryGrant(models.Model):
@@ -64,24 +64,36 @@ class AnalysisCostTypeCategoryGrant(models.Model):
         # if we never found a bad one, allocation is complete
         return True
 
-    def subcomponent_allocation_complete(self):
-        relevant_cost_line_items = self.get_cost_line_items()
-        relevant_cost_line_items = relevant_cost_line_items.exclude(
-            Q(config__allocations__allocation=0) | Q(config__allocations__allocation__isnull=True)
-        )
-
-        return (
-            relevant_cost_line_items.filter(
-                (
-                    Q(config__subcomponent_analysis_allocations_skipped=False)
-                    & (
-                        Q(config__subcomponent_analysis_allocations__isnull=True)
-                        | Q(config__subcomponent_analysis_allocations={})
-                    )
-                ),
-            ).count()
-            == 0
-        )
+    def subcomponent_allocation_complete_for(self, intervention_instance) -> bool:
+        """
+        True when every cost line item in this cost_type/category/grant with a
+        positive allocation to the given intervention instance has a complete
+        (or skipped) subcomponent allocation.
+        """
+        if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+            return True
+        analysis = self.cost_type_category.analysis
+        for cli in require_prefetch(analysis, "unfiltered_cost_line_items"):
+            if (
+                cli.config.cost_type_id == self.cost_type_category.cost_type_id
+                and cli.config.category_id == self.cost_type_category.category_id
+                and cli.grant_code == self.grant
+                and requires_subcomponent_allocation(cli)
+            ):
+                allocations = require_prefetch(cli.config, "allocations")
+                if not any(
+                    allocation.intervention_instance_id == intervention_instance.id
+                    and allocation.allocation
+                    and allocation.allocation > 0
+                    for allocation in allocations
+                ):
+                    continue
+                if not subcomponent_allocation_complete(
+                    cli,
+                    intervention_instance.subcomponent_cost_analysis,
+                ):
+                    return False
+        return True
 
     def assigned_items_total(self):
         """Sum of items that have allocations assigned."""

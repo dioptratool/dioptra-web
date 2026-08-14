@@ -3,6 +3,7 @@ import datetime
 import pytest
 
 from website.models.analysis import AnalysisCostTypeCategoryGrantIntervention
+from website.models.subcomponent import SubcomponentCostAllocation
 from website.tests.factories import AnalysisFactory, UserFactory
 from website.utils.duplicator import clone_analysis
 
@@ -102,16 +103,23 @@ class TestClonedAnalysis:
         self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
     ):
         analysis = analysis_workflow_with_all_cost_lines_allocated_to_subcomponents.analysis
+        subcomponent_analysis = analysis.subcomponent_cost_analyses()[0]
+        cli_config = analysis.cost_line_items.first().config
+        allocation, _ = SubcomponentCostAllocation.objects.update_or_create(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cli_config,
+            defaults={"allocations": {"0": "100"}},
+        )
 
         cloned_analysis = clone_analysis(
             analysis.pk,
             owner=UserFactory(),
         )
+        cloned_subcomponent_analysis = cloned_analysis.subcomponent_cost_analyses()[0]
 
-        assert hasattr(cloned_analysis, "subcomponent_cost_analysis")
-        assert analysis.subcomponent_cost_analysis.pk != cloned_analysis.subcomponent_cost_analysis.pk
+        assert subcomponent_analysis.pk != cloned_subcomponent_analysis.pk
 
-        assert (
-            analysis.subcomponent_cost_analysis.subcomponent_labels
-            == cloned_analysis.subcomponent_cost_analysis.subcomponent_labels
-        )
+        assert subcomponent_analysis.subcomponent_labels == cloned_subcomponent_analysis.subcomponent_labels
+        cloned_allocation = cloned_subcomponent_analysis.allocations.get(cloned_from=allocation)
+        assert cloned_allocation.allocations == {"0": "100"}
+        assert cloned_allocation.cli_config.cost_line_item.analysis == cloned_analysis

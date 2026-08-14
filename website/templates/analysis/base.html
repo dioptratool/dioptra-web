@@ -13,7 +13,7 @@
           </div>
           <div class="analysis-sidebar__logo"><a class="analysis-sidebar__logo-link" href="/">{% include 'icons/logo-s.svg' %}</a></div>
           <ul class="analysis-sidebar__navigation analysis-sidebar__navigation--primary">
-            {% for step in workflow.main_analysis_steps %}
+            {% for step in workflow.steps %}
               {% if step.is_enabled %}
               <li class="analysis-sidebar__navigation-item">
                 {% if step.dependencies_met %}

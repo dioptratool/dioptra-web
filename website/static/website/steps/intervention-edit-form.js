@@ -1,6 +1,7 @@
 $(function() {
     var $intervention = $('[name="intervention"]');
     var mapping = $intervention.data('mapping');
+    var $changeWarning = $('.js-intervention-change-warning');
     var iovFields = ['Conditional Cash Transfer', 'Providing Business Grants', 'Unconditional Cash Transfer']
 
     $intervention
@@ -24,6 +25,12 @@ $(function() {
 
     function interventionChanged() {
         var interventionID = $intervention.val();
+        if ($changeWarning.length) {
+            // Compare against the instance's saved intervention (data-initial),
+            // not the first rendered value, so the warning survives form
+            // re-renders after validation errors.
+            $changeWarning.toggleClass('hidden', String(interventionID) === String($changeWarning.data('initial')));
+        }
         hideAllParameters();
         hideOutputCountSource();
         if (interventionID) {

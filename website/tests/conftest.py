@@ -18,6 +18,7 @@ from .factories import (
     CostTypeFactory,
     CountryFactory,
     InterventionFactory,
+    SubcomponentCostAllocationFactory,
     SubcomponentCostAnalysisFactory,
     UserFactory,
 )
@@ -101,6 +102,12 @@ def transaction_data_row():
 def empty_analysis_workflow():
     """Starting point for all Workflows"""
     return AnalysisWorkflow(analysis=None)
+
+
+@pytest.fixture
+def analysis_workflow_with_analysis_only(defaults):
+    """A saved Analysis without any interventions (Define complete, Interventions not)"""
+    return AnalysisWorkflow(analysis=AnalysisFactory())
 
 
 @pytest.fixture
@@ -345,7 +352,6 @@ def analysis_workflow_with_subcomponent_labels(
 
     SubcomponentCostAnalysisFactory(
         analysis=analysis,
-        subcomponent_labels_confirmed=True,
     )
 
     return AnalysisWorkflow(analysis)
@@ -360,7 +366,6 @@ def analysis_workflow_with_subcomponent_labels_and_client_time_added(
 
     SubcomponentCostAnalysisFactory(
         analysis=analysis,
-        subcomponent_labels_confirmed=True,
     )
 
     return AnalysisWorkflow(analysis)
@@ -378,18 +383,22 @@ def analysis_workflow_with_all_cost_lines_allocated_to_subcomponents(
     analysis.client_time = False
     analysis.save()
 
-    each_line_item: CostLineItem
+    subcomponent_analysis = analysis.subcomponent_cost_analyses()[0]
 
     for cost_line_item in analysis.cost_line_items.all():
         cost_line_item.config.analysis_cost_type = None  # Remove the client time for this test
-        cost_line_item.config.subcomponent_analysis_allocations = {
-            "0": "20",
-            "1": "20",
-            "2": "20",
-            "3": "20",
-            "4": "20",
-        }
         cost_line_item.config.save()
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=cost_line_item.config,
+            allocations={
+                "0": "20",
+                "1": "20",
+                "2": "20",
+                "3": "20",
+                "4": "20",
+            },
+        )
 
     return AnalysisWorkflow(analysis)
 
@@ -456,18 +465,10 @@ def analysis_workflow_with_all_cost_lines_allocated_to_subcomponents_and_some_no
 
     SubcomponentCostAnalysisFactory(
         analysis=analysis,
-        subcomponent_labels_confirmed=True,
     )
 
     contributing_cost_line_item_config.allocation = Decimal("0.1")
     contributing_cost_line_item_config.analysis_cost_type = AnalysisCostType.CLIENT_TIME
-    contributing_cost_line_item_config.subcomponent_analysis_allocations = {
-        "0": "20",
-        "1": "20",
-        "2": "20",
-        "3": "20",
-        "4": "20",
-    }
     contributing_cost_line_item_config.save()
 
     return AnalysisWorkflow(analysis)
@@ -541,18 +542,10 @@ def analysis_workflow_with_some_cost_lines_allocated(
 
     SubcomponentCostAnalysisFactory(
         analysis=analysis,
-        subcomponent_labels_confirmed=True,
     )
 
     contributing_cost_line_item_config.allocation = Decimal("0.1")
     contributing_cost_line_item_config.analysis_cost_type = AnalysisCostType.CLIENT_TIME
-    contributing_cost_line_item_config.subcomponent_analysis_allocations = {
-        "0": "20",
-        "1": "20",
-        "2": "20",
-        "3": "20",
-        "4": "20",
-    }
     contributing_cost_line_item_config.save()
 
     return AnalysisWorkflow(analysis)
@@ -776,7 +769,8 @@ def analysis_with_output_metrics_conditional_cash_transfer(defaults):
 
 
 # Aliases for clarity
-analysis_workflow_with_define_complete = analysis_workflow_with_analysis
+analysis_workflow_with_define_complete = analysis_workflow_with_analysis_only
+analysis_workflow_with_interventions_complete = analysis_workflow_with_analysis
 
 analysis_workflow_with_allocate_complete = analysis_workflow_with_allocations
 analysis_workflow_with_addothercosts_complete = analysis_workflow_with_client_time_added

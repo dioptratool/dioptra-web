@@ -1,0 +1,211 @@
+{% extends "analysis/base.html" %}
+{% load analysis help humanize i18n website_tags %}
+
+{% block analysis_header %}
+    <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
+        <h1 class="analysis__title">{{ title }}</h1>
+        {% help 'step_guidance__allocate_subcomponent_costs' %}
+    </div>
+    {% if help_text %}
+        <div class="analysis__subcomponent__help_text"><em>{{ help_text }}</em></div>
+    {% endif %}
+{% endblock analysis_header %}
+
+{% block analysis_content %}
+
+  <div class="analysis-table analysis-categories">
+
+        {% include 'features/_filters.html' with filterset=filter has_search=False request=request only %}
+
+        <div class="analysis-table__header">
+            <h2 class="analysis-table__subtitle">{{ step.get_nav_title }}</h2>
+            <div class="analysis-table__summary">{% blocktranslate %}{{ cost_line_items_count }} Cost Items to allocate{% endblocktranslate %}</div>
+        </div>
+
+        <div class="analysis-table__categories">
+            {% for cost_type_category_grant, cost_line_items in category_items %}
+                {% with category_complete=categories_complete|dict_get:cost_type_category_grant.id %}
+                <div
+                        class="analysis-table__category{% if not category_complete %} analysis-table__category--unconfirmed{% endif %}
+            {% if errors|error_in_category:cost_type_category_grant.cost_type_category.category %}analysis-table__category--active{% endif %}"
+                >
+                    <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit class="allocate-bulk-form warn-unsaved-changes">
+                        {% csrf_token %}
+
+                        <div class="analysis-table__category-header">
+                            <h3 class="analysis-table__category-name">{{ cost_type_category_grant.cost_type_category.category.name }}{% help_category cost_type_category_grant.cost_type_category.category.name 'allocate_costs' %}</h3>
+                            <div class="analysis-table__category-header-supplement">
+                                <div class="analysis-table__cost-items{% if category_complete %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }} {% translate 'Cost Items' %}{% if category_complete %} {% translate 'Allocated' %}{% endif %}</div>
+                                <div class="analysis-table__category-header-total"><strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong></div>
+                                {% include 'analysis/analysis-table/_analysis-table-header-toggle.html' %}
+                            </div>
+                        </div>
+
+                        <div class="analysis-table__category-content analysis-table__category-content--freeze-col analysis-table__category-content--freeze-row">
+                            <div class="analysis-table__heading-actions">
+                                <div class="analysis-table__heading-select-all">
+                                    <div class="form__checkbox form__checkbox--simple">
+                                        <label for="select-all-{{ cost_type_category_grant.pk }}" class="analysis-table__select-all-label">
+                                            <input type="checkbox" class="select-all" id="select-all-{{ cost_type_category_grant.pk }}" value="select-all"><span>{% translate 'Select All' %}</span></label>
+                                    </div>
+                                    <button type="submit" class="bulk-assign-items analysis-table__bulk-assign-btn"
+                                            data-href="{% url 'analysis-allocate-subcomponents-intervention-grant-bulk' analysis.pk step.intervention_instance.pk step.grant %}"
+                                            data-dialog-confirm="{% translate 'There are unsaved allocation changes in this table that may be affected. Continue?' %}"
+                                            disabled>{% include 'icons/disallowed.svg' %}<span>{% translate 'Set Allocation' %}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {% include 'analysis/analysis-table/_analysis-table-subcomponents.html' %}
+                            <div class="analysis-table__category-footer">
+                                <button class="analysis-table__category-footer-action analysis-table__category-footer-action--allocate" type="submit" name="submit">
+                                    {% translate "Save" %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+        <div class="analysis-table__actions">
+            <div class="analysis-table__actions-inner">
+                {% with next=step.get_next %}
+                    {% if next and next.dependencies_met %}
+                        <a class="analysis-navigation__prev-next analysis-navigation__prev-next--next" href="{{ next.get_href }}"><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</a>
+                    {% else %}
+                        <span class="analysis-navigation__prev-next analysis-navigation__prev-next--next disabled" disabled><strong>{% translate 'Next' %}</strong>{% include 'icons/caret-right-thin.svg' %}</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% if next_message %}
+                <div class="analysis-table__summary">{{ next_message }}</div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock analysis_content %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        $(function () {
+            const table = document.querySelector('.analysis-table');
+
+            // reset form state for firefox on load
+            Array.from(document.forms).forEach((f) => f.reset());
+
+            $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
+                e.preventDefault();
+                const link = e.currentTarget;
+                const form = link.closest('form');
+                const subcomponentIdx = link.dataset.subcomponentIdx;
+                const sourceInput = form?.elements[link.dataset.applyToAll];
+
+                if (!form || !sourceInput) return;
+
+                form.querySelectorAll('input.analysis-table__subcomponent-allocate-input[data-subcomponent-idx="' + subcomponentIdx + '"]').forEach((input) => {
+                    if (input.disabled) return;
+                    input.value = sourceInput.value;
+                    updateSubcomponentTotal(input.closest('tr'));
+                });
+            });
+
+            table?.addEventListener('input', handleAllocationInput);
+            table?.addEventListener('change', handleAllocationInput);
+
+            function handleAllocationInput(e) {
+                const input = e.target;
+                if (input.matches('input.analysis-table__subcomponent-allocate-input')) {
+                    updateSubcomponentTotal(input.closest('tr'));
+                } else if (input.matches('input[name^="cost_line_item_subcomponent_allocation_"][type="checkbox"]')) {
+                    const row = input.closest('tr');
+                    row?.querySelectorAll('input.analysis-table__subcomponent-allocate-input').forEach((allocationInput) => {
+                        allocationInput.disabled = input.checked;
+                    });
+                    updateSubcomponentTotal(row);
+                }
+            }
+
+            function updateSubcomponentTotal(row) {
+                if (!row) return;
+
+                const totalEl = row.querySelector('.analysis-table__subcomponent-total');
+                const skipInput = row.querySelector('input[name$="_skip"][type="checkbox"]');
+                const inputs = row.querySelectorAll('input.analysis-table__subcomponent-allocate-input');
+                if (!totalEl || !inputs.length) return;
+
+                let total = 0;
+                inputs.forEach((input) => {
+                    if (input.value && !input.disabled) {
+                        total += parseNumber(input.value);
+                    }
+                });
+                totalEl.textContent = formatPercent(total);
+
+                const skipped = !!(skipInput && skipInput.checked);
+                // Partial totals are saveable; only over-allocation blocks Save.
+                const valid = skipped || roundPercent(total) <= 100;
+                totalEl.classList.toggle('error', !valid);
+                row.classList.toggle('subcomponent-error', !valid);
+                row.classList.toggle('error', !valid);
+                setErrorStatus(row.closest('form'));
+
+                if (total == 100) {
+                    row.querySelectorAll('input.analysis-table__subcomponent-allocate-input').forEach(function (input) {
+                        if (!input.value.length) input.value = 0;
+                    });
+                }
+            }
+
+            function parseNumber(value) {
+                const parsed = parseFloat(value || "0");
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function roundPercent(value) {
+                return Number(value.toFixed(4));
+            }
+
+            function formatPercent(value) {
+                return roundPercent(value) + "%";
+            }
+
+            function updateAllSubcomponentTotals() {
+                document.querySelectorAll('.analysis-table__table > tbody > tr:first-child').forEach((row) => {
+                    updateSubcomponentTotal(row);
+                });
+                document.querySelectorAll('.analysis-table form').forEach(setErrorStatus);
+            }
+            updateAllSubcomponentTotals();
+        });
+
+        function setErrorStatus(tableFormEl) {
+            if (!tableFormEl) return;
+
+            const errorCount = tableFormEl.querySelectorAll('tr.error').length;
+            const header = tableFormEl.querySelector('.analysis-table__category-header-supplement');
+            const footer = tableFormEl.querySelector('.analysis-table__category-footer');
+            const label = `${errorCount} cost ${errorCount > 1 ? "items" : "item"} with error`;
+            const submit = tableFormEl.querySelector('.analysis-table__category-footer-action--allocate');
+
+            submit?.toggleAttribute('disabled', !!errorCount);
+
+            updateErrorBadge(header, errorCount, label);
+            updateErrorBadge(footer, errorCount, label);
+        }
+
+        function updateErrorBadge(container, errorCount, label) {
+            if (!container) return;
+
+            let badge = container.querySelector('.analysis-table__cost-items--error');
+            if (errorCount) {
+                if (!badge) {
+                    badge = document.createElement('div');
+                    badge.classList.add("analysis-table__cost-items", "analysis-table__cost-items--error");
+                    container.prepend(badge);
+                }
+                badge.textContent = label;
+            } else {
+                badge?.remove();
+            }
+        }
+    </script>
+{% endblock extrascript %}

@@ -1,8 +1,6 @@
 import pytest
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 
-from website.models import Analysis, CostType
-
 
 def extract_path_names(urlpatterns):
     """Get all URL patterns by name"""
@@ -49,14 +47,21 @@ class TestPageAccess:
     @pytest.fixture
     def urls_with_params(self, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents):
         analysis_wf = analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
-        analysis_pk = Analysis.objects.first().pk
-        cost_type_pk = analysis_wf.analysis.cost_line_items.first().config.cost_type.pk
-        grant = Analysis.objects.first().grants.split()[0]
-        subcomponent_analysis_pk = Analysis.objects.first().subcomponent_cost_analysis.pk
+        analysis = analysis_wf.analysis
+        analysis_pk = analysis.pk
+        cost_type_pk = analysis.cost_line_items.first().config.cost_type.pk
+        grant = analysis.grants.split()[0]
+
+        intervention_instance_pk = analysis.interventioninstance_set.first().pk
 
         return [
             ("analysis", {"pk": analysis_pk}),
             ("analysis-define-update", {"pk": analysis_pk}),
+            ("analysis-interventions", {"pk": analysis_pk}),
+            (
+                "analysis-interventions-subcomponent-labels",
+                {"pk": analysis_pk, "instance_pk": intervention_instance_pk},
+            ),
             ("analysis-load-data", {"pk": analysis_pk}),
             ("analysis-categorize", {"pk": analysis_pk}),
             (
@@ -80,7 +85,32 @@ class TestPageAccess:
                     "grant": grant,
                 },
             ),
+            (
+                "analysis-allocate-cost_type-grant-bulk",
+                {
+                    "pk": analysis_pk,
+                    "cost_type_pk": cost_type_pk,
+                    "grant": grant,
+                },
+            ),
             ("analysis-allocate-supporting-costs", {"pk": analysis_pk, "grant": grant}),
+            ("analysis-allocate-subcomponents", {"pk": analysis_pk}),
+            (
+                "analysis-allocate-subcomponents-intervention-grant",
+                {
+                    "pk": analysis_pk,
+                    "intervention_instance_pk": intervention_instance_pk,
+                    "grant": grant,
+                },
+            ),
+            (
+                "analysis-allocate-subcomponents-intervention-grant-bulk",
+                {
+                    "pk": analysis_pk,
+                    "intervention_instance_pk": intervention_instance_pk,
+                    "grant": grant,
+                },
+            ),
             ("analysis-add-other-costs", {"pk": analysis_pk}),
             (
                 "analysis-add-other-costs-detail",
@@ -93,28 +123,6 @@ class TestPageAccess:
             ),
             ("analysis-insights-print", {"pk": analysis_pk}),
             ("analysis-cost-model-spreadsheet", {"pk": analysis_pk}),
-            ("subcomponent-cost-analysis-create", {"pk": analysis_pk}),
-            (
-                "subcomponent-cost-analysis",
-                {"pk": analysis_pk, "subcomponent_pk": subcomponent_analysis_pk},
-            ),
-            (
-                "subcomponent-cost-analysis-label-edit",
-                {"pk": analysis_pk, "subcomponent_pk": subcomponent_analysis_pk},
-            ),
-            (
-                "subcomponent-cost-analysis-allocate",
-                {"pk": analysis_pk, "subcomponent_pk": subcomponent_analysis_pk},
-            ),
-            (
-                "subcomponent-cost-analysis-allocate-cost_type-grant",
-                {
-                    "pk": analysis_pk,
-                    "subcomponent_pk": subcomponent_analysis_pk,
-                    "cost_type_pk": cost_type_pk,
-                    "grant": grant,
-                },
-            ),
         ]
 
     def test_anonymous_user_access_is_blocked_simple_pages(self, client):

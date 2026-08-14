@@ -5,17 +5,22 @@ from django.contrib import messages
 from django.forms.models import model_to_dict
 from django.urls import reverse
 
+from website.forms.cost_line_item import InKindCostLineItemForm
+from website.models.cost_type import Support
 from website.models import (
     AnalysisCostType,
     CostLineItem,
     CostLineItemConfig,
     CostType,
+    SubcomponentCostAllocation,
 )
 from website.tests.factories import (
     AnalysisFactory,
     CostLineItemFactory,
     CostLineItemInterventionAllocationFactory,
     InterventionFactory,
+    SubcomponentCostAllocationFactory,
+    SubcomponentCostAnalysisFactory,
 )
 from website.views.analysis.analysis import CostLineItemUpsertView
 
@@ -49,6 +54,54 @@ class TestInsights:
         response_form = response.context_data["form"]
         assert response_form.ANALYSIS_COST_TYPE == AnalysisCostType.IN_KIND
         assert response_form.initial == {"analysis": insights_analysis, "total_cost": 0}
+
+    @pytest.mark.django_db
+    def test_get_cost_line_items_in_kind_with_subcomponents(self, rf):
+        analysis = AnalysisFactory()
+        intervention_instance = analysis.add_intervention(InterventionFactory())
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+
+        request = rf.get(
+            reverse(
+                "cost-line-item-create",
+                kwargs={
+                    "pk": analysis.id,
+                    "cost_type": int(AnalysisCostType.IN_KIND),
+                },
+            )
+        )
+        request.user = analysis.owner
+        response = CostLineItemUpsertView.as_view()(
+            request,
+            pk=analysis.id,
+            cost_type=int(AnalysisCostType.IN_KIND),
+        )
+
+        assert response.status_code == 200
+        template_names = (
+            response.template_name if isinstance(response.template_name, list) else [response.template_name]
+        )
+        assert "panel-form-in-kind-cost-line-item.html" in template_names
+        allocation_group = response.context_data["form"].allocation_groups[0]
+        assert allocation_group["intervention"] == intervention_instance
+        assert (
+            "bulk-allocation-input"
+            in allocation_group["allocation_field"].field.widget.attrs["class"].split()
+        )
+        assert [field["label"] for field in allocation_group["subcomponent_fields"]] == [
+            "Treatment",
+            "Outreach",
+        ]
+        assert allocation_group["subcomponent_fields"][0][
+            "field"
+        ].name == InKindCostLineItemForm.subcomponent_field_name(subcomponent_analysis.id, 0)
+        assert (
+            "bulk-allocation-input"
+            in allocation_group["subcomponent_fields"][0]["field"].field.widget.attrs["class"].split()
+        )
 
     @pytest.mark.django_db
     def test_get_cost_line_items_client_time(self, rf, insights_analysis):
@@ -95,6 +148,56 @@ class TestInsights:
         response_form = response.context_data["form"]
         assert response_form.ANALYSIS_COST_TYPE == AnalysisCostType.OTHER_HQ
         assert response_form.initial == {"analysis": insights_analysis}
+
+    @pytest.mark.django_db
+    def test_get_cost_line_items_other_hq_with_renamed_cost_types(self, rf, defaults, insights_analysis):
+        # Admins can rename cost types (the Sandbox renamed them to the singular
+        # form), so the default may not be looked up by name.
+        for cost_type in CostType.objects.all():
+            CostType.objects.filter(pk=cost_type.pk).update(name=cost_type.name.rstrip("s"))
+
+        request = rf.get(
+            reverse(
+                "cost-line-item-create",
+                kwargs={
+                    "pk": insights_analysis.id,
+                    "cost_type": int(AnalysisCostType.OTHER_HQ),
+                },
+            )
+        )
+        request.user = insights_analysis.owner
+        response = CostLineItemUpsertView.as_view()(
+            request,
+            pk=insights_analysis.id,
+            cost_type=int(AnalysisCostType.OTHER_HQ),
+        )
+
+        assert response.status_code == 200
+        response_form = response.context_data["form"]
+        assert response_form.fields["cost_type"].initial == CostType.objects.get(type=Support.id)
+
+    @pytest.mark.django_db
+    def test_get_cost_line_items_other_hq_without_support_cost_type(self, rf, defaults, insights_analysis):
+        CostType.objects.filter(type=Support.id).delete()
+
+        request = rf.get(
+            reverse(
+                "cost-line-item-create",
+                kwargs={
+                    "pk": insights_analysis.id,
+                    "cost_type": int(AnalysisCostType.OTHER_HQ),
+                },
+            )
+        )
+        request.user = insights_analysis.owner
+        response = CostLineItemUpsertView.as_view()(
+            request,
+            pk=insights_analysis.id,
+            cost_type=int(AnalysisCostType.OTHER_HQ),
+        )
+
+        assert response.status_code == 200
+        assert response.context_data["form"].fields["cost_type"].initial is None
 
     @pytest.mark.django_db
     def test_create_cost_line_items_in_kind(self, rf, insights_analysis):
@@ -145,6 +248,112 @@ class TestInsights:
         assert cost_line_item.config.analysis_cost_type == AnalysisCostType.IN_KIND
         assert cost_line_item.total_cost == Decimal("15.00")
         assert cost_line_item.note == data["note"]
+
+    @pytest.mark.django_db
+    def test_create_cost_line_items_in_kind_with_subcomponent_allocations(self):
+        analysis = AnalysisFactory()
+        subcomponent_intervention = analysis.add_intervention(InterventionFactory())
+        other_intervention = analysis.add_intervention(InterventionFactory())
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=subcomponent_intervention,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        data = {
+            "analysis": analysis.pk,
+            "budget_line_description": "Medical Supplies",
+            "total_cost": "0",
+            "quantity": "3.00",
+            "unit_cost": "5.00",
+            "note": "Test Note",
+            f"intervention_allocation_{subcomponent_intervention.id}": "80",
+            f"intervention_allocation_{other_intervention.id}": "20",
+            InKindCostLineItemForm.subcomponent_field_name(subcomponent_analysis.id, 0): "40",
+            InKindCostLineItemForm.subcomponent_field_name(subcomponent_analysis.id, 1): "60",
+        }
+
+        form = InKindCostLineItemForm(data=data, initial={"analysis": analysis, "total_cost": 0})
+
+        assert form.is_valid(), form.errors
+        cost_line_item = form.save()
+        subcomponent_allocation = SubcomponentCostAllocation.objects.get(
+            cli_config=cost_line_item.config,
+            subcomponent_analysis=subcomponent_analysis,
+        )
+        assert subcomponent_allocation.allocations == {
+            "0": "40.0000",
+            "1": "60.0000",
+        }
+        assert subcomponent_allocation.skipped is False
+
+    @pytest.mark.django_db
+    def test_create_cost_line_items_in_kind_requires_subcomponent_total_to_equal_100(self):
+        analysis = AnalysisFactory()
+        intervention_instance = analysis.add_intervention(InterventionFactory())
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        data = {
+            "analysis": analysis.pk,
+            "budget_line_description": "Medical Supplies",
+            "total_cost": "0",
+            "quantity": "3.00",
+            "unit_cost": "5.00",
+            "note": "Test Note",
+            f"intervention_allocation_{intervention_instance.id}": "80",
+            InKindCostLineItemForm.subcomponent_field_name(subcomponent_analysis.id, 0): "40",
+            InKindCostLineItemForm.subcomponent_field_name(subcomponent_analysis.id, 1): "50",
+        }
+
+        form = InKindCostLineItemForm(data=data, initial={"analysis": analysis, "total_cost": 0})
+
+        assert not form.is_valid()
+        assert "Sub-component allocations must total 100%." in str(form.errors)
+
+    @pytest.mark.django_db
+    def test_update_cost_line_items_in_kind_zero_allocation_clears_subcomponent_allocations(self):
+        analysis = AnalysisFactory()
+        intervention_instance = analysis.add_intervention(InterventionFactory())
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        cost_line_item = CostLineItemFactory(
+            analysis=analysis,
+            budget_line_description="Medical Supplies",
+            quantity=5,
+            unit_cost=100,
+            total_cost=500,
+        )
+        config = CostLineItemConfig.objects.create(
+            cost_line_item=cost_line_item,
+            analysis_cost_type=AnalysisCostType.IN_KIND,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=config,
+            intervention_instance=intervention_instance,
+            allocation=75,
+        )
+        subcomponent_allocation = SubcomponentCostAllocationFactory(
+            cli_config=config,
+            subcomponent_analysis=subcomponent_analysis,
+            allocations={"0": "25", "1": "75"},
+        )
+        data = {
+            "analysis": analysis.pk,
+            "budget_line_description": cost_line_item.budget_line_description,
+            "total_cost": "500",
+            "quantity": "5",
+            "unit_cost": "100",
+            "note": "",
+            f"intervention_allocation_{intervention_instance.id}": "0",
+        }
+
+        form = InKindCostLineItemForm(data=data, instance=cost_line_item)
+
+        assert form.is_valid(), form.errors
+        form.save()
+        assert not SubcomponentCostAllocation.objects.filter(pk=subcomponent_allocation.pk).exists()
 
     @pytest.mark.django_db
     def test_create_cost_line_items_client_time(self, rf, insights_analysis):

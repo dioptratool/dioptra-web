@@ -1,13 +1,23 @@
 from datetime import date
 
+import pytest
 from django.test import TestCase
+from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from website.models import AnalysisCostType
 from website.tests.factories import (
     AnalysisFactory,
+    CostLineItemConfigFactory,
+    CostLineItemFactory,
+    CostLineItemInterventionAllocationFactory,
+    CostTypeFactory,
     CountryFactory,
     InsightComparisonDataFactory,
     InterventionFactory,
+    SubcomponentCostAllocationFactory,
+    SubcomponentCostAnalysisFactory,
 )
 from website.users.models import User
 from website.views.analysis.steps.insights import Insights
@@ -61,7 +71,7 @@ class InsightsTestCase(TestCase):
                 "value": "$100.00",
                 "percent": 10.0,
                 "label": _(
-                    f"""
+                    """
                     Including Program Costs ($600.00), Support Costs and Indirect Costs ($100.00)
                     """
                 ),
@@ -71,7 +81,7 @@ class InsightsTestCase(TestCase):
                 "value": "$300.00",
                 "percent": 30.0,
                 "label": _(
-                    f"""
+                    """
                     Including Program Costs ($600.00), Support Costs and Indirect Costs ($100.00), In-Kind
                     Contributions ($300.00)
                     """
@@ -95,6 +105,197 @@ class InsightsTestCase(TestCase):
         parameter_values = self.insights_view._get_formatted_parameter_values()
 
         assert parameter_values[intervention_instance.id]["Value of Cash Distributed"] == "$10.00"
+
+    def test_subcomponent_breakdown_includes_in_kind_chart_data(self):
+        intervention_instance = self.analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        program_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=100,
+            ),
+            cost_type=None,
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=program_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=program_config,
+            allocations={
+                "0": "60",
+                "1": "40",
+            },
+        )
+        CostTypeFactory(name="Program Costs", type=10, order=1, default=True)
+        support_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=900,
+            ),
+            cost_type=CostTypeFactory(name="Support Costs", type=20, order=2),
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=support_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=support_config,
+            allocations={
+                "0": "0",
+                "1": "100",
+            },
+        )
+        in_kind_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(
+                analysis=self.analysis,
+                total_cost=100,
+            ),
+            analysis_cost_type=AnalysisCostType.IN_KIND,
+            cost_type=None,
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=in_kind_config,
+            intervention_instance=intervention_instance,
+            allocation=50,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=in_kind_config,
+            allocations={
+                "0": "25",
+                "1": "75",
+            },
+        )
+
+        breakdown = self.insights_view._get_subcomponent_analysis_breakdown_data(intervention_instance)
+
+        assert breakdown["chart_data"] == {
+            "Treatment": 60,
+            "Outreach": 40,
+        }
+        assert breakdown["in_kind_chart_data"] == {
+            "Treatment": 25,
+            "Outreach": 75,
+        }
+        rendered = render_to_string(
+            "insights/_subcomponent-chart.html",
+            {
+                "analysis": self.analysis,
+                "chart_data": breakdown["chart_data"],
+                "total_cost": 100,
+                "in_kind_chart_data": breakdown["in_kind_chart_data"],
+                "in_kind_total_cost": 20,
+            },
+        )
+        assert "In-Kind Contributions" in rendered
+
+    def test_subcomponent_breakdown_uses_the_program_cost_split(self):
+        """
+        Item 7.1: shared (Support/Indirect) and skipped rows follow the
+        weighted Program Cost split, so stored allocations on them never
+        shift the displayed breakdown.
+        """
+        intervention_instance = self.analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=intervention_instance,
+            subcomponent_labels=["Treatment", "Outreach"],
+        )
+        CostTypeFactory(name="Program Costs", type=10, order=1, default=True)
+        program_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(analysis=self.analysis, total_cost=100),
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=program_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=program_config,
+            allocations={"0": "60", "1": "40"},
+        )
+        indirect_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(analysis=self.analysis, total_cost=500),
+            cost_type=CostTypeFactory(name="Indirect Costs", type=30, order=3),
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=indirect_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=indirect_config,
+            allocations={"0": "100", "1": "0"},
+        )
+        skipped_config = CostLineItemConfigFactory(
+            cost_line_item=CostLineItemFactory(analysis=self.analysis, total_cost=200),
+            cost_type=None,
+            category=None,
+        )
+        CostLineItemInterventionAllocationFactory(
+            cli_config=skipped_config,
+            intervention_instance=intervention_instance,
+            allocation=100,
+        )
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=skipped_config,
+            allocations={"0": "100", "1": "0"},
+            skipped=True,
+        )
+
+        breakdown = self.insights_view._get_subcomponent_analysis_breakdown_data(intervention_instance)
+
+        assert breakdown["chart_data"] == {"Treatment": 60, "Outreach": 40}
+        assert breakdown["chart_data"] == dict(
+            zip(
+                subcomponent_analysis.subcomponent_labels,
+                subcomponent_analysis.full_cost_percentages(),
+            )
+        )
+
+
+@pytest.mark.django_db
+def test_insights_page_shows_subcomponent_amounts_against_full_cost(
+    client_with_admin, analysis_workflow_with_all_cost_lines_allocated_to_subcomponents
+):
+    """
+    Item 7.1: the rendered Insights page multiplies the sub-component split
+    by the full output cost (`output_cost_all`), not the program-only cost.
+    """
+    from website.templatetags.website_tags import calculate_subcomponent_cost
+
+    analysis = analysis_workflow_with_all_cost_lines_allocated_to_subcomponents.analysis
+    analysis.calculate_output_costs()
+    analysis.save()
+
+    response = client_with_admin.get(reverse("analysis-insights", kwargs={"pk": analysis.pk}))
+    assert response.status_code == 200
+    html = response.content.decode()
+
+    intervention_instance = analysis.interventioninstance_set.first()
+    subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+    percentages = subcomponent_analysis.full_cost_percentages()
+    output_costs = analysis.output_costs[str(intervention_instance.id)]
+    metric = intervention_instance.intervention.output_metric_objects()[0]
+    expected_amount = calculate_subcomponent_cost(
+        output_costs[metric.id]["all"], percentages[0], analysis.currency_code
+    )
+    assert expected_amount in html
 
 
 class InterventionInsightsTestCase(TestCase):

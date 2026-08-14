@@ -236,6 +236,15 @@ validate-release-preflight:
 validate-release:
 	@cd validation_scripts/ && ./validate_new_version.sh
 
+## validate-release-range: env-OLD env-NEW Run the whole release validation between two git refs, no manual branch switching
+##   Usage: make validate-release-range OLD=<ref> NEW=<ref> [BACKUPS=/path/to/backups]
+##   Snapshots every backup on OLD (preflight), validates them all on NEW, restores your
+##   checkout, and writes per-backup reports plus a summary to validation_scripts/results/.
+##   Requires a clean working tree. BACKUPS defaults to validation_scripts/backups.
+.PHONY: validate-release-range
+validate-release-range: env-OLD env-NEW
+	@./validation_scripts/validate_release_range.sh "$(OLD)" "$(NEW)" "$(BACKUPS)"
+
 ## fmt-check-hadolint: : Run hadolint on Dockerfiles
 # We're ignoring these rules:
 # DL3008: Pin versions in apt-get install

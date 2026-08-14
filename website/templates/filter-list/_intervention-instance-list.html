@@ -1,0 +1,26 @@
+{% load humanize panels_extras %}
+<ul class="analysis-interventions">
+    {% for item in results %}
+        <li class="analysis-intervention">
+            <div class="intervention-info">
+                <h4>{{ item.obj.display_name }}</h4>
+                <p class="intervention-subtitle">
+                    {{ item.obj.intervention.name }}{% if item.params %} /{% endif %}
+                    {% spaceless %}
+                        {% for param in item.params %}
+                            {% if forloop.counter != 1 %}<span>, </span>{% endif %}
+                            <span class="parameter">{{ param.label }}: {{ param.value|floatformat:2|intcomma }} </span>
+                        {% endfor %}
+                    {% endspaceless %}
+                </p>
+            </div>
+            {% if item.operations %}
+                <div class="intervention-actions">
+                    {% for operation in item.operations %}
+                        {{ operation.render }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>

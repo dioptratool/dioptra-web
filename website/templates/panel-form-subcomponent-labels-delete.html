@@ -1,0 +1,20 @@
+{% extends 'html-panel.html' %}
+{% load static %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+{% endblock form-start %}
+
+{% block panel-body %}
+  <p class="delete-confirmation lead">
+      Are you sure you want to delete the sub-component analysis? All
+      work done in the analysis will be cleared.</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+<form method="post">
+  {% csrf_token %}
+    <button class="panels-delete-btn btn btn-danger" type="submit">Yes, delete</button>
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">No, cancel</a>
+</form>
+{% endblock panel-foot %}

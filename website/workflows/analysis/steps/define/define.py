@@ -15,10 +15,7 @@ class Define(Step):
 
     @cached_property
     def is_complete(self) -> bool:
-        if hasattr(self.analysis, "pk"):
-            if self.analysis.has_parameters():
-                return True
-        return False
+        return bool(self.analysis and getattr(self.analysis, "pk", None))
 
     @cached_property
     def dependencies_met(self) -> bool:

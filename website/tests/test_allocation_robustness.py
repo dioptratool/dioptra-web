@@ -90,4 +90,4 @@ def simple_confirmed_analysis(defaults):
 def test_fixture(simple_confirmed_analysis):
     wf = AnalysisWorkflow(simple_confirmed_analysis)
     assert wf.get_last_incomplete().name == "allocate-cost_type-grant"
-    assert wf.get_last_complete().name == "categorize-cost_type"
+    assert wf.get_last_complete().name == "categorize"

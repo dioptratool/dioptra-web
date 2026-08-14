@@ -813,29 +813,6 @@ class Analysis(models.Model):
     def client_time_cost_line_items(self):
         return self.cost_line_items.filter(config__analysis_cost_type=AnalysisCostType.CLIENT_TIME)
 
-    def cost_line_items_with_no_subcomponent_allocation(
-        self, cost_type: CostType | None = None, grant: str | None = None
-    ):
-        cost_line_items = self.cost_line_items.filter(
-            Q(config__subcomponent_analysis_allocations={})
-            | Q(config__subcomponent_analysis_allocations__isnull=True)
-        )
-        if cost_type:
-            cost_line_items = cost_line_items.filter(config__cost_type=cost_type)
-        if grant:
-            cost_line_items = cost_line_items.filter(grant_code=grant)
-        return cost_line_items.all()
-
-    def cost_line_items_with_subcomponent_allocation_skipped(self, cost_type=None):
-        if not cost_type:
-            return self.cost_line_items.filter(
-                Q(config__subcomponent_analysis_allocations_skipped=True)
-            ).all()
-        else:
-            return self.cost_line_items.filter(
-                Q(config__subcomponent_analysis_allocations_skipped=True) & Q(config__cost_type=cost_type)
-            ).all()
-
     def get_cost_output_sums_all(self) -> dict[int, float]:
         """
         Get the Sum of the Total * Allocations for the Cost Line Items by their Intervention Allocation in this Analysis
@@ -1092,18 +1069,27 @@ class Analysis(models.Model):
                         "in_kind": float(round(output_cost_in_kind, 2)),
                         "client": float(round(cost_output_sums_client.get(each_intervention_instance.id, 0))),
                     }
-                except Exception as e:
+                except Exception:
                     # If we get an error it is likely just some shenanigans with the Output Metric
                     #   Parameters changing.  Leaving this here with the expectation that we'll
                     #   have an opportunity to make Output Metric Parameters more robust in the future.
                     pass
         self.save()
 
-    def has_confirmed_subcomponent(self) -> bool:
-        return (
-            hasattr(self, "subcomponent_cost_analysis")
-            and self.subcomponent_cost_analysis.subcomponent_labels_confirmed
+    def has_subcomponent_labels(self) -> bool:
+        return any(
+            subcomponent_analysis.subcomponent_labels
+            for subcomponent_analysis in self.subcomponent_cost_analyses()
         )
+
+    def subcomponent_cost_analyses(self):
+        if not self.pk:
+            return []
+        return [
+            intervention_instance.subcomponent_cost_analysis
+            for intervention_instance in self.interventioninstance_set.all()
+            if hasattr(intervention_instance, "subcomponent_cost_analysis")
+        ]
 
     def add_intervention(
         self,
@@ -1143,6 +1129,9 @@ class Analysis(models.Model):
         data = {}
         for cost_type_category_grant in self.cost_type_category_grants:
             cost_type = cost_type_category_grant.cost_type_category.cost_type
+
+            if cost_type is None:  # The cost_type FK is nullable; nothing to suggest without one
+                continue
 
             if isinstance(cost_type.type_obj(), ProgramCost):  # We don't ever suggest for this type of Sector
                 continue

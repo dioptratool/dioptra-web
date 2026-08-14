@@ -1,16 +1,23 @@
 from decimal import Decimal
-from urllib.parse import quote
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import redirect
-from django.utils.translation import gettext as _
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.utils.translation import gettext as _, gettext_lazy as _l
 from django.views.generic import DetailView
+from django.views.generic.detail import SingleObjectMixin
 from django_filters.views import FilterView
 
+from ombucore.admin import panel_commands
+from ombucore.admin.buttons import CancelButton, SubmitButton
 from ombucore.admin.views import FilterMixin
+from ombucore.admin.views.base import FormView as PanelsFormView
 from website.filterset import AllocateCostTypeGrantSiteFilterSet
-from website.models import CostLineItem
-from website.models import InterventionInstance
+from website.forms.analysis import AllocateInterventionBulkForm
+from website.models import Analysis, CostLineItem, CostType
+from website.models.cost_line_item import CostLineItemConfig, CostLineItemInterventionAllocation
+from website.models.subcomponent import SubcomponentCostAllocation
 from website.models.cost_type import Indirect, ProgramCost, Support
 from website.views.mixins import (
     AllocateMixin,
@@ -19,6 +26,7 @@ from website.views.mixins import (
     AnalysisStepFiltersetMixin,
     AnalysisStepMixin,
 )
+from website.workflows import AnalysisWorkflow
 
 
 class Allocate(AnalysisPermissionRequiredMixin, AnalysisStepDetailMixin):
@@ -112,6 +120,8 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
             good_data = {key: data[key] for key in data if key not in errors}
             if good_data:
                 self._save_data(good_data)
+                self.workflow.invalidate_step("insights")
+                self.workflow.calculate_if_possible()
 
             return self.render_to_response(context)
         else:
@@ -188,12 +198,6 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
 
         return standard_cost_lines_cost / cost_denom
 
-    def _save_data(self, data):
-        for cost_line_item_id, allocation in data.items():
-            cost_line_item = self.analysis.cost_line_items.get(pk=cost_line_item_id)
-            cost_line_item.config.allocation = allocation
-            cost_line_item.config.save()
-
 
 class AllocateCostTypeGrant(
     FilterMixin,
@@ -212,12 +216,22 @@ class AllocateCostTypeGrant(
 
     def setup_step(self):
         super().setup_step()
+        # Match on the URL kwargs rather than the quoted request path: reverse()
+        # leaves sub-delimiters like "," in grant codes unescaped, so hrefs for
+        # those grants never equal the re-quoted path.
         self.step = None
         for substep in self.parent_step.steps:
-            encoded_request_path = quote(self.request.path)
-            if substep.get_href() == encoded_request_path:
+            if (
+                substep.name == "allocate-cost_type-grant"
+                and substep.cost_type.pk == self.kwargs["cost_type_pk"]
+                and substep.grant == self.kwargs["grant"]
+            ):
                 self.step = substep
                 break
+
+        if self.step is None:
+            # No such cost_type/grant sub-step for this analysis; dispatch() redirects.
+            return
 
         self.cost_type_category_grants = (
             self.analysis.cost_type_category_grants.filter(
@@ -360,6 +374,8 @@ class AllocateCostTypeGrant(
             good_data = {key: data[key] for key in data if key not in errors}
             if good_data:
                 self._save_data(good_data)
+                self.workflow.invalidate_step("insights")
+                self.workflow.calculate_if_possible()
 
             return self.render_to_response(context)
         else:
@@ -419,11 +435,103 @@ class AllocateCostTypeGrant(
             allocation = self.calc_item_costs() / self.calc_item_totals()
             return f"{allocation:.2%}"
 
-    def _save_data(self, data):
-        for cost_line_item_id, intervention_allocations in data.items():
-            for intervention_instance_id, allocation in intervention_allocations.items():
-                cost_line_item: CostLineItem = self.analysis.cost_line_items.get(pk=cost_line_item_id)
-                cost_line_item.set_allocation_for_intervention(
-                    intervention_instance=InterventionInstance.objects.get(pk=intervention_instance_id),
+
+class AllocateInterventionBulk(
+    AnalysisPermissionRequiredMixin,
+    LoginRequiredMixin,
+    PanelsFormView,
+    SingleObjectMixin,
+):
+    model = Analysis
+    form_class = AllocateInterventionBulkForm
+    template_name = "panel-form-bulk-intervention-allocate.html"
+    supertitle = _l("Selected Cost Items")
+    title = _l("Set Allocation Percentage")
+    permission_required = "website.change_analysis"
+    buttons = [
+        SubmitButton(text=_l("Save")),
+        CancelButton(),
+    ]
+    help_text = _l("What is the percent allocation of the selected cost items to the interventions?")
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.object = self.get_object()
+        self.analysis = self.object
+        self.cost_type = get_object_or_404(CostType, pk=kwargs["cost_type_pk"])
+        if not self.cost_type.type_obj().allocation_editable:
+            raise Http404(_("Allocations for this cost type are not editable"))
+        self.grant = kwargs["grant"]
+        self.config_ids = self._get_config_ids(request)
+
+    def _get_config_ids(self, request):
+        if request.method == "POST":
+            return request.POST.getlist("config_ids")
+        else:
+            # config_ids are a comma-separated string (e.g. `12,44,2,34`).
+            return request.GET.get("config_ids", "").split(",")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["initial"]["config_ids"] = self.config_ids
+        kwargs["analysis"] = self.analysis
+        return kwargs
+
+    def form_valid(self, form):
+        config_ids = form.cleaned_data["config_ids"]
+        notes = form.cleaned_data.get("notes", "")
+        # Restrict to configs that belong to this step's cost type/grant table so
+        # forged config_ids can't reach rows outside the step.
+        configs = list(
+            CostLineItemConfig.objects.filter(
+                cost_line_item__analysis_id=self.analysis.id,
+                cost_line_item__grant_code=self.grant,
+                cost_type=self.cost_type,
+                id__in=config_ids,
+            )
+        )
+        intervention_instances = list(
+            self.analysis.interventioninstance_set.select_related("subcomponent_cost_analysis").all()
+        )
+
+        allocations_to_upsert = []
+        zeroed_subcomponent_analyses = []
+        for intervention_instance in intervention_instances:
+            allocation = form.cleaned_data.get(f"allocation_{intervention_instance.id}")
+            if allocation is None:
+                continue
+            allocations_to_upsert.extend(
+                CostLineItemInterventionAllocation(
+                    cli_config=config,
+                    intervention_instance=intervention_instance,
                     allocation=allocation,
                 )
+                for config in configs
+            )
+            if not allocation and hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                zeroed_subcomponent_analyses.append(intervention_instance.subcomponent_cost_analysis)
+
+        CostLineItemInterventionAllocation.objects.bulk_create(
+            allocations_to_upsert,
+            update_conflicts=True,
+            unique_fields=["cli_config", "intervention_instance"],
+            update_fields=["allocation"],
+        )
+        if zeroed_subcomponent_analyses:
+            SubcomponentCostAllocation.objects.filter(
+                cli_config__in=configs,
+                subcomponent_analysis__in=zeroed_subcomponent_analyses,
+            ).delete()
+        if notes:
+            CostLineItem.objects.filter(config__in=configs).update(note=notes)
+
+        workflow = AnalysisWorkflow(self.analysis)
+        workflow.invalidate_step("insights")
+        workflow.calculate_if_possible()
+        return super().form_valid(form)
+
+    def get_success_message(self, cleaned_data):
+        return _("{count} cost items updated").format(count=len(self.config_ids))
+
+    def get_success_commands(self):
+        return [panel_commands.Resolve()]

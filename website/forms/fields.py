@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 from django import forms
@@ -7,10 +8,7 @@ from django.forms import DecimalField, ModelChoiceField
 from django.utils.translation import gettext_lazy as _
 
 from website.models.field_types import SubcomponentLabelsType
-from .widgets import (
-    SortableSelectMultipleAnalysisInterventionsWidget,
-    SortableSelectMultipleSubcomponentLabelsWidget,
-)
+from .widgets import SortableSelectMultipleSubcomponentLabelsWidget
 
 
 class PositiveFixedDecimalField(DecimalField):
@@ -19,6 +17,9 @@ class PositiveFixedDecimalField(DecimalField):
         super().__init__(*args, **kwargs)
 
     def to_python(self, value):
+        if isinstance(value, str):
+            # Ignore spurious characters ("40%", "1,000", "$50") — keep digits and the decimal point.
+            value = re.sub(r"[^0-9.]", "", value)
         value = super().to_python(value)
         if value:
             value = value.quantize(settings.DECIMAL_PRECISION)
@@ -49,24 +50,6 @@ class SubcomponentLabelField(forms.JSONField):
         SubcomponentLabelsType.validate(value)
         if len(value) > 8:
             raise ValidationError(_("No more than 8 sublabels are allowed."), code="invalid")
-        return value
-
-
-class AnalysisInterventionManageField(forms.JSONField):
-    widget = SortableSelectMultipleAnalysisInterventionsWidget
-
-    def __init__(self, *args, **kwargs):
-        kwargs["required"] = False
-        super().__init__(*args, **kwargs)
-
-    def clean(self, value: list) -> dict:
-        value = super().clean(value)
-        if len(value) > settings.MAX_ANALYSIS_INTERVENTIONS:
-            raise ValidationError(
-                _("No more than %(limit)s interventions are allowed.")
-                % {"limit": settings.MAX_ANALYSIS_INTERVENTIONS},
-                code="invalid",
-            )
         return value
 
 

@@ -1,5 +1,5 @@
 from website.models import Analysis
-from website.workflows._steps_base import MultiStep, Step, SubStep
+from website.workflows._steps_base import MultiStep, Step
 
 
 class Workflow:
@@ -64,10 +64,32 @@ class Workflow:
         return None
 
     def get_last_complete(self) -> Step | None:
-        latest_step = self.get_last_incomplete()
-        if isinstance(latest_step, SubStep):
-            latest_step = latest_step.parent
-        return self.get_prev(latest_step)
+        last_complete = None
+
+        for step in self.steps:
+            if not step.is_enabled:
+                continue
+
+            if isinstance(step, MultiStep):
+                if not step.dependencies_met:
+                    return last_complete
+
+                sub_last_complete = step.get_last_complete()
+                if sub_last_complete:
+                    last_complete = sub_last_complete
+
+                if not step.is_complete:
+                    return last_complete
+
+                last_complete = step
+                continue
+
+            if not step.is_complete:
+                return last_complete
+
+            last_complete = step
+
+        return last_complete
 
     def get_final_step(self) -> Step | None:
         for step in self.steps:

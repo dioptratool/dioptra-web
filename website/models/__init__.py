@@ -22,5 +22,5 @@ from .intervention import Intervention, InterventionGroup
 from .intervention_instance import InterventionInstance
 from .region import Country, Region
 from .settings import Settings
-from .subcomponent import SubcomponentCostAnalysis
+from .subcomponent import SubcomponentCostAllocation, SubcomponentCostAnalysis
 from .transaction import Transaction, TransactionLike

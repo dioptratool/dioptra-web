@@ -1,0 +1,12 @@
+{% extends "filter-list/filter-list.html" %}
+
+{% block extrahead %}{% endblock %}
+
+{% block extrastyle %}{% endblock %}
+
+{% block panel-body %}
+    <div class="filter-list">
+        {% include view.list_template_name with list_display=list_display results=results object_list=object_list list_display_mobile=list_display_mobile only %}
+        {% include "_pagination.html" %}
+    </div>
+{% endblock panel-body %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Max
+from django.utils.translation import gettext_lazy as _
 
 from website.models.field_types import InterventionParametersType
 from website.models.fields import TypedJsonField
@@ -35,8 +36,15 @@ class InterventionInstance(models.Model):
 
     objects = InterventionInstanceManager()
 
+    class Meta:
+        verbose_name = _("Intervention")
+        verbose_name_plural = _("Interventions")
+
     def __repr__(self):
         return f"<InterventionInstance: {self.label} ({self.id})>"
+
+    def __str__(self):
+        return self.display_name()
 
     def display_name(self) -> str:
         return self.label if self.label else self.intervention.name

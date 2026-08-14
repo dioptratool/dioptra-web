@@ -170,9 +170,15 @@ class CostType(OrderableMixin, models.Model):
         # If we get into a state where nothing is the default we set it to the Instance's default to the default
         with transaction.atomic():
             if not CostType.objects.filter(default=True).exists():
-                default_cat = CostType.objects.get(name=settings.DEFAULT_COST_TYPE)
-                default_cat.default = True
-                default_cat.save(update_fields=["default"])
+                # Names are admin-editable, so fall back to the fixed type when the
+                # configured name no longer matches any row.
+                default_cat = (
+                    CostType.objects.filter(name=settings.DEFAULT_COST_TYPE).first()
+                    or CostType.objects.filter(type=ProgramCost.id).first()
+                )
+                if default_cat is not None:
+                    default_cat.default = True
+                    default_cat.save(update_fields=["default"])
 
     def get_previous_type(self):
         for i, cost_type_type in enumerate(self.TYPES):

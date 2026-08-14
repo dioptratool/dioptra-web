@@ -1,7 +1,5 @@
 from functools import lru_cache
 
-from django.urls import reverse
-
 from . import FieldLabelOverrides
 from .intervention import Intervention
 from .intervention_instance import InterventionInstance
@@ -33,52 +31,30 @@ def get_intervention_parameter_mapping() -> dict[int, list[str]]:
     return mapping
 
 
+def intervention_parameters_display(intervention_instance: InterventionInstance) -> list[dict]:
+    """
+    Label/value pairs for an intervention instance's valid parameters, for display.
+    """
+    fields = get_all_intervention_parameter_fields()
+    params = []
+    for parameter_name in get_valid_intervention_parameter(intervention_instance):
+        field = fields.get(parameter_name)
+        if field is None:
+            continue
+        params.append(
+            {
+                "label": str(field.label),
+                "value": intervention_instance.parameters.get(parameter_name, ""),
+            }
+        )
+    return params
+
+
 def get_intervention_output_metric_mapping() -> dict:
     mapping = {}
     for intervention in Intervention.objects.all():
         mapping[intervention.pk] = intervention.output_metrics
     return mapping
-
-
-def build_intervention_instance_data(kwargs) -> dict:
-    intervention_id = int(kwargs["data"].get("intervention"))
-    intervention = Intervention.objects.get(pk=intervention_id)
-
-    if kwargs["data"].get("intervention_label"):
-        label = kwargs["data"].get("intervention_label")
-    else:
-        label = intervention.name
-
-    intervention_data = {
-        "id": intervention_id,
-        "intervention_name": intervention.name,
-        "title": label,
-        "params": [],
-        "change_url": reverse("analysis-define-interventions-edit"),
-    }
-    if kwargs["data"].get("original_id"):
-        intervention_data["original_id"] = int(kwargs["data"].get("original_id"))
-    if kwargs["data"].get("instance_pk"):
-        intervention_data["instance_pk"] = int(kwargs["data"].get("instance_pk"))
-    if kwargs["data"].get("intervention_label"):
-        intervention_data["intervention_label"] = kwargs["data"].get("intervention_label")
-
-    mapping = get_intervention_parameter_mapping()
-    intervention_parameters = mapping[intervention_id]
-
-    for parameter_name, field in get_all_intervention_parameter_fields().items():
-        for output_metric_parameters in intervention_parameters:
-            if parameter_name in output_metric_parameters:
-                field_name = get_parameter_field_name(parameter_name)
-                if kwargs["data"].get(field_name):
-                    intervention_data["params"].append(
-                        {
-                            "label": str(field.label),
-                            "name": parameter_name,
-                            "value": kwargs["data"].get(field_name),
-                        }
-                    )
-    return intervention_data
 
 
 def get_parameter_field_name(parameter_name) -> str:

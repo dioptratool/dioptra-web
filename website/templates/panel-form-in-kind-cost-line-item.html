@@ -1,0 +1,139 @@
+{% extends 'panel-form.html' %}
+{% load panels_extras panels_form_extras %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis panel-form-in-kind-cost-line-item"
+          enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}"
+          novalidate="novalidate"
+          {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+{% endblock form-start %}
+
+{% block panel-body %}
+    {% csrf_token %}
+    <div class="panel-body-contents">
+        {% if form.non_field_errors %}
+            <div class="help-block errors">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li><em>{{ error }}</em></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field }}
+        {% endfor %}
+
+        {% for field in form.non_allocation_fields %}
+            {% include 'bootstrap/field.html' with field=field|add_input_classes %}
+        {% endfor %}
+
+        <!-- Intervention Allocations -->
+        <div class="bulk-allocate-form" data-total-rule="max-100" id="in-kind-intervention-allocation">
+            <span class="control-label">How much did this item contribute to each intervention?</span>
+            <div class="allocation-input-table-wrapper">
+                <table class="allocation-input-table">
+                    <thead>
+                    <tr>
+                        {% for group in form.allocation_groups %}
+                            <th class="allocation-input-table__intervention-header" title="{{ group.intervention.display_name }}">{{ group.intervention.display_name|truncatechars:30 }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        {% for group in form.allocation_groups %}
+                        <td class="allocation-input-table__input-cell form-group" data-intervention-id="{{ group.intervention.pk }}">
+                            {{ group.allocation_field }}
+                            {% include 'bootstrap/_errors.html' with field=group.allocation_field %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        
+            <div class="allocation-input-table__total">
+                <p class="allocation-total-title">Total Percentage Across Interventions</p>
+                <p class="allocation-total-subtitle bulk-allocate-form__warning">Cannot exceed 100%</p>
+                <p class="allocation-input-table__total-value">0%</p>
+            </div>
+        </div>
+
+        {% for group in form.allocation_groups %}
+        {% if group.subcomponent_fields %}
+            <div class="bulk-allocate-form" data-total-rule="equal-100" data-intervention-id="{{ group.intervention.pk }}">
+                <span class="control-label">{{ group.intervention.display_name }}: how much did this item contribute to each sub-component?</span>
+
+                <div class="allocation-input-table-wrapper">
+                    <table class="allocation-input-table">
+                        <thead>
+                            <tr>
+                                {% for subcomponent in group.subcomponent_fields %}
+                                    <th class="allocation-input-table__subcomponent-header">{{ subcomponent.label }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for subcomponent in group.subcomponent_fields %}
+                                    <td class="allocation-input-table__input-cell form-group">
+                                        {{ subcomponent.field }}
+                                        {% include 'bootstrap/_errors.html' with field=subcomponent.field %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="allocation-input-table__total">
+                    <p class="allocation-total-title">Total Percentage Across Sub-Components</p>
+                    <p class="allocation-total-subtitle bulk-allocate-form__warning">Must Equal 100%</p>
+                    <p class="allocation-input-table__total-value">0%</p>
+                </div>
+            </div>
+        {% endif %}
+        {% endfor %}
+
+        {% if form.note_field %}
+            {% include 'bootstrap/field.html' with field=form.note_field|add_input_classes %}
+        {% endif %}
+    </div>
+{% endblock panel-body %}
+
+{% block extrascript %}
+    {{ block.super }}
+    <script>
+        (function () {
+            const allocationInputs = document.getElementById('in-kind-intervention-allocation').querySelectorAll('td[data-intervention-id] input');
+            allocationInputs?.forEach((input) => {
+                const interventionId = input.closest('[data-intervention-id]').dataset.interventionId;
+                input.addEventListener('change', (e) => {
+                    updateSubcomponentAvailability(interventionId)
+                })
+                input.addEventListener('input', (e) => {
+                    updateSubcomponentAvailability(interventionId)
+                })
+                updateSubcomponentAvailability(interventionId);
+            })
+            function updateSubcomponentAvailability(id) {
+                const input = document.querySelector(`input[name="intervention_allocation_${id}"]`);
+                const form = document.querySelector(`.bulk-allocate-form[data-intervention-id="${id}"]`);
+                if (!input || !form) return;
+
+                const disabled = !(input.value.length && input.value > 0);
+
+                form?.querySelectorAll(`input`)?.forEach((subinput) => {
+                    subinput.disabled = disabled
+                });
+                if (disabled) {
+                    form.style.opacity = 0.5;
+                } else {
+                    form.style.opacity = null;
+                }
+            }
+        })();
+    </script>
+{% endblock extrascript %}

@@ -10,25 +10,57 @@
 {% endblock extrastyle %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form bulk-subcomponent-allocate-form" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="equal-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
 {% endblock form-start %}
 
 {% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block panel-body %}
-        {% csrf_token %}
-        {% if form.Meta.fieldsets %}
-            {% include '_form-with-fieldsets.html' with form=form only %}
-        {% else %}
-            {% include '_form.html' with form=form only %}
-        {% endif %}
+<div class="panel-body-contents">
+  {% csrf_token %}
+  {% for field in form %}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% endif %}
+  {% endfor %}
 
-        <div class="bulk-subcomponent-allocate-form__total form-group">
-          <p class="control-label">Total Percentage (cannot exceed 100%)</p>
-          <p class="bulk-subcomponent-allocate-form__total-value">0%</p>
-          <p class="bulk-subcomponent-allocate-form__exceed-warning">Total exceeds 100%</p>
-        </div>
-    {% endblock panel-body %}
+  <span class="control-label">What is the percent allocation of the selected cost items to the sub-components?</span>
+  <div class="allocation-input-table-wrapper">
+    <table class="allocation-input-table">
+      <thead>
+        <tr>
+          {% for field in form %}
+            {% if field.name != 'notes' and not field.is_hidden %}
+              <th class="allocation-input-table__subcomponent-header">{{ field.label }}</th>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for field in form %}
+            {% if field.name != 'notes' and not field.is_hidden %}
+              <td class="allocation-input-table__input-cell form-group">
+                <div class="currency-wrapper">
+                  {{ field }}
+                  <span class="input-group-text input-group-text__after">%</span>
+                </div>
+                {% include 'bootstrap/_errors.html' with field=field %}
+              </td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="allocation-input-table__total">
+    <p class="allocation-total-title">Total Sub-Component Percentage</p>
+    <p class="allocation-total-subtitle bulk-allocate-form__warning">Must Equal 100%</p>
+    <p class="allocation-input-table__total-value">0%</p>
+  </div>
+</div>
+{% endblock panel-body %}
 
 {% block panel-foot %}
         {% if form.buttons != None %}

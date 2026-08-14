@@ -24,13 +24,13 @@ class SubcomponentsDeleteView(DeleteView):
     template_name = "panel-overrides/subcomponent-analysis-delete.html"
 
     def dispatch(self, request, *args, **kwargs):
-        analysis = self.get_object()
-        if not request.user.has_perm("website.delete_analysis", analysis):
+        subcomponent_analysis = self.get_object()
+        if not request.user.has_perm("website.delete_analysis", subcomponent_analysis.analysis):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_message(self, data):
-        if not "title" in data:
+        if "title" not in data:
             data["title"] = str(self.object)
         return self.success_message % data
 

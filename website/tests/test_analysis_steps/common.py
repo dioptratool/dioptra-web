@@ -104,9 +104,11 @@ class StepTest:
     def test_cloned_analysis_is_still_complete_up_to_the_same_step(self, workflow_with_completed_step):
         cloned_analysis = clone_analysis(workflow_with_completed_step.analysis.pk, owner=UserFactory())
         new_wf = AnalysisWorkflow(analysis=cloned_analysis)
-        assert (
-            new_wf.get_last_incomplete().name == workflow_with_completed_step.get_last_incomplete().name
-        ), f"Expected {workflow_with_completed_step.get_last_incomplete().name} Got: {new_wf.get_last_incomplete().name}"
+        expected = workflow_with_completed_step.get_last_incomplete()
+        actual = new_wf.get_last_incomplete()
+        expected_name = expected.name if expected else None
+        actual_name = actual.name if actual else None
+        assert actual_name == expected_name, f"Expected {expected_name} Got: {actual_name}"
 
     def test_invalidate_step_works(self, workflow_with_completed_step):
         workflow_with_completed_step.invalidate_step(step_name=self.step_under_test.name)

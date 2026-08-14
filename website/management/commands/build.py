@@ -23,6 +23,7 @@ from website.models import CostTypeCategoryMapping, Transaction
 from website.models import InsightComparisonData
 from website.models import Intervention, InterventionGroup
 from website.models import Settings
+from website.models import SubcomponentCostAnalysis
 from .seed_data.default import COST_TYPES
 from .seed_data.default.categories import DEFAULT_CATEGORY
 from .seed_data.default.cost_types import DEFAULT_COST_TYPE
@@ -37,6 +38,7 @@ from ...data_loading.cost_line_items import load_cost_line_items_from_file
 from ...models.cost_line_item import CostLineItemInterventionAllocation
 from ...models.output_metric import OUTPUT_METRICS_BY_ID
 from ...utils.duplicator import clone_analysis
+from ...workflows import AnalysisWorkflow
 
 THIS_DIR = Path(__file__).resolve().parent
 User = get_user_model()
@@ -458,7 +460,7 @@ class Command(BuildCommand):
                 "value_of_cash_distributed": 10_000,
             },
         )
-        _check_analysis_status(analysis_step1, "define")
+        _check_analysis_status(analysis_step1, "interventions")
 
         # Step 1 - Multi
         analysis_step1_multi = clone_analysis(analysis_step1.pk, User.objects.get(name="Akmal Shah"))
@@ -470,7 +472,7 @@ class Command(BuildCommand):
             },
         )
         analysis_step1_multi.save()
-        _check_analysis_status(analysis_step1_multi, "define")
+        _check_analysis_status(analysis_step1_multi, "interventions")
 
         # ##########################
         # Step 2
@@ -568,6 +570,7 @@ class Command(BuildCommand):
         self.add_debug_analyses_with_multiple_intervention()
         self.add_client_provided_multiintervention_analysis()
         self.add_client_provided_multiintervention_analysis_more_complete()
+        self.add_debug_analysis_with_eight_intervention_subcomponents()
 
         ###########################
         # Add Other Cost Line Items step
@@ -760,7 +763,7 @@ class Command(BuildCommand):
         self._import_sample_transactions_and_clis_to_analysis(
             analysis,
             "transactions_10_entries.csv",
-            only_grant_codes=["GA298"],
+            only_grant_codes=["ER342"],
         )
 
         analysis.auto_categorize_cost_line_items()
@@ -778,6 +781,9 @@ class Command(BuildCommand):
                     cli_config=cost_line_item.config,
                 )
                 allocation.save()
+
+        _check_analysis_status(analysis, "insights")
+        AnalysisWorkflow(analysis).calculate_if_possible()
 
     def add_client_provided_multiintervention_analysis(self):
         analysis = Analysis.objects.create(
@@ -1068,6 +1074,70 @@ class Command(BuildCommand):
 
         analysis.save()
 
+    def add_debug_analysis_with_eight_intervention_subcomponents(self):
+        analysis = Analysis.objects.create(
+            title="Sample Analysis - Allocate Step - 8 Interventions With 8 Subcomponents",
+            analysis_type=self.analysis_types["Budget projection data"],
+            description="Sample analysis with eight interventions and eight subcomponents per intervention.",
+            start_date=datetime.date(2000, 4, 1),
+            end_date=datetime.date(2020, 4, 1),
+            country=self.countries["Afghanistan"],
+            grants="EF234",
+            owner=User.objects.get(name="Akmal Shah"),
+        )
+
+        subcomponent_labels = [
+            "Ipsum dolores",
+            "Dolor sit amet",
+            "Consecte elit",
+            "Adipisc sed do",
+            "Eiusmod tempor",
+            "Incididunt ut",
+            "Labore dolore",
+            "Magna aliqua",
+        ]
+        intervention_setups = [
+            ("General Program", {"number_of_outputs": 800}),
+            ("Business Skills Training", {"number_of_people": 800}),
+            ("Legal Aid Case Management", {"number_of_people": 800}),
+            ("GBV Case Management", {"number_of_people": 800}),
+            ("Protection Case Management", {"number_of_people": 800}),
+            ("Maternal Health Services", {"number_of_people": 800}),
+            ("Business Grants and Mentorship", {"number_of_people": 800}),
+            (
+                "Technical and Vocational Education and Training (TVET)",
+                {"number_of_people": 800},
+            ),
+        ]
+
+        for intervention_name, parameters in intervention_setups:
+            intervention_instance = analysis.add_intervention(
+                self.interventions[intervention_name],
+                parameters=parameters,
+            )
+            SubcomponentCostAnalysis.objects.create(
+                intervention_instance=intervention_instance,
+                subcomponent_labels=subcomponent_labels,
+            )
+
+        self._import_cost_line_items_from_path(
+            analysis,
+            THIS_DIR.parent.parent
+            / "tests"
+            / "test_data"
+            / "Budget spreadsheet with 0 dollar cost items.csv",
+        )
+
+        analysis.auto_categorize_cost_line_items()
+        analysis.ensure_cost_type_category_objects()
+        analysis.save()
+
+        for cost_type_category in analysis.cost_type_categories.all():
+            cost_type_category.confirmed = True
+            cost_type_category.save()
+
+        _check_analysis_status(analysis, "categorize")
+
     @betterdb.transaction()
     def _import_sample_transactions_and_clis_to_analysis(
         self,
@@ -1132,6 +1202,13 @@ class Command(BuildCommand):
     def _import_cost_line_items_from_file(analysis, filename):
         with open(THIS_DIR / "build_content" / filename, "rb") as f:
             load_cost_line_items_from_file(analysis, f)
+
+    @staticmethod
+    def _import_cost_line_items_from_path(analysis, path):
+        with open(path, "rb") as f:
+            succeeded, result = load_cost_line_items_from_file(analysis, f)
+        if not succeeded:
+            raise ValueError(f"Could not load cost line items from {path}: {result['errors']}")
 
     @staticmethod
     def add_account_code_descriptions():

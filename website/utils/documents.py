@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-from django.conf import settings
 from django.db.models import F, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -14,7 +13,6 @@ from website.models import InterventionInstance
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 from website.models.cost_type import ProgramCost
 from website.models.output_metric import OutputMetric
-from website.workflows import AnalysisWorkflow
 
 _gray_fill = PatternFill(start_color="00DADADA", end_color="00DADADA", fill_type="solid")
 
@@ -150,7 +148,7 @@ def _write_metadata_table(
         ]:
             # For these values we format things as a date
             ws[f"B{row}"] = val
-            ws[f"B{row}"].number_format = f"yyyy-MM-dd"
+            ws[f"B{row}"].number_format = "yyyy-MM-dd"
         else:
             ws[f"B{row}"] = val
             ws[f"B{row}"].number_format = "#,##0.00"
@@ -200,6 +198,8 @@ def _write_cost_efficiency_table(
         ws[f"A{row}"] = f"{each_metric.metric_name} including Program Costs, Support Costs, Indirect Costs"
         ws[f"A{row}"].border = _black_border
 
+        # Sub-component costs are calculated against the full output cost
+        # (Program + Support + Indirect), matching Insights and print.
         metrics_all_costs_metadata[each_metric.metric_name] = f"B{row}"
 
         ws[f"B{row}"] = output_costs[each_metric.id]["all"]
@@ -240,27 +240,38 @@ def _write_cost_of_each_subcomponent_per_output_metric_table(
     """
     Write the "Cost of Each Sub-component, per OUTPUT METRIC UNIT" table to the provided worksheet
 
+    Each label row shows the allocation amount (column B) and the full-cost
+    allocation percentage (column C); both are filled in as formulas by
+    `_fill_in_subcomponent_cost_efficiency_functions`.
+
     Returns the last row with data on it to position other things on the page.
     """
 
     row = starting_row
+
+    if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        # Explicit empty state so multi-intervention workbooks make clear the
+        # section was not simply lost for interventions without sub-components.
+        ws[f"A{row}"] = "No sub-component analysis for this intervention"
+        ws[f"A{row}"].font = Font(italic=True)
+        return row + 1
+    subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
 
     for output_metric in intervention_instance.intervention.output_metric_objects():
         ws[f"A{row}"] = f"Cost of Each Sub-component, per {output_metric.cost_efficiency_unit}"
         ws[f"A{row}"].font = Font(bold=True)
 
         row += 1
-        percentages = an_analysis.subcomponent_cost_analysis.cost_line_item_average(
-            exclude_support_costs=False
-        )
+        percentages = subcomponent_analysis.full_cost_percentages()
         for idx, each_percentage in enumerate(percentages):
-            ws[f"A{row}"] = f"{an_analysis.subcomponent_cost_analysis.subcomponent_labels[idx]}"
+            ws[f"A{row}"] = f"{subcomponent_analysis.subcomponent_labels[idx]}"
             ws[f"A{row}"].border = _black_border
 
             # This is a placeholder value that is used when building the
             # excel functions in `_fill_in_subcomponent_cost_efficiency_functions`
             ws[f"B{row}"] = str(output_metric.metric_name)
             ws[f"B{row}"].border = _black_border
+            ws[f"C{row}"].border = _black_border
 
             row += 1
 
@@ -449,67 +460,76 @@ def _fill_in_subcomponent_cost_efficiency_functions(
     full_cost_model_last_data_row: int,
 ):
     """
-    The sum of the subcomponent costs / the Item Total
+    Fill in the allocation percentage (column C) and amount (column B) for
+    each sub-component label row.
 
-    This is a complex function needing to know the location of a number of dynamic values.
+    The percentage is the label's share of the full cost model:
+      SUM(label Total column) / SUMIFS(Item Totals that carry a split)
+    Since item 7.1 every cost model row carries a split (explicit on Program
+    rows, derived on shared/skipped rows), so the denominator is the full
+    cost basis and the amount — the metric's full output cost times the
+    percentage cell — matches Insights.
+
+    Label rows are matched to their cost model columns by position within
+    each "Cost of Each Sub-component" block, never by label text, so long or
+    duplicate labels cannot produce a wrong or ambiguous reference. The
+    column base is read from the cost model's own header row: the label
+    (percent, total) pairs start immediately after its "Item Total" column.
     """
 
-    row = first_data_row
+    item_total_column = None
+    first_label_pair_column = None
 
-    # Get a list of strings that are the header values.   This is used to lookup a value used in the excel function
-    full_cost_model_headers = [c.value for c in ws[full_cost_model_first_data_row - 1]]
-
-    while row < last_data_row:
-        # Find which column has the Subcomponent Total for the Subcomponent in this Row
-        try:
-            subcomponent_column = get_column_letter(
-                full_cost_model_headers.index(ws[f"A{row}"].value + " Total") + 1
-            )
-        except ValueError:
-            # We can assume when this happens it has hit a header for one of the Subcomponent Sub Sections.
-            # Something that looks like the following.  Where "Person" and "Person-Day of Training" are
-            # the two Output Metrics for an intervention.  The ValueError is raised when it hits A27 which
-            # doesn't have a value to lookup in the subcomponent label list.  We can just skip it
-            # since the value is blank on that row.   We are filling in column B for this sub section.
-            #
-            # Example layout:
-            #
-            #   Row#    A
-            #   24      Cost of Each Sub-component, per Person
-            #   25      subcomponentlabel1
-            #   26      subcomponentlabel2
-            #   27      Cost of Each Sub-component, per Person-Day of Training
-            #   28      subcomponentlabel1
-            #   29      subcomponentlabel2
-            #
-            row += 1
+    label_idx = 0
+    for row in range(first_data_row, last_data_row):
+        # Label rows hold their metric's name in column B as a placeholder; a
+        # blank B is a "Cost of Each Sub-component, per ..." header row and
+        # starts a new block.
+        placeholder = ws[f"B{row}"].value
+        if placeholder is None:
+            label_idx = 0
             continue
-        # Create a function that takes the percentage of the Subcomponent to the relevant Cost Total
-        #   and applies that percentage to relevant metric's Efficiency Cost
-        if ws[f"B{row}"].value in metrics_all_costs_metadata:
-            v = (
-                "="
-                + metrics_all_costs_metadata[ws[f"B{row}"].value]
-                + " * "
-                + f"SUM({subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row})"
-                + " / "
-                + f"SUMIFS("
-                f"J{full_cost_model_first_data_row}:J{full_cost_model_last_data_row},"
+
+        if first_label_pair_column is None:
+            # The first "Item Total" occurrence is always the fixed column —
+            # label columns only come after it — so a label named
+            # "Item Total" cannot mislead this, and a renamed or missing
+            # header fails loudly instead of desyncing silently.
+            full_cost_model_headers = [c.value for c in ws[full_cost_model_first_data_row - 1]]
+            item_total_index = full_cost_model_headers.index("Item Total") + 1
+            item_total_column = get_column_letter(item_total_index)
+            first_label_pair_column = item_total_index + 1
+
+        subcomponent_column = get_column_letter(first_label_pair_column + 1 + (label_idx * 2))
+        label_idx += 1
+
+        metric_reference = metrics_all_costs_metadata.get(placeholder)
+        if metric_reference is None:
+            # The metric has no calculated output cost; clear the placeholder.
+            ws.cell(row=row, column=2, value="")
+            continue
+
+        percentage_cell = ws.cell(
+            row=row,
+            column=3,
+            value=(
+                f"=SUM({subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row})"
+                " / "
+                f"SUMIFS("
+                f"{item_total_column}{full_cost_model_first_data_row}:{item_total_column}{full_cost_model_last_data_row},"
                 f"{subcomponent_column}{full_cost_model_first_data_row}:{subcomponent_column}{full_cost_model_last_data_row}, "
                 '"<>"'
                 f")"
-            )
-        else:
-            v = ""
-        c = ws.cell(
+            ),
+        )
+        percentage_cell.number_format = "0.00%"
+
+        amount_cell = ws.cell(
             row=row,
             column=2,
-            value=v,
+            value=f"={metric_reference} * C{row}",
         )
-
-        c.number_format = "$#,##0.00"
-
-        row += 1
+        amount_cell.number_format = "$#,##0.00"
 
 
 def _write_full_cost_model_table(
@@ -542,13 +562,23 @@ def _write_full_cost_model_table(
         "Item Total",
     ]
 
-    if (
-        hasattr(an_analysis, "subcomponent_cost_analysis")
-        and an_analysis.subcomponent_cost_analysis.subcomponent_labels_confirmed
-    ):
-        for each_label in an_analysis.subcomponent_cost_analysis.subcomponent_labels:
+    subcomponent_analysis = None
+    subcomponent_allocations_by_config = {}
+    derived_subcomponent_percentages = []
+    if hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+        subcomponent_allocations_by_config = {
+            allocation.cli_config_id: allocation for allocation in subcomponent_analysis.allocations.all()
+        }
+
+    if subcomponent_analysis and subcomponent_analysis.subcomponent_labels:
+        for each_label in subcomponent_analysis.subcomponent_labels:
             header_row.append(each_label)
             header_row.append(each_label + " Total")
+        derived_subcomponent_percentages = subcomponent_analysis.full_cost_percentages()
+        if len(derived_subcomponent_percentages) != len(subcomponent_analysis.subcomponent_labels):
+            # No allocated Program Cost rows to derive from; leave shared rows blank.
+            derived_subcomponent_percentages = []
 
     _write_header_row(ws, row, header_row)
 
@@ -613,25 +643,40 @@ def _write_full_cost_model_table(
         ws[f"H{row}"].number_format = "#,##0.00"
         ws[f"J{row}"].number_format = "#,##0.00"
 
-        if (
-            hasattr(an_analysis, "subcomponent_cost_analysis")
-            and an_analysis.subcomponent_cost_analysis.subcomponent_labels_confirmed
-            and getattr(each_cost_line_item.config, "subcomponent_analysis_allocations", None)
-        ):
+        if subcomponent_analysis and subcomponent_analysis.subcomponent_labels:
+            subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
+            is_explicit_program_row = (
+                subcomponent_allocation is not None
+                and not subcomponent_allocation.skipped
+                and subcomponent_allocation.allocations
+                and each_cost_line_item.config.cost_type
+                and each_cost_line_item.config.cost_type.type == ProgramCost.id
+            )
+            if is_explicit_program_row:
+                percentages_by_idx = {
+                    int(idx): Decimal(each_subcomponent_allocation) / 100
+                    for idx, each_subcomponent_allocation in subcomponent_allocation.allocations.items()
+                }
+            else:
+                # Shared costs (Support, Indirect, Other HQ) and skipped rows
+                # follow the weighted Program Cost split. Derived at export
+                # time and never persisted, so recalculation cannot leave
+                # stale derived rows.
+                percentages_by_idx = {
+                    idx: Decimal(each_percentage) / 100
+                    for idx, each_percentage in enumerate(derived_subcomponent_percentages)
+                }
             subcomponent_analysis_start_column = len(row_data) + 1
-            for (
-                idx,
-                each_subcomponent_allocation,
-            ) in each_cost_line_item.config.subcomponent_analysis_allocations.items():
+            for idx, each_percentage in percentages_by_idx.items():
                 percentage = ws.cell(
                     row=row,
-                    column=subcomponent_analysis_start_column + (int(idx) * 2),
-                    value=Decimal(each_subcomponent_allocation) / 100,
+                    column=subcomponent_analysis_start_column + (idx * 2),
+                    value=each_percentage,
                 )
                 total = ws.cell(
                     row=row,
-                    column=subcomponent_analysis_start_column + ((int(idx) * 2) + 1),
-                    value=f"={get_column_letter(len(row_data))}{row} * {get_column_letter(subcomponent_analysis_start_column + (int(idx) * 2))}{row}",
+                    column=subcomponent_analysis_start_column + ((idx * 2) + 1),
+                    value=f"={get_column_letter(len(row_data))}{row} * {get_column_letter(subcomponent_analysis_start_column + (idx * 2))}{row}",
                 )
                 percentage.number_format = "0.00%"
                 total.number_format = "#,##0.00"
@@ -663,18 +708,27 @@ def _write_other_cost_model_table(
     ws[f"A{row}"] = "Other Costs"
     ws[f"A{row}"].font = Font(bold=True)
     row += 1
-    _write_header_row(
-        ws,
-        row,
-        [
-            "Category",
-            "Cost Item",
-            "Total Cost",
-            "% of Intervention",
-            "Item Total",
-            "Notes",
-        ],
-    )
+
+    header_row = [
+        "Category",
+        "Cost Item",
+        "Total Cost",
+        "% of Intervention",
+        "Item Total",
+        "Notes",
+    ]
+
+    subcomponent_allocations_by_config = {}
+    if an_analysis.in_kind_contributions and hasattr(intervention_instance, "subcomponent_cost_analysis"):
+        subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+        subcomponent_allocations_by_config = {
+            allocation.cli_config_id: allocation for allocation in subcomponent_analysis.allocations.all()
+        }
+        for label in subcomponent_analysis.subcomponent_labels or []:
+            header_row.append(label)
+            header_row.append(label + " Total")
+
+    _write_header_row(ws, row, header_row)
 
     row += 1
 
@@ -692,6 +746,23 @@ def _write_other_cost_model_table(
         cost_type = int(each_cost_line_item.config.analysis_cost_type)
         if cost_type in other_cost_rows:
             other_cost_rows[cost_type].append(row)
+
+        subcomponent_allocation = subcomponent_allocations_by_config.get(each_cost_line_item.config.id)
+        if cost_type == int(AnalysisCostType.IN_KIND) and subcomponent_allocation:
+            for idx, allocation in subcomponent_allocation.allocations.items():
+                percentage_column = 7 + (int(idx) * 2)
+                percentage = ws.cell(
+                    row=row,
+                    column=percentage_column,
+                    value=Decimal(allocation) / 100,
+                )
+                total = ws.cell(
+                    row=row,
+                    column=percentage_column + 1,
+                    value=f"=E{row} * {get_column_letter(percentage_column)}{row}",
+                )
+                percentage.number_format = "0.00%"
+                total.number_format = "#,##0.00"
 
         row += 1
 

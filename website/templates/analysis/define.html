@@ -36,7 +36,7 @@
             <div class="col-md-6">
                 {% include 'forms/_field.html' with field=form.title|add_input_classes help_identifier='define_analysis__title' %}
                 {% include 'forms/_field.html' with field=form.description|add_input_classes %}
-                {% include 'forms/_field.html' with field=form.intervention_data|add_input_classes help_identifier='define_analysis__intervention_to_be_analyzed' %}      
+                <p class="analysis__define-loaded-message"><em>Please provide information about the interventions and sub-components in the next step.</em></p>
             </div>
 
             <div class="col-md-6">

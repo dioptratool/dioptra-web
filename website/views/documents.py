@@ -42,12 +42,14 @@ def full_cost_model_spreadsheet(request, pk):
             "cost_type_categories__cost_type",
             "interventioninstance_set",
             "interventioninstance_set__intervention",
+            "interventioninstance_set__subcomponent_cost_analysis",
+            "interventioninstance_set__subcomponent_cost_analysis__allocations",
             "unfiltered_cost_line_items",
             "unfiltered_cost_line_items__config",
             "unfiltered_cost_line_items__config__cost_type",
             "unfiltered_cost_line_items__config__category",
             "unfiltered_cost_line_items__config__allocations",
-            "subcomponent_cost_analysis",
+            "unfiltered_cost_line_items__config__subcomponent_cost_allocations",
         )
         .get(pk=pk)
     )
@@ -107,7 +109,7 @@ def full_cost_model_spreadsheet(request, pk):
         first_subcomponent_analysis_cost_summary_row = None
         last_subcomponent_analysis_cost_summary_row = None
         # Subcomponent Analysis Costs Section
-        if analysis.has_confirmed_subcomponent():
+        if analysis.has_subcomponent_labels():
             first_subcomponent_analysis_cost_summary_row = row
             last_subcomponent_analysis_cost_summary_row = (
                 _write_cost_of_each_subcomponent_per_output_metric_table(
@@ -149,7 +151,7 @@ def full_cost_model_spreadsheet(request, pk):
             int(AnalysisCostType.CLIENT_TIME): [],
         }
         first_other_cost_model_row = row
-        last_other_cost_model_row = _write_other_cost_model_table(
+        _write_other_cost_model_table(
             worksheet,
             analysis,
             each_intervention_instance,
@@ -176,7 +178,7 @@ def full_cost_model_spreadsheet(request, pk):
             efficiency_row=first_cost_efficiency_row + 1,
         )
 
-        if analysis.has_confirmed_subcomponent():
+        if analysis.has_subcomponent_labels():
             _fill_in_subcomponent_cost_efficiency_functions(
                 worksheet,
                 metrics_all_costs_metadata,

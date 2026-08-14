@@ -1,7 +1,6 @@
 import json
 
 from django import forms
-from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import format_html
@@ -48,7 +47,8 @@ class SortableSelectMultipleSubcomponentLabelsWidget(forms.Select):
 
     def get_context(self, name: str, value: str, attrs: dict | None = None) -> dict:
         context = super().get_context(name, value, attrs)
-        json_value = json.loads(value) or []
+        json_value = json.loads(value) if isinstance(value, str) else value
+        json_value = json_value or []
         choices = []
         for idx, label in enumerate(json_value):
             choices.append(
@@ -69,34 +69,6 @@ class SortableSelectMultipleSubcomponentLabelsWidget(forms.Select):
         context[name] = [c["label"] for c in choices]
         context["sortable"] = True
         context["choices"] = choices
-        return context
-
-
-class AnalysisInterventionDefineWidget(forms.Widget):
-    template_name: str = "widgets/analysis-interventions-field.html"
-
-
-class SortableSelectMultipleAnalysisInterventionsWidget(forms.Widget):
-    template_name: str = "widgets/analysis-interventions-table.html"
-
-    def get_context(self, name: str, value: str, attrs: dict | None = None) -> dict:
-        context = super().get_context(name, value, attrs)
-        json_value = json.loads(value) or []
-        context["max_analysis_interventions"] = settings.MAX_ANALYSIS_INTERVENTIONS
-        context["json"] = json_value
-        for idx, intervention in enumerate(json_value):
-            intervention["change_url"] = reverse("analysis-define-interventions-edit")
-            # {
-            #     "id": 21,
-            #     "title": "Teacher Development: Face-to-Face Trainings",
-            #     "ctype_id": 1,
-            #     "verbose_name": "Intervention",
-            #     "verbose_name_plural": "Interventions",
-            #     "change_url": "/panels/website/intervention/21/change/"
-            # }
-
-        context["sortable"] = True
-        context["objects_info"] = json_value
         return context
 
 

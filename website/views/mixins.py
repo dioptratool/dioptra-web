@@ -15,6 +15,7 @@ from ombucore.admin.filterset import FilterSet
 from ombucore.admin.views.base import search_field_for_model
 from website.models import Analysis, CostLineItem, Settings
 from website.models.cost_line_item import CostLineItemInterventionAllocation
+from website.models.subcomponent import SubcomponentCostAllocation
 from website.workflows import AnalysisWorkflow
 
 
@@ -75,9 +76,12 @@ class AnalysisObjectMixin(ContextMixin):
                 "cost_type_categories",
                 "interventioninstance_set",
                 "interventioninstance_set__intervention",
+                "interventioninstance_set__subcomponent_cost_analysis",
+                "interventioninstance_set__subcomponent_cost_analysis__allocations",
                 "unfiltered_cost_line_items",
                 "unfiltered_cost_line_items__config",
                 "unfiltered_cost_line_items__config__allocations",
+                "unfiltered_cost_line_items__config__subcomponent_cost_allocations",
             )
 
         if pk is None:
@@ -212,6 +216,35 @@ class AllocateMixin:
                 if error_message == "Not a number":
                     c = CostLineItem.objects.get(id=cost_line_item_id)
                     CostLineItemInterventionAllocation.objects.filter(cli_config=c.config).delete()
+
+    def _save_data(self, data):
+        cost_line_items = {
+            cli.id: cli
+            for cli in self.analysis.cost_line_items.filter(pk__in=data.keys()).select_related("config")
+        }
+        intervention_instances = {
+            ii.id: ii
+            for ii in self.analysis.interventioninstance_set.select_related(
+                "subcomponent_cost_analysis"
+            ).all()
+        }
+        for cost_line_item_id, intervention_allocations in data.items():
+            cost_line_item: CostLineItem | None = cost_line_items.get(cost_line_item_id)
+            if cost_line_item is None:
+                continue
+            for intervention_instance_id, allocation in intervention_allocations.items():
+                intervention_instance = intervention_instances.get(intervention_instance_id)
+                if intervention_instance is None:
+                    continue
+                cost_line_item.set_allocation_for_intervention(
+                    intervention_instance=intervention_instance,
+                    allocation=allocation,
+                )
+                if not allocation and hasattr(intervention_instance, "subcomponent_cost_analysis"):
+                    SubcomponentCostAllocation.objects.filter(
+                        cli_config=cost_line_item.config,
+                        subcomponent_analysis=intervention_instance.subcomponent_cost_analysis,
+                    ).delete()
 
 
 class PostActionHandlerMixin:
