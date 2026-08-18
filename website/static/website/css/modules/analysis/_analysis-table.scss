@@ -467,6 +467,15 @@ $analysis-table-sector_code-cell-width: 6rem;
   min-width: $analysis-table-sector_code-cell-width;
 }
 
+$analysis-table-custom-field-cell-width: 10rem;
+
+// The five optional Budget / Transaction Custom Field columns. Only rendered when the
+// analysis actually has values for them, so this may match zero cells on a given page.
+.analysis-table__custom-field-cell {
+  min-width: $analysis-table-custom-field-cell-width;
+  max-width: 20rem;
+}
+
 $analysis-table-site-description-width: 12rem;
 
 .analysis-table__description-cell {

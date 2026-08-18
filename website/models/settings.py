@@ -28,6 +28,11 @@ class Settings(models.Model):
 
     budget_upload_template = models.FileField(
         verbose_name=_("Budget Upload Template"),
+        help_text=_(
+            "Optional override. Leave blank -- or tick Clear -- to offer a template generated "
+            "from the columns the budget importer actually reads, including any custom "
+            "fields. Upload a file only if this instance needs a bespoke template."
+        ),
         null=True,
         blank=True,
     )

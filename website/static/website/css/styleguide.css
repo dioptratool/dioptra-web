@@ -5952,6 +5952,11 @@ a.analysis-navigation__prev-next:hover {
   min-width: 6rem;
 }
 
+.analysis-table__custom-field-cell {
+  min-width: 10rem;
+  max-width: 20rem;
+}
+
 .analysis-table__description-cell {
   min-width: 12rem;
 }

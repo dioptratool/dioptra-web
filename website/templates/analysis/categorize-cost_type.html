@@ -66,6 +66,9 @@
                       <th>{{ 'Site'|label_override:'ci_site_code' }}</th>
                       <th>{{ 'Sector Code' }}</th>
                       <th>{% translate 'Account Code Description' %}</th>
+                      {% for column in analysis.cost_item_custom_fields %}
+                        <th class="analysis-table__custom-field-cell">{{ column.default_label|label_override:column.label_key }}</th>
+                      {% endfor %}
                       <th class="analysis-table__amount-cell">
                         {% if not cost_line_items|contains_sensitive_data %}
                           {% if allocateEdit == 'true' %}
@@ -131,6 +134,9 @@
                               {% if account_code_descriptions|dict_get:cost_line_item.account_code %}
                                 {{ account_code_descriptions|dict_get:cost_line_item.account_code|attr:'account_description' }}{% else %}
                                 {{ cost_line_item.account_code }}{% endif %}</td>
+                            {% for column in analysis.cost_item_custom_fields %}
+                              <td class="analysis-table__custom-field-cell">{{ cost_line_item|object_getattr:column.field }}</td>
+                            {% endfor %}
                             <td class="analysis-table__amount-cell">{% if not sensitive_data %}
                               {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                             <td class="analysis-table__edit-cell">

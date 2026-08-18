@@ -89,6 +89,52 @@ class TestBudgetUpload:
         first_item = analysis.cost_line_items.first()
         assert first_item.grant_code == "739465819275036"
 
+    def test_load_data_imports_five_custom_fields(self):
+        """
+        The 5 columns following the standard budget template columns are imported as
+        Budget Custom Field 1-5 (90.6).
+        """
+
+        analysis = AnalysisFactory()
+        file_path = test_data_dir / "Budget Import with Custom Fields.csv"
+
+        with open(file_path, "rb") as f:
+            succeeded, result = load_cost_line_items_from_file(analysis, f)
+            assert succeeded, result["errors"]
+        assert analysis.cost_line_items.count() == 2
+
+        first, second = analysis.cost_line_items.order_by("budget_line_code")
+        assert first.dummy_field_1 == "CC-100"
+        assert first.dummy_field_2 == "DFID"
+        assert first.dummy_field_3 == "PRJ-7"
+        assert first.dummy_field_4 == "Phase 2"
+        assert first.dummy_field_5 == "Restricted"
+
+        # Blank custom field cells import as empty strings, not None.
+        assert second.dummy_field_1 == "CC-200"
+        assert second.dummy_field_2 == ""
+        assert second.dummy_field_3 == "PRJ-8"
+        assert second.dummy_field_4 == ""
+        assert second.dummy_field_5 == ""
+
+    def test_load_data_from_file_without_all_custom_field_columns(self):
+        """
+        Budget files predating the 5 custom columns still import, leaving the missing
+        custom fields empty.
+        """
+
+        analysis = AnalysisFactory()
+        file_path = test_data_dir / "MC - YDP Budget - Clean Year 1.xlsx - Sheet1.csv"
+
+        with open(file_path, "rb") as f:
+            succeeded, result = load_cost_line_items_from_file(analysis, f)
+            assert succeeded, result["errors"]
+
+        first_item = analysis.cost_line_items.first()
+        assert first_item.dummy_field_3 == ""
+        assert first_item.dummy_field_4 == ""
+        assert first_item.dummy_field_5 == ""
+
 
 @pytest.mark.django_db(databases=["default", "transaction_store"])
 class TestTransactionUpload:

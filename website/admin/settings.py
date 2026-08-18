@@ -162,6 +162,50 @@ class ManageFieldLabelOverridesForm(ModelFormBase):
                     ),
                 },
             ),
+            (
+                _("Budget Custom Fields"),
+                {
+                    "intro": (
+                        "Override the text labels that appear for the five custom columns imported "
+                        "from the budget upload. A custom column is only shown in an analysis when "
+                        "the imported data actually contains values for it."
+                    ),
+                    "fields": (
+                        "ci_dummy_field_1",
+                        "ci_dummy_field_1_overridden",
+                        "ci_dummy_field_2",
+                        "ci_dummy_field_2_overridden",
+                        "ci_dummy_field_3",
+                        "ci_dummy_field_3_overridden",
+                        "ci_dummy_field_4",
+                        "ci_dummy_field_4_overridden",
+                        "ci_dummy_field_5",
+                        "ci_dummy_field_5_overridden",
+                    ),
+                },
+            ),
+            (
+                _("Transaction Custom Fields"),
+                {
+                    "intro": (
+                        "Override the text labels that appear for the five custom columns imported "
+                        "from the transaction data. A custom column is only shown in an analysis "
+                        "when the imported data actually contains values for it."
+                    ),
+                    "fields": (
+                        "tr_dummy_field_1",
+                        "tr_dummy_field_1_overridden",
+                        "tr_dummy_field_2",
+                        "tr_dummy_field_2_overridden",
+                        "tr_dummy_field_3",
+                        "tr_dummy_field_3_overridden",
+                        "tr_dummy_field_4",
+                        "tr_dummy_field_4_overridden",
+                        "tr_dummy_field_5",
+                        "tr_dummy_field_5_overridden",
+                    ),
+                },
+            ),
         )
         help_texts = {
             "tr_date": _("Anytime transactions are expanded, there is a Date column header."),
@@ -177,6 +221,20 @@ class ManageFieldLabelOverridesForm(ModelFormBase):
             ),
             "ci_cost_type": _("Seen on Confirm Categories step, and the full cost model table."),
             "ci_total_cost": _("Seen on the full cost model table."),
+            **{
+                f"ci_dummy_field_{n}": _(
+                    "Seen on Confirm Categories and Allocate Costs steps, "
+                    "when budget data populates this custom column."
+                )
+                for n in range(1, 6)
+            },
+            **{
+                f"tr_dummy_field_{n}": _(
+                    "Seen anytime transactions are expanded, "
+                    "when transaction data populates this custom column."
+                )
+                for n in range(1, 6)
+            },
         }
 
     class Media:

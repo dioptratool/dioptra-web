@@ -3,14 +3,18 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 from datetime import datetime
-from io import BytesIO
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ImproperlyConfigured
-from openpyxl import Workbook
-from openpyxl.styles import Font
-from openpyxl.styles.numbers import FORMAT_TEXT
 from openpyxl.utils import get_column_letter
+
+from website.data_loading.download_template import (
+    DATE_FIELD_TYPE,
+    DECIMAL_FIELD_TYPE,
+    DownloadTemplate,
+    INTEGER_FIELD_TYPE,
+    TEXT_FIELD_TYPE,
+)
 
 if TYPE_CHECKING:
     from website.models import Analysis
@@ -56,10 +60,6 @@ CANONICAL_TRANSACTION_FIELD_LABELS = {
     "dummy_field_5": "Dummy Field 5",
 }
 
-TEXT_FIELD_TYPE = "text"
-DATE_FIELD_TYPE = "date"
-DECIMAL_FIELD_TYPE = "decimal"
-INTEGER_FIELD_TYPE = "integer"
 ISO_SOURCE_DATE_FORMAT = "%Y-%m-%d"
 GROUPED_AMOUNT_PATTERN = re.compile(r"^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$")
 
@@ -70,19 +70,10 @@ class TransactionTemplateError(Exception):
         super().__init__("; ".join(self.errors))
 
 
-class TransactionTemplate:
+class TransactionTemplate(DownloadTemplate):
     id = ""
     label = ""
-    download_headers: list[str] = []
-    download_filename: str | None = None
-    download_date_fields: tuple[str, ...] = ()
-    download_decimal_fields: tuple[str, ...] = ()
-    download_integer_fields: tuple[str, ...] = ()
-    download_date_format = "yyyy-mm-dd"
-    download_decimal_format = "#,##0.00"
-    download_integer_format = "0"
-    download_text_format = FORMAT_TEXT
-    formatted_download_rows = 1000
+    download_sheet_title = "Transactions"
     source_date_formats: dict[str, tuple[str, ...]] = {}
     source_header_aliases: dict[str, tuple[str, ...]] = {}
     canonical_field_sources: dict[str, str | None] = {}
@@ -245,59 +236,10 @@ class TransactionTemplate:
                 field_labels[canonical_field] = f"{source_label} ({canonical_label})"
         return field_labels
 
-    def get_download_headers(self) -> list[str]:
-        return self.download_headers
-
     def get_download_filename(self) -> str:
         if self.download_filename:
             return self.download_filename
         return f"{self.id}_transaction_template.xlsx"
-
-    def get_download_content_type(self) -> str:
-        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-    def get_download_field_type(self, header: str) -> str:
-        if header in self.download_date_fields:
-            return DATE_FIELD_TYPE
-        if header in self.download_decimal_fields:
-            return DECIMAL_FIELD_TYPE
-        if header in self.download_integer_fields:
-            return INTEGER_FIELD_TYPE
-        return TEXT_FIELD_TYPE
-
-    def get_download_number_format(self, header: str) -> str:
-        field_type = self.get_download_field_type(header)
-        if field_type == DATE_FIELD_TYPE:
-            return self.download_date_format
-        if field_type == DECIMAL_FIELD_TYPE:
-            return self.download_decimal_format
-        if field_type == INTEGER_FIELD_TYPE:
-            return self.download_integer_format
-        return self.download_text_format
-
-    def build_download_workbook(self) -> Workbook:
-        workbook = Workbook()
-        worksheet = workbook.active
-        worksheet.title = "Transactions"
-        worksheet.freeze_panes = "A2"
-        worksheet.append(self.get_download_headers())
-
-        header_font = Font(bold=True)
-        for column_index, header in enumerate(self.get_download_headers(), 1):
-            column_letter = get_column_letter(column_index)
-            number_format = self.get_download_number_format(header)
-            worksheet.cell(row=1, column=column_index).font = header_font
-            worksheet.column_dimensions[column_letter].width = max(12, min(len(header) + 2, 40))
-            worksheet.column_dimensions[column_letter].number_format = number_format
-            for row_index in range(2, self.formatted_download_rows + 2):
-                worksheet.cell(row=row_index, column=column_index).number_format = number_format
-
-        return workbook
-
-    def get_download_content(self) -> bytes:
-        output = BytesIO()
-        self.build_download_workbook().save(output)
-        return output.getvalue()
 
 
 def source_header_key(value: str) -> str:

@@ -53,7 +53,11 @@ from website.views.analysis.steps.define import (
     DefineUpdate,
 )
 from website.views.analysis.steps.insights import Insights, InsightsPrint
-from website.views.analysis.steps.load_data import LoadData, TransactionTemplateDownload
+from website.views.analysis.steps.load_data import (
+    BudgetTemplateDownload,
+    LoadData,
+    TransactionTemplateDownload,
+)
 from website.views.dashboard import DashboardView
 from website.views.documents import full_cost_model_spreadsheet
 from website.views.duplicator import DuplicateView
@@ -135,6 +139,11 @@ urlpatterns = [
         "analysis/<int:pk>/load-data/",
         LoadData.as_view(),
         name="analysis-load-data",
+    ),
+    path(
+        "analysis/<int:pk>/load-data/budget-template/",
+        BudgetTemplateDownload.as_view(),
+        name="budget-template-download",
     ),
     path(
         "analysis/<int:pk>/load-data/transaction-template/<str:template_id>/",

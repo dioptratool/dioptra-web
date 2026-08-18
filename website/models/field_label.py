@@ -14,6 +14,21 @@ class FieldLabelOverrides(models.Model):
     tr_amount = models.CharField(_("Amount"), max_length=40, null=True, blank=True)
     tr_amount_overridden = models.BooleanField(_("Overridden"), default=False)
 
+    tr_dummy_field_1 = models.CharField(_("Transaction Custom Field 1"), max_length=40, null=True, blank=True)
+    tr_dummy_field_1_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    tr_dummy_field_2 = models.CharField(_("Transaction Custom Field 2"), max_length=40, null=True, blank=True)
+    tr_dummy_field_2_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    tr_dummy_field_3 = models.CharField(_("Transaction Custom Field 3"), max_length=40, null=True, blank=True)
+    tr_dummy_field_3_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    tr_dummy_field_4 = models.CharField(_("Transaction Custom Field 4"), max_length=40, null=True, blank=True)
+    tr_dummy_field_4_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    tr_dummy_field_5 = models.CharField(_("Transaction Custom Field 5"), max_length=40, null=True, blank=True)
+    tr_dummy_field_5_overridden = models.BooleanField(_("Overridden"), default=False)
+
     ci_grant_code = models.CharField(_("Grant Code"), max_length=40, null=True, blank=True)
     ci_grant_code_overridden = models.BooleanField(_("Overridden"), default=False)
 
@@ -25,6 +40,21 @@ class FieldLabelOverrides(models.Model):
 
     ci_total_cost = models.CharField(_("Total Cost"), max_length=40, null=True, blank=True)
     ci_total_cost_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_dummy_field_1 = models.CharField(_("Budget Custom Field 1"), max_length=40, null=True, blank=True)
+    ci_dummy_field_1_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_dummy_field_2 = models.CharField(_("Budget Custom Field 2"), max_length=40, null=True, blank=True)
+    ci_dummy_field_2_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_dummy_field_3 = models.CharField(_("Budget Custom Field 3"), max_length=40, null=True, blank=True)
+    ci_dummy_field_3_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_dummy_field_4 = models.CharField(_("Budget Custom Field 4"), max_length=40, null=True, blank=True)
+    ci_dummy_field_4_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_dummy_field_5 = models.CharField(_("Budget Custom Field 5"), max_length=40, null=True, blank=True)
+    ci_dummy_field_5_overridden = models.BooleanField(_("Overridden"), default=False)
 
     @classmethod
     def label_for(cls, field_name, default=None):
