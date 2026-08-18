@@ -10,12 +10,13 @@ long_string = "a" * 256
 default_field_labels = DioptraDefaultTemplate().get_validation_field_labels([])
 
 
-def _validate_transaction_row(index, row, analysis=None):
+def _validate_transaction_row(index, row, analysis=None, currency_required=True):
     return validation.validate_transaction_row(
         index,
         row,
         analysis,
         field_labels=default_field_labels,
+        currency_required=currency_required,
     )
 
 
@@ -257,6 +258,34 @@ class TestValidations:
         )
 
     # transaction description is always valid
+
+    def test_currency_code_required(self, transaction_data_row):
+        row_data = transaction_data_row()
+
+        row_data[9] = ""
+        result = _validate_transaction_row(1, row_data)
+
+        assert result.full_message() == "Row 1: currency_code (Column J) (Currency Code) cannot be empty"
+
+    def test_currency_code_can_be_blank_when_something_else_supplies_it(self, transaction_data_row):
+        """An instance with a currency of its own fills in the rows that have none."""
+        row_data = transaction_data_row()
+
+        row_data[9] = ""
+        result = _validate_transaction_row(1, row_data, currency_required=False)
+
+        assert result.valid()
+
+    def test_currency_code_is_still_checked_when_it_is_not_required(self, transaction_data_row):
+        row_data = transaction_data_row()
+
+        row_data[9] = "US"
+        result = _validate_transaction_row(1, row_data, currency_required=False)
+
+        assert (
+            result.full_message()
+            == "Row 1: currency_code (Column J) (Currency Code) is an invalid currency code (got US)"
+        )
 
     def test_currency_code_enum(self, transaction_data_row):
         row_data = transaction_data_row()

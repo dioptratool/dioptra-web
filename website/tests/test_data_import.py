@@ -1,15 +1,67 @@
 import datetime
 from decimal import Decimal
+from io import BytesIO
 from pathlib import Path
 
 import pytest
+from django.test import override_settings
+from openpyxl import Workbook
 
 from website.data_loading.cost_line_items import load_cost_line_items_from_file
+from website.data_loading.transaction_templates.base import CANONICAL_TRANSACTION_FIELDS
 from website.data_loading.transactions import get_transactions_data_store_count, load_transactions
+from website.models import Settings
 from website.tests.factories import AnalysisFactory, CountryFactory
 from website.tests.utils import import_test_transaction_store
 
 test_data_dir = Path(__file__).resolve().parent / "test_data"
+
+
+def _save_the_children_upload():
+    """A one-row Save the Children upload: positional columns, no headers, no currency."""
+
+    Settings.objects.create(transaction_data_template="save_the_children")
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.append(
+        [
+            "9116",  # column_1  grant_code
+            "4021014ON14A",  # column_2  budget_line_code
+            "DM - ON14A-Other nutrition",  # column_3  budget_line_description
+            "52010",  # column_4  account_code
+            "2015-01-01",  # column_5  transaction_date
+            "39.88",  # column_6  amount
+            "NUT",  # column_7  sector_code
+        ]
+    )
+    upload = BytesIO()
+    workbook.save(upload)
+    upload.seek(0)
+    return upload
+
+
+def _transaction_upload(**field_values):
+    """A one-row transaction upload in the Dioptra default layout."""
+
+    row = {
+        "transaction_date": "2015-01-01",
+        "country_code": "JO",
+        "grant_code": "9116",
+        "budget_line_code": "200",
+        "account_code": "300",
+        "currency_code": "USD",
+        "budget_line_description": "Budget line",
+        "amount": "123.45",
+        **field_values,
+    }
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.append(CANONICAL_TRANSACTION_FIELDS)
+    worksheet.append([row.get(field_name, "") for field_name in CANONICAL_TRANSACTION_FIELDS])
+    upload = BytesIO()
+    workbook.save(upload)
+    upload.seek(0)
+    return upload
 
 
 @pytest.mark.django_db
@@ -152,6 +204,65 @@ class TestTransactionUpload:
         with open(file_path, "rb") as f:
             succeeded, result = load_transactions(_analysis_for_transactions, f=f)
             assert succeeded, result["errors"]
+
+    @override_settings(ISO_CURRENCY_CODE="GBP")
+    def test_load_data_without_a_currency_uses_the_instance_currency(self, _analysis_for_transactions):
+        """An instance configured for a single currency does not need one in the file."""
+        succeeded, result = load_transactions(
+            _analysis_for_transactions,
+            f=_transaction_upload(currency_code=""),
+        )
+
+        assert succeeded, result["errors"]
+        assert _analysis_for_transactions.transactions.get().currency_code == "GBP"
+
+    @override_settings(ISO_CURRENCY_CODE="GBP")
+    def test_load_data_keeps_the_currency_the_file_supplies(self, _analysis_for_transactions):
+        succeeded, result = load_transactions(
+            _analysis_for_transactions,
+            f=_transaction_upload(currency_code="BDT"),
+        )
+
+        assert succeeded, result["errors"]
+        assert _analysis_for_transactions.transactions.get().currency_code == "BDT"
+
+    @override_settings(ISO_CURRENCY_CODE="none")
+    def test_load_data_without_a_currency_fails_without_an_instance_currency(
+        self, _analysis_for_transactions
+    ):
+        succeeded, result = load_transactions(
+            _analysis_for_transactions,
+            f=_transaction_upload(currency_code=""),
+        )
+
+        assert not succeeded
+        assert result["errors"] == ["Row 2: currency_code (Column J) (Currency Code) cannot be empty"]
+
+    @override_settings(ISO_CURRENCY_CODE="GBP")
+    def test_load_data_from_a_layout_without_a_currency_column(self, _analysis_for_transactions):
+        """The Save the Children layout has no currency column, so the instance supplies it."""
+        succeeded, result = load_transactions(
+            _analysis_for_transactions,
+            f=_save_the_children_upload(),
+            transaction_template_id="save_the_children",
+        )
+
+        assert succeeded, result["errors"]
+        assert _analysis_for_transactions.transactions.get().currency_code == "GBP"
+
+    @override_settings(ISO_CURRENCY_CODE="none")
+    def test_load_data_from_a_layout_without_a_currency_column_and_no_instance_currency(
+        self, _analysis_for_transactions
+    ):
+        """Nothing can supply a currency here, so the import is not held up for one."""
+        succeeded, result = load_transactions(
+            _analysis_for_transactions,
+            f=_save_the_children_upload(),
+            transaction_template_id="save_the_children",
+        )
+
+        assert succeeded, result["errors"]
+        assert _analysis_for_transactions.transactions.get().currency_code == ""
 
     @pytest.mark.parametrize(
         "field,value",

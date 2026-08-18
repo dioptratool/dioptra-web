@@ -11,6 +11,7 @@ def validate_transaction_row(
     analysis: Analysis | None = None,
     *,
     field_labels: dict[str, str],
+    currency_required: bool = True,
 ) -> ValidationResult | None:
     v = ValidationResult(index, analysis)
     if isinstance(row, dict):
@@ -86,12 +87,16 @@ def validate_transaction_row(
         field_labels["transaction_code"],
         v.shortlength,
     )
-    v.check(
-        mapped_row.get("currency_code", ""),
-        field_labels["currency_code"],
-        v.require,
-        v.currency,
-    )
+    # A blank currency is left to the instance currency, so it is only an error when
+    # the caller says the row has to carry one.
+    currency_value = mapped_row.get("currency_code", "")
+    if currency_required or currency_value:
+        v.check(
+            currency_value,
+            field_labels["currency_code"],
+            v.require,
+            v.currency,
+        )
     v.check(
         mapped_row.get("budget_line_description", ""),
         field_labels["budget_line_description"],

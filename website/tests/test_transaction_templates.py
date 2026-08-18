@@ -5,6 +5,7 @@ from io import BytesIO
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
+from django.test import override_settings
 from openpyxl import Workbook, load_workbook
 
 from website.data_loading.transaction_templates import TransactionTemplate, TransactionTemplateError
@@ -515,6 +516,171 @@ def test_transaction_template_normalizes_amount_thousands_separators(monkeypatch
     assert normalized[0]["amount"] == "1000.00"
 
 
+# Layouts whose source files carry no currency column at all.
+CURRENCY_LESS_LAYOUTS = [
+    (
+        "save_the_children",
+        {
+            "column_1": "SC-123",
+            "column_3": "Medical supplies",
+            "column_4": "5501",
+            "column_5": "202605",
+            "column_6": "1234.56",
+        },
+    ),
+    (
+        "accion_contra_el_hambre",
+        {
+            "contract": "MLB2AS",
+            "trans_date": "10/07/2024",
+            "account": "600100",
+            "amount_eur": "2458.70",
+            "dim_1": "ML",
+        },
+    ),
+    (
+        "mercy_corps",
+        {
+            "posting_date": "2023-04-01",
+            "fund_no": "999dummy",
+            "g_l_account_no": "6910",
+            "g_l_account_name": "Office Costs",
+            "lin_name": "Office Costs",
+            "usd_amount": "9.85",
+        },
+    ),
+]
+
+
+def _normalize_source_row(template, row_values):
+    source_row = dict.fromkeys(template.get_download_headers(), "")
+    source_row.update(row_values)
+    return normalize_uploaded_transaction_file(
+        [
+            template.get_download_headers(),
+            [source_row[header] for header in template.get_download_headers()],
+        ],
+        analysis=_analysis_with_country(),
+    )
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+@pytest.mark.parametrize("template_id,row_values", CURRENCY_LESS_LAYOUTS)
+def test_layout_without_a_currency_column_takes_the_instance_currency(monkeypatch, template_id, row_values):
+    _set_active_template(monkeypatch, template_id)
+    template = get_transaction_template()
+
+    assert template.canonical_field_sources["currency_code"] is None
+
+    succeeded, normalized = _normalize_source_row(template, row_values)
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == "GBP"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+@pytest.mark.parametrize("template_id,row_values", CURRENCY_LESS_LAYOUTS)
+def test_layout_without_a_currency_column_stays_blank_without_an_instance_currency(
+    monkeypatch, template_id, row_values
+):
+    """Nothing can supply a currency here, so the rows simply carry none."""
+    _set_active_template(monkeypatch, template_id)
+    template = get_transaction_template()
+
+    succeeded, normalized = _normalize_source_row(template, row_values)
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == ""
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+def test_transaction_upload_falls_back_to_the_instance_currency(monkeypatch):
+    """A row that carries no currency is imported in the instance currency."""
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == "GBP"
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+def test_transaction_upload_keeps_the_currency_the_file_supplies(monkeypatch):
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "BDT", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == "BDT"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+def test_transaction_upload_leaves_currency_blank_without_an_instance_currency(monkeypatch):
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == ""
+
+
+@override_settings(ISO_CURRENCY_CODE="EUR")
+def test_currency_column_is_optional_when_the_instance_has_a_currency(monkeypatch):
+    """CARE files identify columns by header, so the currency column can be left out."""
+    _set_active_template(monkeypatch, "cooperative_for_assistance_and_relief_everywhere")
+    template = get_transaction_template()
+    headers = [header for header in template.get_download_headers() if header != "currency_cd"]
+    source_row = dict.fromkeys(headers, "")
+    source_row.update(
+        {
+            "journal_date": "03/31/2024",
+            "country_code": "KEN01",
+            "grant_code": "EF789",
+            "account": "501100",
+            "budget_line_description": "5 - LER program manager",
+            "bu_amount": "103.14",
+        }
+    )
+
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [headers, [source_row[header] for header in headers]],
+        analysis=object(),
+    )
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == "EUR"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+def test_currency_column_is_required_without_an_instance_currency(monkeypatch):
+    _set_active_template(monkeypatch, "cooperative_for_assistance_and_relief_everywhere")
+    template = get_transaction_template()
+    headers = [header for header in template.get_download_headers() if header != "currency_cd"]
+
+    succeeded, errors = normalize_uploaded_transaction_file(
+        [headers, ["" for _ in headers]],
+        analysis=object(),
+    )
+
+    assert not succeeded
+    assert "currency_cd" in errors[0]
+
+
 def test_transaction_template_must_be_active(monkeypatch):
     _set_active_template(monkeypatch, "dioptra_default")
 
@@ -607,6 +773,7 @@ def test_save_the_children_transaction_template_loads(monkeypatch):
     assert template.get_download_headers() == [f"column_{n}" for n in range(1, 13)]
 
 
+@override_settings(ISO_CURRENCY_CODE="USD")
 def test_save_the_children_transaction_template_normalizes_positional_rows(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
 
@@ -799,6 +966,7 @@ def test_accion_contra_el_hambre_transaction_template_loads(monkeypatch):
     assert "amount_eur" in template.get_download_headers()
 
 
+@override_settings(ISO_CURRENCY_CODE="EUR")
 def test_accion_contra_el_hambre_transaction_template_normalizes_rows(monkeypatch):
     _set_active_template(monkeypatch, "accion_contra_el_hambre")
     template = get_transaction_template()
@@ -1078,6 +1246,7 @@ def test_mercy_corps_transaction_template_loads(monkeypatch):
     assert "usd_amount" in template.get_download_headers()
 
 
+@override_settings(ISO_CURRENCY_CODE="USD")
 def test_mercy_corps_transaction_template_normalizes_rows(monkeypatch):
     _set_active_template(monkeypatch, "mercy_corps")
     template = get_transaction_template()

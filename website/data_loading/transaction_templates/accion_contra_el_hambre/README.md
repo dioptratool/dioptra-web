@@ -24,7 +24,9 @@ Mapped fields:
 | description_ii                 | budget_line_description |
 | amount_eur                     | amount                  |
 
-The template sets `currency_code` to `EUR`.
+The layout has no currency column, so `currency_code` is left blank and the
+currency configured for the instance is used; `amount_eur` is reported in that
+currency.
 
 Required source headers:
 

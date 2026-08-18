@@ -10,6 +10,14 @@ def iso_currency_code_is_set() -> bool:
     return settings.ISO_CURRENCY_CODE not in [None, "none"]
 
 
+def instance_currency_code() -> str | None:
+    """The single currency this instance is configured for, or None when it has none."""
+
+    if not iso_currency_code_is_set():
+        return None
+    return settings.ISO_CURRENCY_CODE
+
+
 def currency_code(analysis: Analysis = None) -> str | None:
     if not iso_currency_code_is_set():
         return None

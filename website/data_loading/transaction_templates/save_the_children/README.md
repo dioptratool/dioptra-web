@@ -37,7 +37,8 @@ Required source columns:
 Two canonical fields have no source column in this layout:
 
 - `country_code` is taken from the analysis's country.
-- `currency_code` is set to `USD`; `column_6` is reported in USD.
+- `currency_code` is left blank, so the currency configured for the instance is
+  used; `column_6` is reported in that currency.
 
 `site_code`, `transaction_code` and `transaction_description` are not mapped.
 

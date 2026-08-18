@@ -88,7 +88,7 @@ class TransactionTemplate(DownloadTemplate):
         source_header_set = {header for header in source_headers if header}
         missing_fields = [
             display_name
-            for field_name, display_name in self.required_source_fields.items()
+            for field_name, display_name in self.get_required_source_fields().items()
             if field_name not in source_header_set
         ]
         if missing_fields:
@@ -122,6 +122,21 @@ class TransactionTemplate(DownloadTemplate):
 
     def normalize_rows(self, rows: list[dict[str, str]], analysis: Analysis) -> list[dict[str, str]]:
         return rows
+
+    def get_required_source_fields(self) -> dict[str, str]:
+        """The source headers an upload must carry.
+
+        An instance configured for a single currency supplies that currency to every
+        imported row, so a currency column is optional there.
+        """
+        # Imported here because website.currency imports website.models, which imports
+        # the transaction template registry.
+        from website.currency import instance_currency_code
+
+        required_source_fields = dict(self.required_source_fields)
+        if instance_currency_code() is not None:
+            required_source_fields.pop(self.canonical_field_sources.get("currency_code"), None)
+        return required_source_fields
 
     def rows_with_source_headers(self, rows: list[list[str]]) -> list[list[str]]:
         return rows

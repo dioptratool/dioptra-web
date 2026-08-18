@@ -13,7 +13,7 @@ class Template(PositionalTransactionTemplate):
     """Save the Children positional 12-column transaction export.
 
     ``country_code`` and ``currency_code`` have no source column in this layout:
-    the analysis supplies the country, and amounts are reported in USD.
+    the analysis supplies the country, and the instance currency supplies the currency.
     """
 
     id = "save_the_children"
@@ -60,7 +60,7 @@ class Template(PositionalTransactionTemplate):
                 "sector_code": row.get("column_7", ""),
                 "transaction_code": "",
                 "transaction_description": "",
-                "currency_code": "USD",
+                "currency_code": "",
                 "budget_line_description": row.get("column_3", ""),
                 "amount": row.get("column_6", ""),
                 **{
