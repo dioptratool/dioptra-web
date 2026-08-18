@@ -1,8 +1,7 @@
-from website.data_loading.transaction_templates import TransactionTemplate
-from website.data_loading.transaction_templates.base import source_header_key
+from website.data_loading.transaction_templates.positional import PositionalTransactionTemplate
 
 
-class Template(TransactionTemplate):
+class Template(PositionalTransactionTemplate):
     id = "danish_refugee_council"
     label = "Danish Refugee Council"
     download_headers = [f"column_{column_number}" for column_number in range(1, 20)]
@@ -42,16 +41,6 @@ class Template(TransactionTemplate):
         "column_18": "column_18",
     }
 
-    def rows_with_source_headers(self, rows):
-        if rows and not self._has_column_headers(rows[0]):
-            rows = [self.download_headers, *rows]
-        return rows
-
-    def get_first_data_row_number(self, rows):
-        if rows and not self._has_column_headers(rows[0]):
-            return 1
-        return 2
-
     def normalize_rows(self, rows, analysis):
         return [
             {
@@ -75,7 +64,3 @@ class Template(TransactionTemplate):
             }
             for row in rows
         ]
-
-    def _has_column_headers(self, row):
-        source_headers = {source_header_key(header) for header in row}
-        return bool(source_headers.intersection(self.download_headers))

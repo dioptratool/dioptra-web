@@ -128,7 +128,7 @@ def test_transaction_templates_define_all_validation_field_sources(monkeypatch, 
     "template_id,date_header,decimal_header,text_header",
     [
         ("dioptra_default", "transaction_date", "amount", "grant_code"),
-        ("save_the_children", "Period", "Amount in USD", "Subaward Code"),
+        ("save_the_children", "column_5", "column_6", "column_1"),
         ("catholic_relief_services", "Date", "Amount", "Grant_code"),
         ("accion_contra_el_hambre", "trans_date", "amount_eur", "contract"),
         (
@@ -257,16 +257,15 @@ def test_excel_file_to_array_streams_only_active_xlsx_worksheet(monkeypatch):
         ),
         (
             "save_the_children",
-            "period",
+            "column_5",
             "%Y%m",
             "202605",
             "2026-05-01",
             {
-                "Costc Description": "JO",
-                "Subaward Code": "SC-123",
-                "Budget Chapter Description": "Medical supplies",
-                "Account": "5501",
-                "Amount in USD": "1234.56",
+                "column_1": "SC-123",
+                "column_3": "Medical supplies",
+                "column_4": "5501",
+                "column_6": "1234.56",
             },
         ),
         (
@@ -375,27 +374,13 @@ def test_transaction_templates_parse_configured_source_date_formats(
 def test_save_the_children_transaction_template_keeps_day_month_year_period_support(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
-    source_row = dict.fromkeys(template.get_download_headers(), "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "29/05/2026",
-            "Amount in USD": "1234.56",
-        }
-    )
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [
-            template.get_download_headers(),
-            [source_row[header] for header in template.get_download_headers()],
-        ],
-        analysis=object(),
+        [["SC-123", "", "Medical supplies", "5501", "29/05/2026", "1234.56"]],
+        analysis=_analysis_with_country(),
     )
 
-    assert "%d/%m/%Y" in template.source_date_formats["period"]
+    assert "%d/%m/%Y" in template.source_date_formats["column_5"]
     assert succeeded
     assert normalized[0]["transaction_date"] == "2026-05-29"
 
@@ -439,29 +424,16 @@ def test_transaction_templates_parse_iso_source_date_fallback(monkeypatch):
 
 def test_transaction_template_reports_source_date_format_errors(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    source_row = dict.fromkeys(template.get_download_headers(), "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "05-29-2026",
-            "Amount in USD": "1234.56",
-        }
-    )
 
     succeeded, errors = normalize_uploaded_transaction_file(
-        [
-            template.get_download_headers(),
-            [source_row[header] for header in template.get_download_headers()],
-        ],
-        analysis=object(),
+        [["SC-123", "", "Medical supplies", "5501", "05-29-2026", "1234.56"]],
+        analysis=_analysis_with_country(),
     )
 
     assert not succeeded
-    assert errors == ["Row 2: Period must use date format %Y%m or %d/%m/%Y or %Y-%m-%d (got 05-29-2026)"]
+    # "Row 2" for what is physically row 1: source_rows_from_upload enumerates from 2 because
+    # rows_with_source_headers has prepended the synthetic header row. Same in the DRC template.
+    assert errors == ["Row 2: column_5 must use date format %Y%m or %d/%m/%Y or %Y-%m-%d (got 05-29-2026)"]
 
 
 def test_mercy_corps_transaction_template_keeps_period_and_quarter_as_text(monkeypatch):
@@ -632,141 +604,116 @@ def test_save_the_children_transaction_template_loads(monkeypatch):
 
     assert template.id == "save_the_children"
     assert template.label == "Save the Children"
-    assert "Country Office" in template.get_download_headers()
-    assert "Amount in USD" in template.get_download_headers()
+    assert template.get_download_headers() == [f"column_{n}" for n in range(1, 13)]
 
 
-def test_save_the_children_transaction_template_normalizes_rows(monkeypatch):
+def test_save_the_children_transaction_template_normalizes_positional_rows(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    headers = template.get_download_headers()
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "Country Office": "JO",
-            "Costc Description": "JO",
-            "Budget Chapter": "BUD-100",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Subaward Code": "SC-123",
-            "Subaward Description": "Subaward that is not a budget line",
-            "Period": "2026-05-29",
-            "Trans No": "TR-456",
-            "Transaction Desc (Text)": "Invoice payment",
-            "Amount in USD": "1234.56",
-        }
-    )
-    field_labels = template.get_validation_field_labels([headers])
 
     succeeded, normalized = normalize_uploaded_transaction_file(
         [
-            headers,
-            [source_row[header] for header in headers],
+            [
+                "57801594",  # column_1  grant_code
+                "4021014ON14A",  # column_2  budget_line_code
+                "DM - ON14A-Other nutrition",  # column_3  budget_line_description
+                "52010",  # column_4  account_code
+                "202306",  # column_5  transaction_date
+                "39.88",  # column_6  amount
+                "NUT",  # column_7  sector_code
+                "Finance coordinator",  # column_8  custom field 1
+                "6-CAM Support costs -2022",  # column_9  custom field 2
+                "",  # column_10 custom field 3
+                "6-CAM Support costs -2022",  # column_11 custom field 4
+                "",  # column_12 custom field 5
+            ]
         ],
-        analysis=object(),
+        analysis=_analysis_with_country("SL"),
     )
 
     assert succeeded
-    assert field_labels["budget_line_code"] == "Budget Chapter (Column M) (Budget Line Code)"
-    assert (
-        field_labels["budget_line_description"]
-        == "Budget Chapter Description (Column N) (Budget Line Description)"
-    )
     assert normalized == [
         {
-            "transaction_date": "2026-05-29",
-            "country_code": "JO",
-            "grant_code": "SC-123",
-            "budget_line_code": "BUD-100",
-            "account_code": "5501",
+            "transaction_date": "2023-06-01",
+            "country_code": "SL",
+            "grant_code": "57801594",
+            "budget_line_code": "4021014ON14A",
+            "account_code": "52010",
             "site_code": "",
-            "sector_code": "",
+            "sector_code": "NUT",
             "transaction_code": "",
             "transaction_description": "",
             "currency_code": "USD",
-            "budget_line_description": "Medical supplies",
-            "amount": "1234.56",
-            "dummy_field_1": "",
-            "dummy_field_2": "",
+            "budget_line_description": "DM - ON14A-Other nutrition",
+            "amount": "39.88",
+            "dummy_field_1": "Finance coordinator",
+            "dummy_field_2": "6-CAM Support costs -2022",
             "dummy_field_3": "",
-            "dummy_field_4": "",
+            "dummy_field_4": "6-CAM Support costs -2022",
             "dummy_field_5": "",
         }
     ]
 
 
-def test_save_the_children_transaction_template_uses_costc_t_when_description_header_is_absent(
-    monkeypatch,
-):
+def test_save_the_children_transaction_template_accepts_column_headers(monkeypatch):
+    """A file that already carries column_N headers is used as-is."""
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
-    headers = [header for header in template.get_download_headers() if header != "Costc Description"]
-    headers.append("CostC (T)")
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "CostC (T)": "SL",
-            "Subaward Code": "SC-123",
-            "Budget Chapter": "BUD-100",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "202605",
-            "Amount in USD": "1234.56",
-        }
-    )
-    rows = [headers, [source_row[header] for header in headers]]
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        rows,
-        analysis=object(),
+        [
+            template.get_download_headers(),
+            ["SC-123", "BL-1", "Medical supplies", "5501", "202605", "1234.56", "", "CC-1"],
+        ],
+        analysis=_analysis_with_country("JO"),
     )
 
     assert succeeded
-    assert normalized[0]["country_code"] == "SL"
+    assert normalized[0]["grant_code"] == "SC-123"
     assert normalized[0]["transaction_date"] == "2026-05-01"
-    assert (
-        template.get_validation_field_labels(rows)["country_code"] == "CostC (T) (Column AU) (Country Code)"
-    )
+    assert normalized[0]["dummy_field_1"] == "CC-1"
+    # Columns absent from a short row simply stay empty.
+    assert normalized[0]["dummy_field_5"] == ""
 
 
-def test_save_the_children_transaction_template_prefers_costc_description_over_costc_t(monkeypatch):
+def test_save_the_children_transaction_template_takes_country_from_the_analysis(monkeypatch):
+    """The layout has no country column, so the analysis supplies it."""
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    headers = [*template.get_download_headers(), "CostC (T)"]
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "CostC (T)": "SL",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "202605",
-            "Amount in USD": "1234.56",
-        }
-    )
+
+    assert get_transaction_template().canonical_field_sources["country_code"] is None
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [headers, [source_row[header] for header in headers]],
-        analysis=object(),
+        [["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
+        analysis=_analysis_with_country("ET"),
     )
 
     assert succeeded
-    assert normalized[0]["country_code"] == "JO"
+    assert normalized[0]["country_code"] == "ET"
 
 
-def test_save_the_children_transaction_template_reports_missing_required_headers(monkeypatch):
+def test_save_the_children_transaction_template_reports_missing_required_columns(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
+    template = get_transaction_template()
+
     succeeded, errors = normalize_uploaded_transaction_file(
-        [["Country Office", "Amount in USD"]],
-        analysis=object(),
+        [
+            ["column_1", "column_2"],
+            ["SC-123", "BL-1"],
+        ],
+        analysis=_analysis_with_country(),
     )
 
     assert not succeeded
-    assert "Costc Description" in errors[0]
-    assert "Subaward Code" in errors[0]
-    assert "Budget Chapter Description" in errors[0]
-    assert "Period" in errors[0]
+    assert errors == [
+        "The Save the Children transaction file is missing required headers: "
+        "column_3, column_4, column_5, column_6"
+    ]
+    assert set(template.required_source_fields) == {
+        "column_1",
+        "column_3",
+        "column_4",
+        "column_5",
+        "column_6",
+    }
 
 
 def test_catholic_relief_services_transaction_template_loads(monkeypatch):
