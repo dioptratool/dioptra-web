@@ -430,7 +430,7 @@
     border: none;
     padding: 1rem;
     vertical-align: middle;
-    @include font-size(13, 1.153846154);
+    @include font-size(14, 1.1429);
 
     &.analysis-table__transaction-cell,
     &.analysis-table__edit-row-cell {
@@ -452,7 +452,7 @@
   max-width: 36rem;
 }
 
-$analysis-table-site-cell-width: 8.8rem;
+$analysis-table-site-cell-width: 9rem;
 $analysis-table-sector_code-cell-width: 6rem;
 
 .analysis-table__site-cell {
@@ -520,28 +520,39 @@ $analysis-table-edit-cell-width-narrow: 13rem;
 $analysis-table-edit-cell-width-tablet: 16rem;
 $analysis-table-dropdown-cell-width: 19rem;
 
-.analysis-table__edit-cell {
-  text-align: right;
+.analysis-table__actions {
+  text-align: center;
+  min-width: 7rem;
+}
+.analysis-table__action {
+  background-color: #F1F4F8;
+  border: none;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.6rem;
+  font-weight: $font-weight-bold;
+  padding: 0.7rem;
+  transition: all $transition-duration-default ease;
 
-  .analysis-table__confirm-categories & {
-    min-width: $analysis-table-edit-cell-width-narrow;
-
-    .help+.analysis-table__help-in-th-label {
-      margin-left: 34px;
-      margin-top: -20px;
-    }
+  &:hover {
+    background-color: #D7E3F3;
   }
 }
 
-.analysis-table__table>thead>tr>th.analysis-table__edit-cell {
+.analysis-table__table > thead > tr > th.analysis-table__edit-cell {
   background-color: #3570AB;
-  text-align: left;
+
+  .help+.analysis-table__help-in-th-label {
+    margin-left: 34px;
+    margin-top: -20px;
+  }
+}
+.analysis-table__table > tbody > tr > td.analysis-table__edit-cell {
+  background-color: #F1F4F8;
 }
 
-.analysis-table__table>tbody>tr>td.analysis-table__edit-cell {
-  background-color: #F1F4F8;
-  text-align: left;
-}
 
 .analysis-table__total-cell {
   text-align: right;
@@ -571,8 +582,8 @@ $analysis-table-dropdown-cell-width: 19rem;
 }
 
 .analysis-table__cost-item-title {
-  margin-bottom: 0.4rem;
-  @include font-size(14, 1.1429);
+  margin-bottom: 0.2rem;
+  @include font-size(14, 1.4286);
   width: 25rem;
 }
 
@@ -584,13 +595,11 @@ $analysis-table-dropdown-cell-width: 19rem;
     display: none;
   }
 }
-
 .analysis-table__category-edit {
   background-color: $color-moonstone;
   border: none;
   border-radius: 2px;
   font-weight: $font-weight-bold;
-  min-width: 10rem;
   padding: 0.7rem;
   transition: all $transition-duration-default ease;
 
@@ -626,32 +635,46 @@ $analysis-table__category-edit-note-width: 8rem;
 }
 
 // transactions
+.analysis-table:has(.analysis-table__transactions-toggle) {
+  .analysis-table__bulk-update-checkbox + .analysis-table__cost-item-cell {
+    vertical-align: top;
+    padding-left: 0;
+  }
+
+  .analysis-table__table>tbody>tr>td.analysis-table__bulk-update-checkbox {
+    vertical-align: top;
+  }
+}
+
 .analysis-table__transactions-toggle {
+  @include font-size(14, 1.4286);
   background-color: transparent;
   border: none;
   padding: 0;
-  padding-left: 2.5rem;
+  padding-left: 1lh;
   text-align: left;
   width: 100%;
 }
 
 .analysis-table__transactions-toggle-inner {
-  height: 3.6rem;
-  left: -0.6rem;
-  padding: 0;
   position: absolute;
-  text-align: center;
   top: 0;
-  width: 3.6rem;
+  left: 0;
+  width: 1lh;
+  height: 1lh;
+  padding: 0;
+  text-align: center;
 }
 
 .analysis-table__transactions-toggle-icon {
+  display: grid;
+  place-items: center;
   height: 100%;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
+
+  svg {
+    height: 100%;
+  }
 }
 
 .analysis-table__transactions-toggle-icon--expand {
@@ -664,7 +687,7 @@ $analysis-table__category-edit-note-width: 8rem;
   display: none;
 
   .analysis-table__tbody--transactions-active & {
-    display: block;
+    display: grid;
   }
 }
 
@@ -689,11 +712,11 @@ $analysis-table__category-edit-note-width: 8rem;
 
     th {
       font-weight: $font-weight-bold;
-      padding: 0.2rem 1rem 0.5rem;
+      padding: 0.4rem 1rem;
       @include font-size(12, 1.1667);
 
       &.analysis-table__transaction-table-summary {
-        padding-left: 3.1rem;
+        padding-left: 4.2rem;
       }
     }
   }
@@ -702,11 +725,11 @@ $analysis-table__category-edit-note-width: 8rem;
     background-color: $color-moonstone;
 
     td {
-      padding: 0.5rem 1rem 0.5rem;
+      padding: 1rem;
       @include font-size(14, 1.1429);
 
       &.analysis-table__transaction-table-summary {
-        padding-left: 3.1rem;
+        padding-left: 4.2rem;
       }
     }
 
@@ -784,10 +807,6 @@ $analysis-table__category-edit-note-width: 8rem;
   @media (max-width: $breakpoint-desktop - 1px) {
     min-width: $analysis-table-edit-cell-width-tablet;
   }
-
-  .analysis-table__confirm-categories & {
-    min-width: 28rem;
-  }
 }
 
 .analysis-table__edit-row-label {
@@ -819,7 +838,6 @@ $analysis-table__category-edit-note-width: 8rem;
   color: rgb(144, 154, 162);
   display: none;
   font-style: italic;
-  margin-left: 1rem;
   @include font-size(14, 1.1429);
 
   .analysis-table__tbody--edit-active & {
@@ -978,12 +996,6 @@ $analysis-table__category-edit-note-width: 8rem;
   }
 }
 
-.analysis-table__intervention-title {
-  font-weight: 700;
-  font-size: 16px;
-  line-height: 100%;
-}
-
 .analysis-table__intervention-header,
 .analysis-table__set-contribution {
   width: min(17.7rem, 15vw);
@@ -1063,7 +1075,7 @@ $analysis-table__category-edit-note-width: 8rem;
 input[type="text"].analysis-table__allocated-input {
   min-height: 0;
   padding: 0.6rem 0.8rem;
-  width: 6rem;
+  width: 6.1rem;
   text-align: right;
   @include font-size(14, 1.1428);
 }

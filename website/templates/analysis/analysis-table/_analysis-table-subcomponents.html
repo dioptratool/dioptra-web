@@ -84,12 +84,7 @@
                             {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                         <td class="analysis-table__edit-cell analysis-table__intervention-percent-cell">{{ allocation|floatformat:"-2" }}%</td>
                         <td class="analysis-table__intervention-subtotal-cell">
-                            <span class="analysis-table__intervention-subtotal"
-                                  data-cost-line-item-id="{{ cost_line_item.id }}"
-                                  data-intervention-id="{{ step.intervention_instance.id }}">
-                                {{ cost_line_item|allocated_cost_for_percentage:allocation|format_currency:analysis.currency_code }}
-                            </span>
-                        </td>
+                            {{ cost_line_item|allocated_cost_for_percentage:allocation|format_currency:analysis.currency_code }}</td>
                         {% for subcomponent_label in subcomponent_data.labels %}
                             <td class="analysis-table__subcomponent-input-cell">
                                 <div class="analysis-table__subcomponent-allocate">

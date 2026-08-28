@@ -5922,9 +5922,9 @@ a.analysis-navigation__prev-next:hover {
   border: none;
   padding: 1rem;
   vertical-align: middle;
-  font-size: 13px;
-  font-size: 1.3rem;
-  line-height: 1.153846154;
+  font-size: 14px;
+  font-size: 1.4rem;
+  line-height: 1.1429;
 }
 .analysis-table__table > tbody > tr > td.analysis-table__transaction-cell, .analysis-table__table > tbody > tr > td.analysis-table__edit-row-cell {
   padding: 0;
@@ -5942,10 +5942,10 @@ a.analysis-navigation__prev-next:hover {
 }
 
 .analysis-table__site-cell {
-  min-width: 8.8rem;
+  min-width: 9rem;
 }
 .analysis-table__transaction-table--with-sector-code .analysis-table__site-cell {
-  min-width: 14.8rem;
+  min-width: 15rem;
 }
 
 .analysis-table__sector_code-cell {
@@ -5983,25 +5983,37 @@ a.analysis-navigation__prev-next:hover {
   text-align: right;
 }
 
-.analysis-table__edit-cell {
-  text-align: right;
+.analysis-table__actions {
+  text-align: center;
+  min-width: 7rem;
 }
-.analysis-table__confirm-categories .analysis-table__edit-cell {
-  min-width: 13rem;
+
+.analysis-table__action {
+  background-color: #F1F4F8;
+  border: none;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.6rem;
+  font-weight: 700;
+  padding: 0.7rem;
+  transition: all 0.2s ease;
 }
-.analysis-table__confirm-categories .analysis-table__edit-cell .help + .analysis-table__help-in-th-label {
-  margin-left: 34px;
-  margin-top: -20px;
+.analysis-table__action:hover {
+  background-color: #D7E3F3;
 }
 
 .analysis-table__table > thead > tr > th.analysis-table__edit-cell {
   background-color: #3570AB;
-  text-align: left;
+}
+.analysis-table__table > thead > tr > th.analysis-table__edit-cell .help + .analysis-table__help-in-th-label {
+  margin-left: 34px;
+  margin-top: -20px;
 }
 
 .analysis-table__table > tbody > tr > td.analysis-table__edit-cell {
   background-color: #F1F4F8;
-  text-align: left;
 }
 
 .analysis-table__total-cell {
@@ -6031,10 +6043,10 @@ a.analysis-navigation__prev-next:hover {
 }
 
 .analysis-table__cost-item-title {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
   font-size: 14px;
   font-size: 1.4rem;
-  line-height: 1.1429;
+  line-height: 1.4286;
   width: 25rem;
 }
 
@@ -6053,7 +6065,6 @@ a.analysis-navigation__prev-next:hover {
   border: none;
   border-radius: 2px;
   font-weight: 700;
-  min-width: 10rem;
   padding: 0.7rem;
   transition: all 0.2s ease;
 }
@@ -6083,32 +6094,44 @@ a.analysis-navigation__prev-next:hover {
   vertical-align: middle;
 }
 
+.analysis-table:has(.analysis-table__transactions-toggle) .analysis-table__bulk-update-checkbox + .analysis-table__cost-item-cell {
+  vertical-align: top;
+  padding-left: 0;
+}
+.analysis-table:has(.analysis-table__transactions-toggle) .analysis-table__table > tbody > tr > td.analysis-table__bulk-update-checkbox {
+  vertical-align: top;
+}
+
 .analysis-table__transactions-toggle {
+  font-size: 14px;
+  font-size: 1.4rem;
+  line-height: 1.4286;
   background-color: transparent;
   border: none;
   padding: 0;
-  padding-left: 2.5rem;
+  padding-left: 1lh;
   text-align: left;
   width: 100%;
 }
 
 .analysis-table__transactions-toggle-inner {
-  height: 3.6rem;
-  left: -0.6rem;
-  padding: 0;
   position: absolute;
-  text-align: center;
   top: 0;
-  width: 3.6rem;
+  left: 0;
+  width: 1lh;
+  height: 1lh;
+  padding: 0;
+  text-align: center;
 }
 
 .analysis-table__transactions-toggle-icon {
+  display: grid;
+  place-items: center;
   height: 100%;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
+}
+.analysis-table__transactions-toggle-icon svg {
+  height: 100%;
 }
 
 .analysis-table__tbody--transactions-active .analysis-table__transactions-toggle-icon--expand {
@@ -6119,7 +6142,7 @@ a.analysis-navigation__prev-next:hover {
   display: none;
 }
 .analysis-table__tbody--transactions-active .analysis-table__transactions-toggle-icon--collapse {
-  display: block;
+  display: grid;
 }
 
 .analysis-table__category--transactions-active {
@@ -6143,25 +6166,25 @@ a.analysis-navigation__prev-next:hover {
 }
 .analysis-table__transaction-table thead th {
   font-weight: 700;
-  padding: 0.2rem 1rem 0.5rem;
+  padding: 0.4rem 1rem;
   font-size: 12px;
   font-size: 1.2rem;
   line-height: 1.1667;
 }
 .analysis-table__transaction-table thead th.analysis-table__transaction-table-summary {
-  padding-left: 3.1rem;
+  padding-left: 4.2rem;
 }
 .analysis-table__transaction-table tbody {
   background-color: rgb(241, 247, 253);
 }
 .analysis-table__transaction-table tbody td {
-  padding: 0.5rem 1rem 0.5rem;
+  padding: 1rem;
   font-size: 14px;
   font-size: 1.4rem;
   line-height: 1.1429;
 }
 .analysis-table__transaction-table tbody td.analysis-table__transaction-table-summary {
-  padding-left: 3.1rem;
+  padding-left: 4.2rem;
 }
 .analysis-table__transaction-table tbody tr:first-child td {
   padding-top: 1rem;
@@ -6233,9 +6256,6 @@ a.analysis-navigation__prev-next:hover {
     min-width: 16rem;
   }
 }
-.analysis-table__confirm-categories .analysis-table__edit-actions-cell {
-  min-width: 28rem;
-}
 
 .analysis-table__edit-row-label {
   display: inline-block;
@@ -6268,7 +6288,6 @@ a.analysis-navigation__prev-next:hover {
   color: rgb(144, 154, 162);
   display: none;
   font-style: italic;
-  margin-left: 1rem;
   font-size: 14px;
   font-size: 1.4rem;
   line-height: 1.1429;
@@ -6413,12 +6432,6 @@ a.analysis-navigation__prev-next:hover {
   }
 }
 
-.analysis-table__intervention-title {
-  font-weight: 700;
-  font-size: 16px;
-  line-height: 100%;
-}
-
 .analysis-table__intervention-header,
 .analysis-table__set-contribution {
   width: min(17.7rem, 15vw);
@@ -6492,7 +6505,7 @@ a.analysis-navigation__prev-next:hover {
 input[type=text].analysis-table__allocated-input {
   min-height: 0;
   padding: 0.6rem 0.8rem;
-  width: 6rem;
+  width: 6.1rem;
   text-align: right;
   font-size: 14px;
   font-size: 1.4rem;
@@ -7023,18 +7036,16 @@ input[type=text].analysis-table__allocated-input {
   min-width: 16rem;
 }
 
+.analysis-table__intervention-subtotal-cell {
+  text-align: right;
+}
+
 .analysis-table__table > tbody > tr > .analysis-table__intervention-subtotal-cell {
   background-color: rgb(241, 244, 248);
 }
 
 .analysis-table__table > tbody > tr > .analysis-table__subcomponent-input-cell {
   background-color: rgb(250, 250, 251);
-}
-
-.analysis-table__intervention-subtotal {
-  display: block;
-  min-width: 8rem;
-  text-align: right;
 }
 
 .analysis-table__subcomponent-total {

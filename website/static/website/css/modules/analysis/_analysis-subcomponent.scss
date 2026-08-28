@@ -72,6 +72,9 @@
   text-align: right;
   min-width: 16rem;
 }
+.analysis-table__intervention-subtotal-cell {
+  text-align: right;
+}
 .analysis-table__table > tbody > tr > .analysis-table__intervention-subtotal-cell {
   background-color: $color-moonstone-2;
 }
@@ -79,11 +82,6 @@
   background-color: $color-moonstone-3;
 }
 
-.analysis-table__intervention-subtotal {
-  display: block;
-  min-width: 8rem;
-  text-align: right;
-}
 
 .analysis-table__subcomponent-total {
   min-width: 6rem;
