@@ -520,9 +520,13 @@ $analysis-table-edit-cell-width-narrow: 13rem;
 $analysis-table-edit-cell-width-tablet: 16rem;
 $analysis-table-dropdown-cell-width: 19rem;
 
-.analysis-table__actions {
+.analysis-table__actions-cell {
   text-align: center;
   min-width: 7rem;
+
+  .analysis-table__table > tbody > tr > & {
+    padding-block: 0.8rem;
+  }
 }
 .analysis-table__action {
   background-color: #F1F4F8;
@@ -568,11 +572,6 @@ $analysis-table-dropdown-cell-width: 19rem;
 
 .analysis-table__dropdown-cell {
   min-width: $analysis-table-dropdown-cell-width;
-}
-
-.analysis-table__tbody--transactions-active,
-.analysis-table__tbody--edit-active {
-  background-color: $color-table-blue;
 }
 
 .analysis-table__cost-item-summary {
@@ -706,7 +705,7 @@ $analysis-table__category-edit-note-width: 8rem;
 
   thead {
     background-color: $color-table-blue;
-    border-bottom: 1px solid $color-table-accent-blue;
+    border-block: 1px solid $color-table-accent-blue;
     position: sticky;
     top: 0;
 
@@ -729,8 +728,36 @@ $analysis-table__category-edit-note-width: 8rem;
       @include font-size(14, 1.1429);
 
       &.analysis-table__transaction-table-summary {
-        padding-left: 4.2rem;
+        padding: 0.6rem 1rem;
       }
+    }
+
+    .analysis-table__transaction-summary {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      padding-left: 2.4rem;
+    }
+
+    .analysis-table__transaction-checkbox {
+      flex-shrink: 0;
+      margin: -0.6rem;
+
+      label {
+        display: block;
+      }
+
+      .form__checkbox--simple span {
+        background-position: center center;
+        min-height: 2rem;
+        min-width: 2rem;
+        padding: 0;
+      }
+    }
+
+    .analysis-table__transaction-description {
+      flex: 1 1 auto;
+      min-width: 0;
     }
 
     tr:first-child td {
@@ -1083,7 +1110,7 @@ input[type="text"].analysis-table__allocated-input {
 .analysis-table__allocated-input-suffix {
   @include font-size(14, 1.1428);
   color: $color-smoke;
-  padding: 0.2rem 1.5rem 0.2rem 0.2rem;
+  padding: 0.2rem;
   margin-right: auto;
   margin-left: 0.2rem;
 }

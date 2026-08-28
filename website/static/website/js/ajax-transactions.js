@@ -4,9 +4,14 @@ $(function() {
         if (!$button.hasClass('transactions-loaded')) {
             $button.addClass('transactions-loaded');
             var href = $button.data('transactions-href');
+            var $tbody = $button.closest('tbody.analysis-table__tbody');
             $.get(href).then(function(transactionRows) {
                 var targetSelector = $button.data('transactions-target');
-                $(targetSelector).html(transactionRows);
+                var $target = $(targetSelector);
+                $target.html(transactionRows);
+                if (window.AnalysisTableNestedCheckboxes && $tbody.length) {
+                    window.AnalysisTableNestedCheckboxes.initLoadedTransactions($tbody);
+                }
             });
         }
     });

@@ -62,6 +62,7 @@ var jsFiles = [
   './js/form-helpers.js',
   './js/loading-triggers.js',
   './js/analysis-categories.js',
+  './js/analysis-table-nested-checkboxes.js',
   './js/fix-missing-data.js',
   './js/categorize-cost_type.js',
   './js/allocate-bulk.js',

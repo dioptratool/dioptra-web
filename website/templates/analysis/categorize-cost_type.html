@@ -78,7 +78,7 @@
                           {% endif %}
                         {% endif %}
                       </th>
-                      <th class="analysis-table__actions">
+                      <th class="analysis-table__actions-cell">
                         {% help 'confirm_categories__edit_cost_type_category' %}
                         <span class="analysis-table__help-in-th-label">{% translate 'Actions' %}</span>
                       </th>
@@ -105,7 +105,7 @@
                                   {% if transactions_count > 0 %}
                                     <button class="analysis-table__transactions-toggle"
                                             aria-label="{% translate 'Toggle transactions' %}"
-                                            data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                            data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?type=categorizeCostType&amp;bulk_select=1"
                                             data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
                                     <div class="analysis-table__transactions-toggle-inner"><span
                                        class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">{% include 'icons/triangle-right.svg' %}</span><span
@@ -139,12 +139,12 @@
                             {% endfor %}
                             <td class="analysis-table__amount-cell">{% if not sensitive_data %}
                               {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
-                            <td class="analysis-table__actions">
+                            <td class="analysis-table__actions-cell">
                               <button type="button" class="analysis-table__action">{% include 'icons/edit-small.svg' %}</button>
                               <span class="analysis-table__category-edit-active-label">{% translate 'Editing' %}</span>
                             </td>
                           </tr>
-                          {% include 'analysis/analysis-table/_analysis-table-transaction-rows.html' with cost_line_item=cost_line_item transactions_count=transactions_count showSectorCode='true' sensitive_data=sensitive_data type='categorizeCostType' %}
+                          {% include 'analysis/analysis-table/_analysis-table-transaction-rows.html' with cost_line_item=cost_line_item transactions_count=transactions_count showSectorCode='true' sensitive_data=sensitive_data type='categorizeCostType' bulkSelect='true' %}
                           {% include 'analysis/analysis-table/_analysis-table-edit-row.html' with type='categorizeCostType' %}
                         {% endwith %}
                       {% endwith %}

@@ -2,14 +2,21 @@
 {% for transaction in transactions %}
     <tr>
     {% with sensitive_data=account_code_descriptions|dict_get:transaction.account_code|attr:'sensitive_data' %}
-        <td class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">{{ transaction.transaction_description }}</td>
+        <td class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">
+            <div class="analysis-table__transaction-summary">
+                {% if bulk_select %}
+                    {% include 'analysis/analysis-table/_analysis-table-transaction-checkbox.html' with transaction=transaction config_id=config_id %}
+                {% endif %}
+                <span class="analysis-table__transaction-description">{{ transaction.transaction_description }}</span>
+            </div>
+        </td>
         <td class="analysis-table__site-cell">{{ transaction.site_code }}</td>
         <td class="analysis-table__description-cell">{{ transaction.date }}</td>
         <td class="analysis-table__amount-cell">{% if not sensitive_data %}{{ transaction.amount_in_instance_currency|format_currency:transaction.analysis.currency_code }}{% endif %}</td>
         {% for column in transaction_custom_fields %}
             <td class="analysis-table__custom-field-cell">{{ transaction|object_getattr:column.field }}</td>
         {% endfor %}
-        <td {% if type == 'fixData' %}colspan="3"{% endif %} class="analysis-table__edit-cell"></td>
+        <td {% if type == 'fixData' %}colspan="3"{% elif type == 'categorizeCostType' %}colspan="3"{% endif %} class="analysis-table__actions-cell"></td>
     {% endwith %}
     </tr>
 {% endfor %}

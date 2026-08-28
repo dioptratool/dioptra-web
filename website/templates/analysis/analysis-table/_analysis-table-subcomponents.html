@@ -48,7 +48,7 @@
                                     {% if transactions_count > 0 %}
                                         <button class="analysis-table__transactions-toggle"
                                                 aria-label="{% translate 'Toggle transactions' %}"
-                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?bulk_select=1"
                                                 data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
                                         <div class="analysis-table__transactions-toggle-inner">
                                           <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
