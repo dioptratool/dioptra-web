@@ -225,6 +225,7 @@ class CostLineItemTransactions(PermissionRequiredMixin, DetailView):
         context["type"] = self.request.GET.get("type")
         context["bulk_select"] = self.request.GET.get("bulk_select") in ("1", "true", "True")
         context["config_id"] = self.object.config.id
+        context["transaction_edit_url"] = self.request.GET.get("transaction_edit_url")
         # The nested table's headers are rendered by the parent page, so the columns here
         # must match the analysis-wide set rather than this cost line item's own values.
         context["transaction_custom_fields"] = self.object.analysis.transaction_custom_fields

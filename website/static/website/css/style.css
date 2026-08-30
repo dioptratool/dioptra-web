@@ -5577,9 +5577,6 @@ a.analysis-navigation__prev-next:hover {
   top: 0;
   z-index: 4;
 }
-.analysis-table__category-content--freeze-row .analysis-table__table > thead > tr > th:last-child {
-  border-right: 1px solid rgb(255, 255, 255);
-}
 .analysis-table__category-content--freeze-row [data-dragged-y=true] .analysis-table__table > thead {
   box-shadow: 0 1rem 1rem -1rem rgba(0, 0, 0, 0.2);
 }
@@ -5991,23 +5988,75 @@ a.analysis-navigation__prev-next:hover {
   min-width: 7rem;
 }
 .analysis-table__table > tbody > tr > .analysis-table__actions-cell {
-  padding-block: 0.8rem;
+  padding: 0.8rem 0.5rem;
 }
 
-.analysis-table__action {
+.analysis-table__actions-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.analysis-table__actions-menu {
+  display: inline-flex;
+  position: relative;
+}
+
+.analysis-table__actions-menu__popover {
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(197, 222, 246);
+  border-radius: 2px;
+  box-shadow: 0 4px 4px rgba(16, 69, 122, 0.2);
+  margin: 0;
+  min-width: 14rem;
+  padding: 0.4rem 0;
+  position-area: bottom left;
+  right: anchor(right);
+}
+
+.analysis-table__actions-menu__item {
+  background: transparent;
+  border: none;
+  color: rgb(51, 51, 51);
+  display: block;
+  font-weight: 700;
+  padding: 0.8rem 1.2rem;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  font-size: 13px;
+  font-size: 1.3rem;
+  line-height: 1.125;
+}
+.analysis-table__actions-menu__item:hover, .analysis-table__actions-menu__item:focus {
+  background-color: rgb(241, 247, 253);
+  color: rgb(51, 51, 51);
+  text-decoration: none;
+}
+
+.analysis-table__action, .analysis-table__subcomponent-skip__label {
   background-color: #F1F4F8;
   border: none;
   border-radius: 2px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.6rem;
+  min-width: 3.2rem;
   font-weight: 700;
   padding: 0.7rem;
   transition: all 0.2s ease;
 }
-.analysis-table__action:hover {
+.analysis-table__action:hover, .analysis-table__subcomponent-skip__label:hover {
   background-color: #D7E3F3;
+}
+.analysis-table__action.analysis-table__action--active, .analysis-table__action--active.analysis-table__subcomponent-skip__label {
+  background-color: #1B77D4;
+}
+.analysis-table__action.analysis-table__action--active svg, .analysis-table__action--active.analysis-table__subcomponent-skip__label svg {
+  filter: invert(1);
 }
 
 .analysis-table__table > thead > tr > th.analysis-table__edit-cell {
@@ -6020,6 +6069,7 @@ a.analysis-navigation__prev-next:hover {
 
 .analysis-table__table > tbody > tr > td.analysis-table__edit-cell {
   background-color: #F1F4F8;
+  padding-block: 0.6rem;
 }
 
 .analysis-table__total-cell {
@@ -6027,6 +6077,10 @@ a.analysis-navigation__prev-next:hover {
 }
 .analysis-table__total-cell em {
   text-wrap: nowrap;
+}
+
+.analysis-table__table > tbody > tr > td.analysis-table__total-cell {
+  padding-block: 0.6rem;
 }
 
 .analysis-table__grant-cell {
@@ -6061,35 +6115,6 @@ a.analysis-navigation__prev-next:hover {
   display: none;
 }
 
-.analysis-table__category-edit {
-  background-color: rgb(241, 247, 253);
-  border: none;
-  border-radius: 2px;
-  font-weight: 700;
-  padding: 0.7rem;
-  transition: all 0.2s ease;
-}
-.analysis-table__category-edit:hover {
-  background-color: rgb(196.375, 221.5, 246.625);
-}
-.analysis-table__tbody--edit-active .analysis-table__category-edit {
-  display: none;
-}
-
-.analysis-table__category-edit--note {
-  display: inline-block;
-  min-width: 8rem;
-}
-
-.analysis-table__category-edit--note-active {
-  background-color: rgb(35, 121, 209);
-  color: rgb(255, 255, 255);
-}
-.analysis-table__category-edit--note-active:hover {
-  background-color: rgb(27.6844262295, 95.7090163934, 165.3155737705);
-  color: rgb(255, 255, 255);
-}
-
 .analysis-table__help-in-th-label {
   display: inline-block;
   vertical-align: middle;
@@ -6098,6 +6123,7 @@ a.analysis-navigation__prev-next:hover {
 .analysis-table:has(.analysis-table__transactions-toggle) .analysis-table__bulk-update-checkbox + .analysis-table__cost-item-cell {
   vertical-align: top;
   padding-left: 0;
+  padding-bottom: 5px;
 }
 .analysis-table:has(.analysis-table__transactions-toggle) .analysis-table__table > tbody > tr > td.analysis-table__bulk-update-checkbox {
   vertical-align: top;
@@ -6152,7 +6178,7 @@ a.analysis-navigation__prev-next:hover {
 
 .analysis-table__transactions-detail {
   border-bottom: 1px solid rgb(197, 222, 246);
-  max-height: 17rem;
+  max-height: 21rem;
   overflow: auto;
 }
 
@@ -6306,24 +6332,6 @@ a.analysis-navigation__prev-next:hover {
 }
 .analysis-table__edit-row-select.analysis-table__edit-row-select--fix-data {
   width: calc(19rem - 2rem);
-}
-
-.analysis-table__category-edit-active-label {
-  color: rgb(144, 154, 162);
-  display: none;
-  font-style: italic;
-  font-size: 14px;
-  font-size: 1.4rem;
-  line-height: 1.1429;
-}
-.analysis-table__tbody--edit-active .analysis-table__category-edit-active-label {
-  display: block;
-}
-
-.analysis-table__tbody--edit-active .analysis-table__category-edit-active-label--note {
-  display: inline-block;
-  margin-left: 0;
-  min-width: 8rem;
 }
 
 .analysis-table__edit-note-input {
@@ -6555,7 +6563,7 @@ input[type=text].analysis-table__allocated-input {
 
 .analysis-table__allocated-total {
   font-weight: 700;
-  padding: 0.7rem 0.8rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   min-width: 7rem;
 }
@@ -7055,9 +7063,14 @@ input[type=text].analysis-table__allocated-input {
 
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header--total {
   background-color: rgb(197, 222, 246);
+  border-left: 1px solid rgb(255, 255, 255);
   color: rgb(51, 51, 51);
   text-align: right;
   min-width: 16rem;
+}
+
+.analysis-table__table > thead > tr > th:has(+ th.analysis-table__subcomponent-header--total) {
+  border-right: none;
 }
 
 .analysis-table__intervention-subtotal-cell {
@@ -7100,15 +7113,9 @@ input[type=text].analysis-table__allocated-input {
 }
 
 .analysis-table__subcomponent-skip__label {
-  padding: 8px 16px;
-  border-radius: 2px;
-  background-color: rgb(241, 247, 253);
-  color: rgb(51, 51, 51);
-  margin-bottom: 0;
-}
-.analysis-table__subcomponent-skip__label:hover {
-  filter: brightness(0.9);
   cursor: pointer;
+  margin-bottom: 0;
+  line-height: 1;
 }
 .analysis-table__subcomponent-skip input:disabled + .analysis-table__subcomponent-skip__label {
   color: rgb(155, 155, 155);

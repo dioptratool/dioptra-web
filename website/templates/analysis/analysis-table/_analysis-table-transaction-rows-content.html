@@ -1,4 +1,4 @@
-{% load analysis help humanize website_tags %}
+{% load analysis help humanize i18n website_tags %}
 {% for transaction in transactions %}
     <tr>
     {% with sensitive_data=account_code_descriptions|dict_get:transaction.account_code|attr:'sensitive_data' %}
@@ -16,7 +16,15 @@
         {% for column in transaction_custom_fields %}
             <td class="analysis-table__custom-field-cell">{{ transaction|object_getattr:column.field }}</td>
         {% endfor %}
-        <td {% if type == 'fixData' %}colspan="3"{% elif type == 'categorizeCostType' %}colspan="3"{% endif %} class="analysis-table__actions-cell"></td>
+        <td {% if type == 'fixData' %}colspan="3"{% elif type == 'categorizeCostType' %}colspan="3"{% endif %} class="analysis-table__actions-cell">
+            {% if transaction_edit_url %}
+            <a href="{{ transaction_edit_url }}?transaction_id={{ transaction.pk }}"
+                class="analysis-table__action"
+                data-panels-trigger
+                data-panels-reload-on="saved"
+                aria-label="{% translate 'Edit Transaction' %}">{% include 'icons/edit-small.svg' %}</a>
+            {% endif %}
+        </td>
     {% endwith %}
     </tr>
 {% endfor %}

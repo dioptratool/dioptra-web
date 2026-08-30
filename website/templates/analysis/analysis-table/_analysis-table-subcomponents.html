@@ -1,4 +1,6 @@
 {% load analysis help humanize i18n website_tags %}
+{% url 'analysis-allocate-subcomponents-intervention-grant-bulk' analysis.pk step.intervention_instance.pk step.grant as transaction_edit_url %}
+{% url 'analysis-allocate-subcomponents-intervention-grant-bulk' analysis.pk step.intervention_instance.pk step.grant as cost_line_item_edit_url %}
 <div class="analysis-table__wrapper analysis-table__wrapper--allocate">
     <table class="analysis-table__table">
         <thead>
@@ -18,6 +20,7 @@
             <th class="analysis-table__subcomponent-header--total" rowspan="2">
                 {% translate 'Sub-Component Total' %}<br/><small><em>{% translate 'Must equal 100%' %}</em></small>
             </th>
+            <th class="analysis-table__actions-cell" rowspan="2">{% translate 'Actions' %}</th>
         </tr>
         <tr>
             {% for subcomponent_label in step.subcomponent_analysis.subcomponent_labels %}
@@ -48,7 +51,7 @@
                                     {% if transactions_count > 0 %}
                                         <button class="analysis-table__transactions-toggle"
                                                 aria-label="{% translate 'Toggle transactions' %}"
-                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?bulk_select=1"
+                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?bulk_select=1&amp;transaction_edit_url={{ transaction_edit_url|urlencode }}"
                                                 data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
                                         <div class="analysis-table__transactions-toggle-inner">
                                           <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
@@ -133,11 +136,6 @@
                                     <label class="analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
                                            for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skipped' %}</label>
                                 </span>
-                                <button class="analysis-table__category-edit analysis-table__category-edit--note{% if cost_line_item.note %} analysis-table__category-edit--note-active {% endif %}">
-                                    {% if cost_line_item.note %}{% translate 'View note' %} {% else %}
-                                        {% translate 'Add note' %}{% endif %}
-                                </button>
-                                <span class="analysis-table__category-edit-active-label analysis-table__category-edit-active-label--note">{% translate 'Editing' %}</span>
                                 {% if errors|dict_get:cost_line_item.id %}
                                     <div class="form__errors form__errors--left form__errors--subcomponent">
                                         <ul class="form__errors-list">
@@ -148,6 +146,9 @@
                                     </div>
                                 {% endif %}
                             </div>
+                        </td>
+                        <td class="analysis-table__actions-cell">
+                            {% include 'analysis/analysis-table/_analysis-table-actions-menu.html' %}
                         </td>
                     </tr>
 

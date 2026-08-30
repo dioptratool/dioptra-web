@@ -1,0 +1,33 @@
+{% load i18n %}
+<div class="analysis-table__actions-group">
+    {% if cost_line_item.note %}
+        <button type="button" aria-label="{% translate 'View Note' %}"
+            class="analysis-table__action analysis-table__action--active analysis-table__category-edit analysis-table__category-edit--note">
+            {% include 'icons/note-small.svg' %}
+        </button>
+    {% endif %}
+    <div class="analysis-table__actions-menu">
+        <button type="button"
+                id="cost-line-item-actions-trigger-{{ cost_line_item.id }}"
+                class="analysis-table__action analysis-table__actions-menu__trigger"
+                popovertarget="cost-line-item-actions-{{ cost_line_item.id }}"
+                aria-label="{% translate 'Cost item actions' %}">
+            {% include 'icons/edit-small.svg' %}
+        </button>
+        <div id="cost-line-item-actions-{{ cost_line_item.id }}"
+            popover="auto"
+            anchor="cost-line-item-actions-trigger-{{ cost_line_item.id }}"
+            class="analysis-table__actions-menu__popover">
+            <button type="button"
+                    class="analysis-table__actions-menu__item analysis-table__category-edit analysis-table__category-edit--note">
+                {% if cost_line_item.note %}{% translate 'View note' %}{% else %}{% translate 'Add note' %}{% endif %}
+            </button>
+            <a href="{{ cost_line_item_edit_url }}?config_ids={{ cost_line_item.config.id }}"
+            class="analysis-table__actions-menu__item"
+            data-panels-trigger
+            data-panels-reload-on="saved">
+                {% translate 'Edit Cost Item' %}
+            </a>
+        </div>
+    </div>
+</div>
