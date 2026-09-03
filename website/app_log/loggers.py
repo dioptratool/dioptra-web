@@ -365,3 +365,11 @@ def log_user_made_inactive(active_user, user=None):
 
 def log_user_password_reset(user):
     log(user, "Password reset", user, f"Password reset for user {user}.")
+
+
+def log_analysis_transactions_corrected(analysis, message, user=None):
+    log(user, "Transactions Corrected", analysis, message)
+
+
+def log_analysis_cost_items_corrected(analysis, message, user=None):
+    log(user, "Cost Items Corrected", analysis, message)

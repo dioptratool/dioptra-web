@@ -18,7 +18,7 @@
         {% endfor %}
         <td {% if type == 'fixData' %}colspan="3"{% elif type == 'categorizeCostType' %}colspan="3"{% endif %} class="analysis-table__actions-cell">
             {% if transaction_edit_url %}
-            <a href="{{ transaction_edit_url }}?transaction_id={{ transaction.pk }}"
+            <a href="{{ transaction_edit_url }}{% if '?' in transaction_edit_url %}&amp;{% else %}?{% endif %}transaction_id={{ transaction.pk }}"
                 class="analysis-table__action"
                 data-panels-trigger
                 data-panels-reload-on="saved"

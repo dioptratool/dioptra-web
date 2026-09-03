@@ -1,0 +1,42 @@
+{% extends 'panel-form.html' %}
+{% load i18n panels_form_extras %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis correction-form"
+          enctype="application/x-www-form-urlencoded"
+          novalidate="novalidate"
+          {% if stage != 'confirm' %}data-confirm-abandonment-message="{% translate 'There are unsaved changes on this form. Are you sure you want to leave?' %}"{% endif %}>
+{% endblock form-start %}
+
+{% block panel-body %}
+    {% csrf_token %}
+    {% if stage == 'confirm' %}
+        <div class="panel-body-contents correction-confirm">
+            {% if stale %}
+                <div class="help-block errors">
+                    <ul>
+                        <li><em>{% translate 'The affected cost items changed since this change was previewed. Review the details below before continuing.' %}</em></li>
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if needs_allocation_warning %}
+                <div class="correction-warning">
+                    <h3 class="correction-warning__title">{% translate 'This change will clear allocations' %}</h3>
+                    <p class="correction-warning__body">{% translate 'This change will split or merge cost items. Intervention and sub-component allocations for all affected cost items will be cleared and must be entered again.' %}</p>
+                </div>
+            {% endif %}
+
+            {% for name, value in hidden_fields %}
+                <input type="hidden" name="{{ name }}" value="{{ value }}">
+            {% endfor %}
+            <input type="hidden" name="confirm_fingerprint" value="{{ confirm_fingerprint }}">
+        </div>
+    {% else %}
+        {% include '_form.html' with form=form only %}
+    {% endif %}
+{% endblock panel-body %}
+
+{% block panel-foot %}
+    {% include '_panel-form-buttons.html' with buttons=buttons form=form only %}
+{% endblock panel-foot %}

@@ -19,6 +19,7 @@ from website.models import Analysis, CostLineItem, CostType
 from website.models.cost_line_item import CostLineItemConfig, CostLineItemInterventionAllocation
 from website.models.subcomponent import SubcomponentCostAllocation
 from website.models.cost_type import Indirect, ProgramCost, Support
+from website.views.analysis.corrections import correction_urls
 from website.views.mixins import (
     AllocateMixin,
     AnalysisPermissionRequiredMixin,
@@ -168,35 +169,28 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
         return Decimal(cost / total)
 
     def calc_country_proportion(self):
+        """
+        The share of this grant's stored cost lines that are ordinary (categorised) cost items:
+        ordinary cost lines / all cost lines carrying the grant code, where "all" includes the
+        special-country lump sums and Add Other Costs rows.
+
+        This deliberately no longer reads ``Analysis.all_transactions_total_cost``, the per-grant
+        total written once at import: it counted transactions that were never persisted and went
+        stale after any in-app amount edit or grant move (Feature 91, spec section 13).
+        """
         standard_cost_lines_cost = sum(
-            list(
-                self.analysis.cost_line_items.cost_type_category_items()
-                .filter(grant_code=self.grant_code)
-                .values_list("total_cost", flat=True)
-            )
+            self.analysis.cost_line_items.cost_type_category_items()
+            .filter(grant_code=self.grant_code)
+            .values_list("total_cost", flat=True)
         )
         all_cost_lines_cost = sum(
-            list(
-                self.analysis.cost_line_items.filter(grant_code=self.grant_code).values_list(
-                    "total_cost", flat=True
-                )
+            self.analysis.cost_line_items.filter(grant_code=self.grant_code).values_list(
+                "total_cost", flat=True
             )
         )
-
-        # When initially loading data for an Analysis, we aggregate the cost of ALL transactions, even those that are
-        # filtered out by now due to a non-matching country.  This total value should always be the highest value among
-        # all other cost values in this method
-        total_transaction_cost = self.analysis.get_all_transactions_total_cost(self.grant_code)
-        if total_transaction_cost is None:
-            return None
-
-        total_non_stored_cost = max(total_transaction_cost - all_cost_lines_cost, 0)
-
-        cost_denom = standard_cost_lines_cost + total_non_stored_cost
-        if not cost_denom:
+        if not all_cost_lines_cost:
             return 0
-
-        return standard_cost_lines_cost / cost_denom
+        return standard_cost_lines_cost / all_cost_lines_cost
 
 
 class AllocateCostTypeGrant(
@@ -287,6 +281,7 @@ class AllocateCostTypeGrant(
                 "title": _("How much did each cost item contribute to intervention being analyzed?"),
             }
         )
+        context.update(correction_urls(self.analysis, "allocate"))
 
         self.filterset.form.fields["site_code"].choices = (
             self.object.site_codes_choices_from_cost_line_items()

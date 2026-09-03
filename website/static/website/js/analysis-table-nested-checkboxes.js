@@ -59,6 +59,21 @@
       .get();
   }
 
+  function getCheckedCostLineItemIds($form) {
+    return $form
+      .find('input.bulk-checkbox:checked')
+      .filter(function () {
+        return !this.indeterminate;
+      })
+      .map(function () {
+        return parseInt(this.getAttribute('data-cost-line-item-id'), 10);
+      })
+      .get()
+      .filter(function (id) {
+        return !isNaN(id);
+      });
+  }
+
   function getCheckedTransactionIds($form) {
     return $form
       .find('input.transaction-checkbox:checked')
@@ -87,8 +102,30 @@
     return params.length ? '?' + params.join('&') : '?';
   }
 
+  /**
+   * What a bulk Edit sends to the selection endpoint (Feature 91, spec section 4).
+   *
+   * A fully checked cost-item row is sent as a cost line item id so the server can expand it to
+   * every transaction it contains, including ones that are collapsed or were never rendered;
+   * checked transaction rows (partial parents) are sent individually. On a budget analysis the
+   * selection is the cost items themselves.
+   */
+  function buildSelectionPayload($form, kind) {
+    var costLineItemIds = getCheckedCostLineItemIds($form);
+    var transactionIds = getCheckedTransactionIds($form);
+    if (kind === 'cost_items') {
+      return costLineItemIds.length ? { ids: costLineItemIds, cost_line_item_ids: [] } : null;
+    }
+    if (!costLineItemIds.length && !transactionIds.length) {
+      return null;
+    }
+    return { ids: transactionIds, cost_line_item_ids: costLineItemIds };
+  }
+
   function updateBulkAssignButton($form) {
-    $form.find('button.bulk-assign-items').prop('disabled', !hasBulkSelection($form));
+    $form
+      .find('button.bulk-assign-items, button.correction-bulk-edit')
+      .prop('disabled', !hasBulkSelection($form));
   }
 
   function initForm($form) {
@@ -121,7 +158,9 @@
       window.AnalysisTableNestedCheckboxes.selectAllInForm($form, false);
     },
     getCheckedConfigIds: getCheckedConfigIds,
+    getCheckedCostLineItemIds: getCheckedCostLineItemIds,
     getCheckedTransactionIds: getCheckedTransactionIds,
+    buildSelectionPayload: buildSelectionPayload,
     hasBulkSelection: hasBulkSelection,
     buildBulkQueryString: buildBulkQueryString,
     updateBulkAssignButton: updateBulkAssignButton,

@@ -69,8 +69,12 @@ class TestPageAccess:
                 {"pk": analysis_pk, "cost_type_pk": cost_type_pk},
             ),
             (
-                "analysis-categorize-cost_type-bulk",
-                {"pk": analysis_pk, "cost_type_pk": cost_type_pk},
+                "analysis-correct-transactions",
+                {"pk": analysis_pk, "step": "categorize"},
+            ),
+            (
+                "analysis-correct-cost-items",
+                {"pk": analysis_pk, "step": "allocate"},
             ),
             ("analysis-allocate", {"pk": analysis_pk}),
             (

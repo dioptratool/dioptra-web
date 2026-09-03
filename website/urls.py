@@ -20,6 +20,12 @@ from website.users.views import AdminLoginView, CustomPasswordResetFromKeyView
 from website.views import intervention
 from website.views import logout
 from website.views import styleguide
+from website.views.analysis.corrections import (
+    AllocationChangesPromptPanel,
+    CorrectionSelectionCreate,
+    CostItemCorrectionPanel,
+    TransactionCorrectionPanel,
+)
 from website.views.analysis.analysis import (
     AnalysisDetailView,
     AnalysisLessonsEditorView,
@@ -44,10 +50,7 @@ from website.views.analysis.steps.allocate_subcomponents import (
     AllocateSubcomponentsInterventionGrant,
 )
 from website.views.analysis.steps.categorize import Categorize
-from website.views.analysis.steps.categorize_cost_type import (
-    CategorizeCostType,
-    CategorizeCostTypeBulk,
-)
+from website.views.analysis.steps.categorize_cost_type import CategorizeCostType
 from website.views.analysis.steps.define import (
     DefineCreate,
     DefineUpdate,
@@ -160,10 +163,26 @@ urlpatterns = [
         CategorizeCostType.as_view(),
         name="analysis-categorize-cost_type",
     ),
+    # In-app corrections (Feature 91): selection token, then the edit panels.
     path(
-        "analysis/<int:pk>/categorize/<int:cost_type_pk>/bulk/",
-        CategorizeCostTypeBulk.as_view(),
-        name="analysis-categorize-cost_type-bulk",
+        "analysis/<int:pk>/corrections/selection/",
+        CorrectionSelectionCreate.as_view(),
+        name="analysis-correction-selection",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/unsaved-allocations/",
+        AllocationChangesPromptPanel.as_view(),
+        name="analysis-correction-unsaved-prompt",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/<str:step>/transactions/",
+        TransactionCorrectionPanel.as_view(),
+        name="analysis-correct-transactions",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/<str:step>/cost-items/",
+        CostItemCorrectionPanel.as_view(),
+        name="analysis-correct-cost-items",
     ),
     path(
         "analysis/<int:pk>/allocate/",

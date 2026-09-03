@@ -1,0 +1,24 @@
+{% extends 'html-panel.html' %}
+{% load i18n %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">{% translate 'Editing reloads this page when the change is saved, so allocation percentages typed into the table would be lost.' %}</p>
+    <p>{% translate 'Save the allocation changes first and continue to the edit, discard them and continue, or cancel and return to the table unchanged.' %}</p>
+{% endblock panel-body %}
+
+{% block panel-foot %}
+    <a href="#" class="btn btn-primary" data-correction-choice="save">{% translate 'Save and continue' %}</a>
+    <a href="#" class="btn btn-default" data-correction-choice="discard">{% translate 'Discard' %}</a>
+    <a href="#" class="btn btn-cancel" data-panels-action="reject-close">{% translate 'Cancel' %}</a>
+{% endblock panel-foot %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        $(function () {
+            $('[data-correction-choice]').on('click', function (e) {
+                e.preventDefault();
+                Panels.current.resolve({ choice: this.getAttribute('data-correction-choice') });
+            });
+        });
+    </script>
+{% endblock extrascript %}
