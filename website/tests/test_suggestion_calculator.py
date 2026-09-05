@@ -164,6 +164,8 @@ class TestSuggestionCalculatorSpecialCountries:
             end_date=datetime.date(2016, 4, 30),
             country=country,
             grants="GRANT123,GRANT456",
+            # Written at import but no longer read: the country proportion is computed from the
+            # stored cost lines alone (Feature 91, spec section 13 / decision D-10).
             all_transactions_total_cost="200000.00,300000.00",
         )
 
@@ -381,9 +383,11 @@ class TestSuggestionCalculatorSpecialCountries:
         context = self.view.get_context_data()
         assert context["show_special_calculator"]
         assert context["grant_proportions"] == "61.11%"
-        assert context["country_proportions"] == "80.00%"
-        assert round(float(context["suggested_allocation"]), 2) == 48.89
-        assert context["other_suggested_allocation"] == "48.89%"
+        # Ordinary cost lines / all stored cost lines for the grant, lump sums included:
+        # (50,000 + 40,000 + 10,000) / (100,000 + 75,000).
+        assert context["country_proportions"] == "57.14%"
+        assert round(float(context["suggested_allocation"]), 2) == 34.92
+        assert context["other_suggested_allocation"] == "34.92%"
 
         # Call calculator with second Grant
         self.view.grant_code = "GRANT456"
@@ -395,6 +399,7 @@ class TestSuggestionCalculatorSpecialCountries:
         context = self.view.get_context_data()
         assert context["show_special_calculator"]
         assert context["grant_proportions"] == "50.00%"
-        assert context["country_proportions"] == "31.30%"
-        assert round(float(context["suggested_allocation"]), 2) == 15.65
-        assert context["other_suggested_allocation"] == "15.65%"
+        # (60,000 + 12,000) / (72,000 + 70,000).
+        assert context["country_proportions"] == "50.70%"
+        assert round(float(context["suggested_allocation"]), 2) == 25.35
+        assert context["other_suggested_allocation"] == "25.35%"

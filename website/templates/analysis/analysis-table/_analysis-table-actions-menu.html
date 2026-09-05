@@ -1,4 +1,5 @@
 {% load i18n %}
+{# Row action menu on Allocate: Add/View note, and Edit Cost Item unless the row is a special-country lump sum. #}
 <div class="analysis-table__actions-group">
     {% if cost_line_item.note %}
         <button type="button" aria-label="{% translate 'View Note' %}"
@@ -22,12 +23,14 @@
                     class="analysis-table__actions-menu__item analysis-table__category-edit analysis-table__category-edit--note">
                 {% if cost_line_item.note %}{% translate 'View note' %}{% else %}{% translate 'Add note' %}{% endif %}
             </button>
-            <a href="{{ cost_line_item_edit_url }}?config_ids={{ cost_line_item.config.id }}"
+            {% if editable != 'false' and cost_item_edit_url %}
+            <a href="{{ cost_item_edit_url }}{% if '?' in cost_item_edit_url %}&amp;{% else %}?{% endif %}cost_line_item_id={{ cost_line_item.pk }}"
             class="analysis-table__actions-menu__item"
             data-panels-trigger
             data-panels-reload-on="saved">
                 {% translate 'Edit Cost Item' %}
             </a>
+            {% endif %}
         </div>
     </div>
 </div>

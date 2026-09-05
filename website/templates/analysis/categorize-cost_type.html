@@ -27,7 +27,6 @@
 
     <div class="analysis-table__categories">
       {% for cost_type_category, cost_line_items in cost_type_category_items %}
-        {% url 'analysis-categorize-cost_type-bulk' analysis.pk cost_type_category.pk as transaction_edit_url %}
         <div
            class="analysis-table__category{% if not cost_type_category.confirmed %} analysis-table__category--unconfirmed{% endif %}">
             <div class="analysis-table__category-header">
@@ -46,15 +45,19 @@
             <div class="analysis-table__category-content">
               <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" class="categorize-cost_type-bulk-form" novalidate
                     data-show-loading-on-submit autocomplete="off">
+                {% csrf_token %}
                 <div class="analysis-table__heading-actions">
                   <div class="analysis-table__heading-select-all">
                     <div class="form__checkbox form__checkbox--simple">
                       <label for="select-all-{{ cost_type_category.pk }}" class="analysis-table__select-all-label">
                          <input type="checkbox" class="select-all" id="select-all-{{ cost_type_category.pk }}" value="select-all"><span>Select All</span></label>
                     </div>
-                    <button type="submit" class="bulk-assign-items analysis-table__bulk-assign-btn"
-                            data-href="{% url 'analysis-categorize-cost_type-bulk' analysis.pk cost_type_category.pk %}"
-                            disabled>{% include 'icons/disallowed.svg' %}<span>Assign Selected Items</span>
+                    <button type="button" class="correction-bulk-edit analysis-table__bulk-assign-btn"
+                            data-selection-url="{{ selection_url }}"
+                            data-selection-kind="{{ selection_kind }}"
+                            data-selection-step="{{ selection_step }}"
+                            data-cost-type="{{ selection_cost_type }}"
+                            disabled>{% include 'icons/disallowed.svg' %}<span>{% translate 'Edit' %}</span>
                     </button>
                   </div>
                 </div>
@@ -95,7 +98,8 @@
                                 <label>
                                   <input type="checkbox" class="bulk-checkbox"
                                      {# No name attribute so it isn't submitted with the form, only used via JS #}
-                                         value="{{ cost_line_item.config.id }}" aria-label="Select">
+                                         value="{{ cost_line_item.config.id }}"
+                                         data-cost-line-item-id="{{ cost_line_item.pk }}" aria-label="Select">
                                   <span></span>
                                 </label>
                               </div>
@@ -141,10 +145,11 @@
                             <td class="analysis-table__amount-cell">{% if not sensitive_data %}
                               {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                             <td class="analysis-table__actions-cell">
-                              <a href="{% url 'analysis-categorize-cost_type-bulk' analysis.pk cost_type_category.pk %}?config_ids={{ cost_line_item.pk }}"
+                              <a href="{{ cost_item_edit_url }}{% if '?' in cost_item_edit_url %}&amp;{% else %}?{% endif %}cost_line_item_id={{ cost_line_item.pk }}"
                                  class="analysis-table__action"
                                  data-panels-trigger
-                                 aria-label="{% translate 'Edit' %}">{% include 'icons/edit-small.svg' %}</a>
+                                 data-panels-reload-on="saved"
+                                 aria-label="{% translate 'Edit Cost Item' %}">{% include 'icons/edit-small.svg' %}</a>
                             </td>
                           </tr>
                           {% include 'analysis/analysis-table/_analysis-table-transaction-rows.html' with cost_line_item=cost_line_item transactions_count=transactions_count showSectorCode='true' sensitive_data=sensitive_data type='categorizeCostType' bulkSelect='true' %}

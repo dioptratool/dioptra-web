@@ -1,8 +1,5 @@
 {% load analysis help humanize i18n panels_form_extras website_tags %}
-{% if allocateEdit == 'true' %}
-    {% url 'analysis-allocate-cost_type-grant-bulk' pk=analysis.pk cost_type_pk=step.cost_type.id grant=step.grant as transaction_edit_url %}
-    {% url 'analysis-allocate-cost_type-grant-bulk' pk=analysis.pk cost_type_pk=step.cost_type.id grant=step.grant as cost_line_item_edit_url %}
-{% endif %}
+{# transaction_edit_url / cost_item_edit_url come from the view (see correction_urls); lump-sum rows get neither. #}
 <div class="analysis-table__wrapper{% if allocateEdit == 'true' %} analysis-table__wrapper--allocate{% endif %}">
     {% if step.cost_type.type_obj|get_class_name != "Support" %}
         {% if cost_type_category_grant.show_allocation_calculator %}
@@ -55,8 +52,8 @@
                 {% endif %}
             {% endfor %}
             <th class="analysis-table__total-cell">Total Allocations<br/><small><em>Cannot exceed 100%</em></small></th>
-            {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
-            <th class="analysis-table__actions-cell">Actions</th>
+            {% if allocateEdit == 'true' %}
+            <th class="analysis-table__actions-cell">{% translate 'Actions' %}</th>
             {% endif %}
         </tr>
         </thead>
@@ -71,7 +68,8 @@
                                     <label>
                                         <input type="checkbox" class="bulk-checkbox"
                                            {# No name attribute so it isn't submitted with the form, only used via JS #}
-                                               value="{{ cost_line_item.config.id }}" aria-label="{% translate 'Select' %}">
+                                               value="{{ cost_line_item.config.id }}"
+                                               data-cost-line-item-id="{{ cost_line_item.pk }}" aria-label="{% translate 'Select' %}">
                                         <span></span>
                                     </label>
                                 </div>
@@ -83,7 +81,7 @@
                                     {% if transactions_count > 0 %}
                                         <button class="analysis-table__transactions-toggle"
                                                 aria-label="{% translate 'Toggle transactions' %}"
-                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?{% if bulkSelect == 'true' %}bulk_select=1{% if transaction_edit_url %}&amp;{% endif %}{% endif %}{% if transaction_edit_url %}transaction_edit_url={{ transaction_edit_url|urlencode }}{% endif %}"
+                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?{% if bulkSelect == 'true' %}bulk_select=1{% if transaction_edit_url and lumpSumTable != 'true' %}&amp;{% endif %}{% endif %}{% if transaction_edit_url and lumpSumTable != 'true' %}transaction_edit_url={{ transaction_edit_url|urlencode }}{% endif %}"
                                                 data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
                                         <div class="analysis-table__transactions-toggle-inner">
                                           <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
@@ -201,9 +199,9 @@
                                     class="analysis-table__allocated-total">100%</span>
                             </div>
                         </td>
-                        {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
+                        {% if allocateEdit == 'true' %}
                         <td class="analysis-table__actions-cell">
-                            {% include 'analysis/analysis-table/_analysis-table-actions-menu.html' %}
+                            {% include 'analysis/analysis-table/_analysis-table-actions-menu.html' with editable=lumpSumTable|default:''|yesno:'false,true' %}
                         </td>
                         {% endif %}
                     </tr>
@@ -213,7 +211,6 @@
                     {% if costItemEdit == 'true' %}
                         {% include 'analysis/analysis-table/_analysis-table-edit-row.html' %}
                     {% elif allocateEdit == 'true' %}
-                        {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
                             <tr class="analysis-table__edit-row allocate-costs">
                                 <td
                                         colspan="99"
@@ -253,8 +250,6 @@
                                     </div>
                                 </td>
                             </tr>
-
-                        {% endif %}
                     {% endif %}
                 {% endwith %}
             {% endwith %}

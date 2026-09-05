@@ -1,0 +1,35 @@
+/* Correction panels (Feature 91): Tagify select fields, multiple-values placeholder, confirmation step */
+
+// Tagify (select mode) inside a panel form: size it like the other controls.
+.panel-form .tagify {
+  min-height: 34px;
+  width: 100%;
+}
+
+// The grey <multiple values> placeholder on a bulk panel, for text inputs and Tagify fields.
+.panel-form .correction-field--multiple::placeholder,
+.panel-form .tagify__input::before {
+  color: $color-boulder;
+  font-style: italic;
+  opacity: 1;
+}
+
+.correction-warning {
+  background-color: #fff6e5;
+  border: 1px solid #f2c66d;
+  border-radius: 2px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+}
+
+.correction-warning__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.correction-warning__body {
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}

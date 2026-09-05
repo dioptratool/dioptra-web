@@ -13,8 +13,6 @@ from website.forms.fields import PositiveFixedDecimalField, SubcomponentLabelFie
 from website.forms.widgets import TagEditorWidget
 from website.models import (
     Analysis,
-    Category,
-    CostType,
     InterventionInstance,
     Settings,
     SubcomponentCostAnalysis,
@@ -131,18 +129,6 @@ class DefineForm(forms.ModelForm):
 
     def _grant_is_valid(self, grant) -> bool:
         return True if re.match(r"^\S+$", grant) else False
-
-
-class CategorizeCostTypeBulkForm(forms.Form):
-    cost_type = forms.ModelChoiceField(CostType.objects)
-    category = forms.ModelChoiceField(Category.objects)
-    config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["config_ids"].choices = (
-            (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
-        )
 
 
 class AllocateInterventionBulkForm(forms.Form):
