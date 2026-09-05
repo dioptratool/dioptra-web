@@ -139,6 +139,22 @@ class TestTransactionPanelForm:
         assert tageditor_options(content, "site_code")["enforceWhitelist"] is True
         assert "tagify.js" in content
 
+    def test_calendar_limits_cover_the_analysis_range(self, transaction_analysis, client_with_admin):
+        analysis = transaction_analysis
+        analysis.end_date = datetime.date(2017, 12, 31)
+        analysis.save()
+        a, b, t1, t2, t3 = items(analysis)
+
+        content = client_with_admin.get(transactions_url(analysis, transaction_id=t1.id)).content.decode()
+        match = re.search(r'name="date"[^>]*data-flatpickr="([^"]*)"', content)
+        assert match
+        options = json.loads(html.unescape(match.group(1)))
+
+        assert options["dateFormat"] == "d-M-Y"
+        assert options["allowInput"] is True
+        assert datetime.date.fromisoformat(options["minDate"]) == analysis.start_date
+        assert datetime.date.fromisoformat(options["maxDate"]) == analysis.end_date
+
     def test_allocate_panel_offers_no_cost_type_or_category(self, transaction_analysis, client_with_admin):
         analysis = transaction_analysis
         a, b, t1, t2, t3 = items(analysis)
@@ -316,14 +332,19 @@ class TestTransactionPanelSave:
         assert t1.date == datetime.date(2016, 3, 1)
         assert not correction_entries().exists()
 
-    def test_the_range_ends_are_valid_dates(self, transaction_analysis, client_with_admin):
+    @pytest.mark.parametrize("value", ["01-Jan-2016", "15-Jun-2016", "31-Dec-2016", "2016-06-15"])
+    def test_valid_dates_can_be_saved(self, transaction_analysis, client_with_admin, value):
         analysis = transaction_analysis
         a, b, t1, t2, t3 = items(analysis)
 
-        client_with_admin.post(transactions_url(analysis, transaction_id=t1.id), data={"date": "31-Dec-2016"})
+        response = client_with_admin.post(
+            transactions_url(analysis, transaction_id=t1.id), data={"date": value}
+        )
 
+        assert '"operation": "saved"' in response.content.decode()
         t1.refresh_from_db()
-        assert t1.date == datetime.date(2016, 12, 31)
+        date_format = "%Y-%m-%d" if value[4] == "-" else "%d-%b-%Y"
+        assert t1.date == datetime.datetime.strptime(value, date_format).date()
 
     def test_amount_with_more_than_four_decimals_is_rejected(self, transaction_analysis, client_with_admin):
         analysis = transaction_analysis

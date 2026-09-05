@@ -6,6 +6,19 @@
   width: 100%;
 }
 
+// Keep selected descriptions within the control, leaving room for its remove button and arrow.
+.correction-form .tagify--select {
+  .tagify__tag,
+  .tagify__tag > div {
+    min-width: 0;
+  }
+
+  .tagify__tag-text {
+    max-width: 100%;
+    white-space: nowrap;
+  }
+}
+
 // The grey <multiple values> placeholder on a bulk panel, for text inputs and Tagify fields.
 .panel-form .correction-field--multiple::placeholder,
 .panel-form .tagify__input::before {

@@ -139,26 +139,40 @@ class TestTransactionCustomColumns:
 
         assert "analysis-table__custom-field-cell" not in response.content.decode()
 
-    def test_parent_page_renders_the_matching_transaction_header(
-        self, analysis_workflow_with_allocations, client_with_admin
+    @pytest.mark.parametrize("page_url", [_categorize_url, _allocate_url], ids=["categorize", "allocate"])
+    def test_parent_page_uses_transaction_labels_saved_by_another_worker(
+        self, analysis_workflow_with_allocations, client_with_admin, page_url
     ):
         overrides = FieldLabelOverrides.get()
-        overrides.tr_dummy_field_3 = "Project Code"
-        overrides.tr_dummy_field_3_overridden = True
-        overrides.save()
-
         analysis = analysis_workflow_with_allocations.analysis
         cost_line_item = analysis.cost_line_items.first()
         TransactionFactory(
             analysis=analysis,
             cost_line_item=cost_line_item,
-            dummy_field_3="PRJ-7",
+            **{f"dummy_field_{n}": f"VALUE-{n}" for n in range(1, 6)},
         )
+        url = page_url(analysis)
+        response = client_with_admin.get(url)
+        assert response.status_code == 200
+        for n in range(1, 6):
+            assert f"Transaction Custom Field {n}" in response.content.decode()
 
-        content = client_with_admin.get(_categorize_url(analysis)).content.decode()
+        # Another worker's save updates the database without emitting post_save in this process.
+        labels = ["Cost Centre", "Donor", "Project Code", "Phase", "Restriction"]
+        changes = {}
+        for n, label in enumerate(labels, start=1):
+            changes[f"tr_dummy_field_{n}"] = label
+            changes[f"tr_dummy_field_{n}_overridden"] = True
+        FieldLabelOverrides.objects.filter(pk=overrides.pk).update(**changes)
+
+        response = client_with_admin.get(url)
+        assert response.status_code == 200
+        content = response.content.decode()
 
         # Header lives in the parent page's skeleton; the values arrive over AJAX.
-        assert "Project Code" in content
+        for n, label in enumerate(labels, start=1):
+            assert f'<th class="analysis-table__custom-field-cell">{label}</th>' in content
+            assert f"Transaction Custom Field {n}" not in content
 
     def test_transaction_columns_do_not_appear_at_the_cost_item_level(
         self, analysis_workflow_with_allocations, client_with_admin

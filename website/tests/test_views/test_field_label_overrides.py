@@ -65,6 +65,21 @@ class TestCustomFieldLabelOverrides:
             load_field_label_override("ci_dummy_field_2", "Budget Custom Field 2") == "Budget Custom Field 2"
         )
 
+    @pytest.mark.parametrize("field_name", CUSTOM_FIELD_NAMES)
+    def test_override_changes_in_another_worker_are_read_immediately(self, field_name):
+        overrides = FieldLabelOverrides.get()
+        default = str(FieldLabelOverrides._meta.get_field(field_name).verbose_name)
+        assert load_field_label_override(field_name, default) == default
+
+        # QuerySet.update simulates changes without a save signal in the reading worker.
+        row = FieldLabelOverrides.objects.filter(pk=overrides.pk)
+        for label in ("Project Code", "Donor"):
+            row.update(**{field_name: label, f"{field_name}_overridden": True})
+            assert load_field_label_override(field_name, default) == label
+
+        row.update(**{f"{field_name}_overridden": False})
+        assert load_field_label_override(field_name, default) == default
+
     def test_panel_renders_both_custom_field_tabs(self, client_with_admin):
         overrides = FieldLabelOverrides.get()
         url = reverse("ombucore.admin:website_fieldlabeloverrides_change", args=[overrides.pk])

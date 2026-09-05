@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from . import FieldLabelOverrides
 from .intervention import Intervention
 from .intervention_instance import InterventionInstance
@@ -61,14 +59,9 @@ def get_parameter_field_name(parameter_name) -> str:
     return f"parameter__{parameter_name}"
 
 
-@lru_cache(maxsize=1)
-def _get_overrides() -> FieldLabelOverrides:
-    """Singleton lookup, cached until a save/delete clears it."""
-    return FieldLabelOverrides.get()
-
-
 def load_field_label_override(field_name: str, default=None):
-    obj = _get_overrides()
+    # Read current labels: a save in another worker cannot invalidate a process-local cache.
+    obj = FieldLabelOverrides.get()
     if getattr(obj, f"{field_name}_overridden", False):
         return getattr(obj, field_name) or default
     return default

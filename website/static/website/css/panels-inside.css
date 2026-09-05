@@ -6706,6 +6706,15 @@ html.is-in-panel .allocation-total-subtitle {
   width: 100%;
 }
 
+.correction-form .tagify--select .tagify__tag,
+.correction-form .tagify--select .tagify__tag > div {
+  min-width: 0;
+}
+.correction-form .tagify--select .tagify__tag-text {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
 .panel-form .correction-field--multiple::placeholder,
 .panel-form .tagify__input::before {
   color: rgb(118, 118, 118);

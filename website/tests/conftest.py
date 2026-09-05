@@ -34,21 +34,6 @@ from ..models.cost_type import CostType
 User = get_user_model()
 
 
-@pytest.fixture(autouse=True)
-def _clear_field_label_override_cache():
-    """Drop the FieldLabelOverrides lru_cache around every test.
-
-    The cache in website.models.utils is only invalidated by post_save/post_delete.
-    Neither fires when a test's transaction is rolled back, so an override saved by one
-    test would otherwise leak into every test that renders a labelled column header.
-    """
-    from website.models.utils import _get_overrides
-
-    _get_overrides.cache_clear()
-    yield
-    _get_overrides.cache_clear()
-
-
 @pytest.fixture
 def defaults():
     Settings.objects.create()
