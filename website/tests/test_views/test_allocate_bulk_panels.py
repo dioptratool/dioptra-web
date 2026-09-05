@@ -25,6 +25,7 @@ class TestAllocateInterventionBulkPanel:
             analysis.cost_line_items.filter(
                 grant_code=cost_type_category_grant.grant,
                 config__cost_type=cost_type_category_grant.cost_type_category.cost_type,
+                config__category=cost_type_category_grant.cost_type_category.category,
             )
         )
         url = reverse(

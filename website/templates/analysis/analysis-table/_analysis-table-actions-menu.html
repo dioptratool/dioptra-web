@@ -23,6 +23,13 @@
                     class="analysis-table__actions-menu__item analysis-table__category-edit analysis-table__category-edit--note">
                 {% if cost_line_item.note %}{% translate 'View note' %}{% else %}{% translate 'Add note' %}{% endif %}
             </button>
+            {% if editable != 'false' and step.cost_type.is_program_cost and not lumpSumTable %}
+            <a href="{% url 'analysis-allocate-cost_type-grant-suggest' pk=analysis.pk cost_type_pk=step.cost_type.pk grant=step.grant %}?config_ids={{ cost_line_item.config.pk }}"
+               class="analysis-table__actions-menu__item program-cost-suggest-item"
+               data-dialog-confirm="{% translate 'There are unsaved allocation changes in this table that may be affected. Continue?' %}">
+                {% translate 'Suggest Allocation' %}
+            </a>
+            {% endif %}
             {% if editable != 'false' and cost_item_edit_url %}
             <a href="{{ cost_item_edit_url }}{% if '?' in cost_item_edit_url %}&amp;{% else %}?{% endif %}cost_line_item_id={{ cost_line_item.pk }}"
             class="analysis-table__actions-menu__item"

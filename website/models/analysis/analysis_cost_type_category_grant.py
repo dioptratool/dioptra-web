@@ -119,6 +119,42 @@ class AnalysisCostTypeCategoryGrant(models.Model):
             allocation = self.assigned_items_cost() / self.assigned_items_total()
             return f"{allocation:.2%}"
 
+    def program_cost_suggestion(self):
+        """Expose the legacy category calculation, including its grant-wide fallback.
+
+        Retain the existing arithmetic, including counting explicit zeroes and
+        counting an item's amount once per assigned intervention in the category.
+        """
+        numerator = self.assigned_items_cost()
+        denominator = self.assigned_items_total()
+        uses_fallback = denominator == 0
+        if uses_fallback:
+            numerator = 0
+            denominator = 0
+            categories = self.cost_type_category.analysis.cost_type_category_grants.filter(
+                cost_type_category__cost_type=self.cost_type_category.cost_type,
+                grant=self.grant,
+            ).select_related("cost_type_category__analysis")
+            for category in categories:
+                for item in category.get_cost_line_items():
+                    allocation_total = sum(
+                        allocation.allocation
+                        for allocation in item.config.allocations.all()
+                        if allocation.allocation is not None
+                    )
+                    # Preserve calc_item_totals/calc_item_costs, including the
+                    # fallback denominator's use of rows with a zero total.
+                    if allocation_total == 0:
+                        denominator += item.total_cost
+                    numerator += item.total_cost * (allocation_total * Decimal(0.01))
+
+        return {
+            "numerator": numerator,
+            "denominator": denominator,
+            "allocation": (f"{numerator / denominator:.2%}".removesuffix("%") if denominator else None),
+            "uses_fallback": uses_fallback,
+        }
+
     def all_errors(self):
         if self.assigned_items_total() == 0:
             return True

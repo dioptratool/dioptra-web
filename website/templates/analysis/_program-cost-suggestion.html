@@ -1,0 +1,22 @@
+{% load i18n website_tags %}
+<h2 class="program-cost-suggestion__title">{% translate 'Suggested Allocation Calculations' %}</h2>
+{% if suggestion.allocation == None %}
+  <p class="program-cost-suggestion__unavailable">{% translate 'Unable to calculate' %}</p>
+{% endif %}
+{% for intervention in interventions %}
+  <div class="program-cost-suggestion__calculation">
+    <div class="program-cost-suggestion__intervention">{{ intervention.display_name }}</div>
+    <div class="program-cost-suggestion__cost">
+      <strong>{{ suggestion.numerator|format_currency:analysis.currency_code }}</strong>
+      <span>{% if suggestion.uses_fallback %}{% translate 'Costs across all categories in this grant, weighted by the allocations provided' %}{% else %}{% translate 'Costs in this category and grant, weighted by the allocations provided' %}{% endif %}</span>
+    </div>
+    <div class="program-cost-suggestion__cost program-cost-suggestion__cost--unweighted">
+      <strong>{{ suggestion.denominator|format_currency:analysis.currency_code }}</strong>
+      <span>{% if suggestion.uses_fallback %}{% translate 'Costs with a zero total allocation across all categories in this grant, unweighted' %}{% else %}{% translate 'Costs in this category and grant, unweighted and counted per assigned intervention' %}{% endif %}</span>
+    </div>
+    <div class="program-cost-suggestion__result">
+      <strong>{% if suggestion.allocation != None %}{{ suggestion.allocation }}%{% else %}—{% endif %}</strong>
+      <span>{% translate 'Suggested Allocation' %}</span>
+    </div>
+  </div>
+{% endfor %}

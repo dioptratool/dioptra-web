@@ -1040,6 +1040,15 @@ $(function() {
             assignCheckedItems();
         });
 
+        $form.on('click', '.program-cost-suggest-item', function (e) {
+            e.preventDefault();
+            var unsavedChanges = $form.hasClass('dirty') || $form.find('[data-changed]').length > 0;
+            if (unsavedChanges && !confirm(this.getAttribute('data-dialog-confirm'))) {
+                return;
+            }
+            openAllocationPanel(this.href);
+        });
+
         $bulkCheckboxes.on('change', function () {
             updateBulkAssignButtonState();
         });
@@ -1077,10 +1086,14 @@ $(function() {
                 }).get().join(',');
             var url = bulkUrl + queryString;
 
-            $(window).off('beforeunload');
+            openAllocationPanel(url);
+        }
+
+        function openAllocationPanel(url) {
             Panels.open(url).then(function () {
+                $(window).off('beforeunload');
                 window.location = window.location.href;
-            });
+            }, function () {});
         }
 
         function updateBulkAssignButtonState() {

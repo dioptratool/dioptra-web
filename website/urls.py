@@ -43,6 +43,7 @@ from website.views.analysis.steps.allocate import (
     AllocateCostTypeGrant,
     AllocateInterventionBulk,
     AllocateSupportingCosts,
+    SuggestInterventionAllocation,
 )
 from website.views.analysis.steps.allocate_subcomponents import (
     AllocateSubcomponents,
@@ -195,6 +196,11 @@ urlpatterns = [
         name="analysis-allocate-cost_type-grant--save-suggested",
     ),
     # NOTE: bulk routes must precede the `<path:grant>` catch-alls below.
+    path(
+        "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/suggest/",
+        SuggestInterventionAllocation.as_view(),
+        name="analysis-allocate-cost_type-grant-suggest",
+    ),
     path(
         "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/bulk/",
         AllocateInterventionBulk.as_view(),

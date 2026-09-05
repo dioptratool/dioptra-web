@@ -1,5 +1,5 @@
 {% extends 'html-panel.html' %}
-{% load panels_extras panels_form_extras static %}
+{% load i18n panels_extras panels_form_extras static %}
 
 {% block extrahead %}
   {{ form.media.js }}
@@ -10,7 +10,7 @@
 {% endblock extrastyle %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="max-100" enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="max-100" {% if suggestions_enabled %}data-suggestion-url="{{ request.path }}" data-suggestion-error="{% translate 'Unable to load suggestions. Please try again.' %}"{% endif %} {% if suggestion_only and not form.is_bound %}data-initial-suggestion="{{ suggestion.allocation|default_if_none:'' }}"{% endif %} enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
 {% endblock form-start %}
 
 {% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}
@@ -24,7 +24,10 @@
       {{ field }}
     {% endif %}
   {% endfor %}
-  <span class="control-label">What is the percent allocation of the selected cost items to the interventions?</span>
+  {% if form.non_field_errors %}
+    <div class="help-block errors" role="alert">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <span class="control-label">{{ view.help_text }}</span>
   <div class="allocation-input-table-wrapper">
     <table class="allocation-input-table">
       <thead>
@@ -56,15 +59,23 @@
 
   <div class="allocation-input-table__total">
     <p class="allocation-total-title">Total Allocation Percentage</p>
-    <p class="allocation-total-subtitle bulk-allocate-form__warning">Cannot exceed 100%</p>
+    <p class="allocation-total-subtitle">{% translate 'Cannot exceed 100%' %}</p>
     <p class="allocation-input-table__total-value">0%</p>
   </div>
 
-  {% include 'bootstrap/field.html' with field=form.notes %}
+  {% if form.notes %}{% include 'bootstrap/field.html' with field=form.notes %}{% endif %}
+  {% if suggestions_enabled %}
+    <div class="program-cost-suggestion" aria-live="polite" {% if not show_suggestion %}hidden{% endif %}>
+      {% if show_suggestion %}{% include 'analysis/_program-cost-suggestion.html' %}{% endif %}
+    </div>
+    <p class="program-cost-suggestion-error text-danger" role="alert" hidden></p>
+  {% endif %}
 </div>
 {% endblock panel-body %}
 
 {% block panel-foot %}
+    <div class="program-cost-panel-buttons">
+      <div class="program-cost-panel-buttons__save">
         {% if form.buttons != None %}
           {% include '_panel-form-buttons.html' with buttons=form.buttons form=form only %}
         {% elif view.buttons != None %}
@@ -74,6 +85,11 @@
         {% else %}
           {% include '_panel-form-buttons.html' with buttons=view|get_default_buttons form=form only %}
         {% endif %}
+      </div>
+      {% if suggestions_enabled and not suggestion_only %}
+        <button type="button" class="btn program-cost-suggest-button">{% translate 'Suggest Allocation' %}</button>
+      {% endif %}
+    </div>
     {% endblock panel-foot %}
 
 {% block form-end %}

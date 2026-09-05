@@ -137,8 +137,16 @@ class AllocateInterventionBulkForm(forms.Form):
     """
 
     config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
+    suggestion_requested = forms.BooleanField(required=False, widget=forms.HiddenInput())
 
-    def __init__(self, *args, analysis, **kwargs):
+    def __init__(
+        self,
+        *args,
+        analysis,
+        include_notes=True,
+        allow_empty_allocations=False,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.fields["config_ids"].choices = (
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
@@ -160,9 +168,18 @@ class AllocateInterventionBulkForm(forms.Form):
                 attrs={
                     "class": "form-control",
                     "placeholder": _l("Source of this information and any other important notes"),
+                    "rows": 4,
                 }
             ),
         )
+        if not include_notes:
+            del self.fields["notes"]
+        if self.is_bound and allow_empty_allocations:
+            self.data = self.data.copy()
+            for name in self.fields:
+                value = self.data.get(name)
+                if name.startswith("allocation_") and isinstance(value, str) and not value.strip():
+                    self.data[name] = "0"
 
     def clean(self):
         cleaned_data = super().clean()

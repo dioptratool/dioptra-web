@@ -1,9 +1,12 @@
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import render_to_string
+from django.utils.functional import cached_property
 from django.utils.translation import gettext as _, gettext_lazy as _l
 from django.views.generic import DetailView
 from django.views.generic.detail import SingleObjectMixin
@@ -352,18 +355,21 @@ class AllocateCostTypeGrant(
         data, errors = self._validate_data(data)
         if len(errors):
             context = self.get_context_data(errors=errors)
-            self._clear_fields_needing_help(errors)
-            line_items_needing_help = self._line_item_objects_needing_help(errors)
-            for grant in self.cost_type_category_grants:
-                if grant.all_errors():
-                    # set context for calculator
-                    context["item_totals"] = self.calc_item_totals()
-                    context["item_costs"] = self.calc_item_costs()
-                    context["all_errors_suggest"] = self.calc_all_errors_suggest()
+            # Program Costs now request suggestions through the panel. Invalid
+            # input (including '?') must not trigger the legacy calculator or
+            # delete the row's saved allocations.
+            if not self.step.cost_type.is_program_cost():
+                self._clear_fields_needing_help(errors)
+                line_items_needing_help = self._line_item_objects_needing_help(errors)
+                for grant in self.cost_type_category_grants:
+                    if grant.all_errors():
+                        context["item_totals"] = self.calc_item_totals()
+                        context["item_costs"] = self.calc_item_costs()
+                        context["all_errors_suggest"] = self.calc_all_errors_suggest()
 
-                for line in line_items_needing_help:
-                    if line in grant.get_cost_line_items():
-                        grant.show_allocation_calculator = True
+                    for line in line_items_needing_help:
+                        if line in grant.get_cost_line_items():
+                            grant.show_allocation_calculator = True
 
             # We should attempt to save the items that were not in error
             good_data = {key: data[key] for key in data if key not in errors}
@@ -448,6 +454,7 @@ class AllocateInterventionBulk(
         CancelButton(),
     ]
     help_text = _l("What is the percent allocation of the selected cost items to the interventions?")
+    suggestion_only = False
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -458,6 +465,75 @@ class AllocateInterventionBulk(
             raise Http404(_("Allocations for this cost type are not editable"))
         self.grant = kwargs["grant"]
         self.config_ids = self._get_config_ids(request)
+        try:
+            selected_ids = [int(config_id) for config_id in self.config_ids if config_id]
+        except (ValueError, TypeError):
+            raise Http404(_("Invalid cost item selection"))
+        self.configs = list(
+            CostLineItemConfig.objects.filter(
+                cost_line_item__analysis_id=self.analysis.id,
+                cost_line_item__grant_code=self.grant,
+                cost_type=self.cost_type,
+                id__in=selected_ids,
+            ).select_related("category")
+        )
+        category_ids = {config.category_id for config in self.configs}
+        if self.cost_type.is_program_cost() and len(category_ids) > 1:
+            raise Http404(_("Select cost items from a single category and grant"))
+        self.suggestions_enabled = self.cost_type.is_program_cost() and bool(self.configs)
+        if self.suggestion_only and (not self.suggestions_enabled or len(self.configs) != 1):
+            raise Http404(_("Select one Program Cost item"))
+
+    @cached_property
+    def suggestion(self):
+        category = get_object_or_404(
+            self.analysis.cost_type_category_grants.select_related("cost_type_category__analysis"),
+            cost_type_category__cost_type=self.cost_type,
+            cost_type_category__category_id=self.configs[0].category_id,
+            grant=self.grant,
+        )
+        return category.program_cost_suggestion()
+
+    def suggestion_context(self):
+        return {
+            "analysis": self.analysis,
+            "suggestion": self.suggestion,
+            "interventions": self.analysis.interventioninstance_set.all(),
+        }
+
+    def get(self, request, *args, **kwargs):
+        if request.GET.get("suggestion") == "1":
+            if not self.suggestions_enabled:
+                raise Http404(_("Suggestions are only available for Program Costs"))
+            response = JsonResponse(
+                {
+                    "allocation": self.suggestion["allocation"],
+                    "html": render_to_string(
+                        "analysis/_program-cost-suggestion.html",
+                        self.suggestion_context(),
+                        request=request,
+                    ),
+                }
+            )
+            response["Cache-Control"] = "no-store"
+            return response
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["analysis"] = self.analysis
+        context["suggestions_enabled"] = self.suggestions_enabled
+        context["suggestion_only"] = self.suggestion_only
+        form = context["form"]
+        suggestion_requested = form.fields["suggestion_requested"].to_python(
+            form["suggestion_requested"].value()
+        )
+        context["show_suggestion"] = self.suggestions_enabled and (
+            self.suggestion_only or suggestion_requested
+        )
+        if context["show_suggestion"]:
+            context.update(self.suggestion_context())
+        return context
 
     def _get_config_ids(self, request):
         if request.method == "POST":
@@ -468,10 +544,23 @@ class AllocateInterventionBulk(
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["initial"]["config_ids"] = self.config_ids
+        kwargs["initial"]["config_ids"] = [config.id for config in self.configs]
         kwargs["analysis"] = self.analysis
+        kwargs["include_notes"] = not self.suggestion_only
+        kwargs["allow_empty_allocations"] = self.cost_type.is_program_cost()
+        if self.suggestion_only:
+            kwargs["initial"]["suggestion_requested"] = True
+            if self.request.method == "GET":
+                for allocation in self.configs[0].allocations.all():
+                    kwargs["initial"][
+                        f"allocation_{allocation.intervention_instance_id}"
+                    ] = allocation.allocation
+                if self.suggestion["allocation"] is not None:
+                    for intervention in self.analysis.interventioninstance_set.all():
+                        kwargs["initial"][f"allocation_{intervention.id}"] = self.suggestion["allocation"]
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
         config_ids = form.cleaned_data["config_ids"]
         notes = form.cleaned_data.get("notes", "")
@@ -526,7 +615,18 @@ class AllocateInterventionBulk(
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):
-        return _("{count} cost items updated").format(count=len(self.config_ids))
+        return _("{count} cost items updated").format(count=len(self.configs))
 
     def get_success_commands(self):
         return [panel_commands.Resolve()]
+
+
+class SuggestInterventionAllocation(AllocateInterventionBulk):
+    suggestion_only = True
+    supertitle = _l("Selected Cost Item")
+    title = _l("Suggested Allocation Percentage")
+    help_text = _l("The following allocation is suggested for this cost item:")
+    buttons = [
+        SubmitButton(text=_l("Accept"), disable_when_form_unchanged=False),
+        CancelButton(text=_l("Dismiss")),
+    ]
