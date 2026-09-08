@@ -5953,7 +5953,7 @@ a.analysis-navigation__prev-next:hover {
 }
 
 .analysis-table__custom-field-cell {
-  min-width: 10rem;
+  min-width: 11rem;
   max-width: 20rem;
 }
 
@@ -6045,18 +6045,26 @@ a.analysis-navigation__prev-next:hover {
   align-items: center;
   justify-content: center;
   min-width: 3.2rem;
+  font-size: 13px;
+  font-size: 1.3rem;
+  line-height: 1.125;
   font-weight: 700;
   padding: 0.7rem;
   transition: all 0.2s ease;
+  text-wrap: nowrap;
 }
 .analysis-table__action:hover, .analysis-table__subcomponent-skip__label:hover {
   background-color: #D7E3F3;
 }
 .analysis-table__action.analysis-table__action--active, .analysis-table__action--active.analysis-table__subcomponent-skip__label {
   background-color: #1B77D4;
+  color: #ffffff;
 }
 .analysis-table__action.analysis-table__action--active svg, .analysis-table__action--active.analysis-table__subcomponent-skip__label svg {
-  filter: invert(1);
+  filter: invert(1) brightness(2);
+}
+.analysis-table__action.analysis-table__action--active:hover, .analysis-table__action--active.analysis-table__subcomponent-skip__label:hover {
+  filter: brightness(0.9);
 }
 
 .analysis-table__table > thead > tr > th.analysis-table__edit-cell {

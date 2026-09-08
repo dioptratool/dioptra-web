@@ -6453,6 +6453,29 @@ input[type=file].clearable-file__upload {
   order: 4;
 }
 
+/* Tagify overrides */
+.panel-body .tagify__tag__removeBtn {
+  color: currentColor;
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+  margin-inline: auto;
+}
+.panel-body .tagify__tag__removeBtn:hover {
+  color: #fff;
+}
+.panel-body .tagify--select .tagify__tag {
+  margin-inline-end: 1.6em;
+}
+.panel-body .tagify--select::after {
+  font-size: 12px;
+  opacity: 1;
+  transform: translate(-150%, -50%) scaleX(2) rotate(90deg);
+}
+.panel-body .tagify--select[aria-expanded=true]::after {
+  transform: translate(-150%, -50%) scaleX(2) rotate(270deg);
+}
+
 html.is-in-panel .allocation-input-table-title,
 .panel-form.bulk-allocate-form .control-label {
   font-weight: 700;
@@ -6624,15 +6647,18 @@ html.is-in-panel .allocation-total-subtitle {
   background: #afcff0;
 }
 
-.program-cost-suggestion {
+.program-cost-suggestion,
+.is-in-panel .program-cost-suggestion {
   margin-top: 32px;
 }
-.program-cost-suggestion__title {
+.program-cost-suggestion__title,
+.is-in-panel .program-cost-suggestion__title {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 16px;
 }
-.program-cost-suggestion__calculation {
+.program-cost-suggestion__calculation,
+.is-in-panel .program-cost-suggestion__calculation {
   display: grid;
   grid-template-columns: 1fr 1.3fr 1.3fr 1fr;
   margin-bottom: 12px;
@@ -6641,36 +6667,56 @@ html.is-in-panel .allocation-total-subtitle {
   font-size: 13px;
   line-height: 1.3;
 }
-.program-cost-suggestion__calculation > div {
+.program-cost-suggestion__calculation > :where(div),
+.is-in-panel .program-cost-suggestion__calculation > :where(div) {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: start;
   overflow-wrap: anywhere;
 }
-.program-cost-suggestion__calculation strong {
+.program-cost-suggestion__calculation strong,
+.is-in-panel .program-cost-suggestion__calculation strong {
   display: block;
   font-size: 20px;
   margin-bottom: 6px;
 }
-.program-cost-suggestion__intervention {
+.program-cost-suggestion__intervention,
+.is-in-panel .program-cost-suggestion__intervention {
   background: #f0f4f9;
+  font-size: 14px;
   font-weight: 700;
+  justify-content: center;
 }
-.program-cost-suggestion__cost {
+.program-cost-suggestion__cost,
+.is-in-panel .program-cost-suggestion__cost {
   background: #dfecfa;
+  border-left: 6px solid #fff;
 }
-.program-cost-suggestion__cost--unweighted {
-  border-left: 2px solid #f0f4f9;
-}
-.program-cost-suggestion__result {
-  background: #c6e0fb;
+.program-cost-suggestion__cost span,
+.is-in-panel .program-cost-suggestion__cost span {
+  font-size: 12px;
   font-weight: 700;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+}
+.program-cost-suggestion__cost:has(+ .program-cost-suggestion__result),
+.is-in-panel .program-cost-suggestion__cost:has(+ .program-cost-suggestion__result) {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%);
+  margin-inline-end: -10px;
+}
+.program-cost-suggestion__result,
+.is-in-panel .program-cost-suggestion__result {
+  background: #c6e0fb;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%);
   padding-left: 24px !important;
 }
+.program-cost-suggestion__result span,
+.is-in-panel .program-cost-suggestion__result span {
+  font-size: 14px;
+  font-weight: 700;
+}
 @media (max-width: 600px) {
-  .program-cost-suggestion__calculation {
+  .program-cost-suggestion__calculation,
+  .is-in-panel .program-cost-suggestion__calculation {
     grid-template-columns: 1fr 1fr;
   }
 }

@@ -51,7 +51,7 @@
                     </th>
                 {% endif %}
             {% endfor %}
-            <th class="analysis-table__total-cell">Total Allocations<br/><small><em>Cannot exceed 100%</em></small></th>
+            <th class="analysis-table__edit-cell analysis-table__total-cell">Total Allocations<br/><small><em>Cannot exceed 100%</em></small></th>
             {% if allocateEdit == 'true' %}
             <th class="analysis-table__actions-cell">{% translate 'Actions' %}</th>
             {% endif %}
@@ -193,7 +193,7 @@
                                 {% endwith %}
                             {% endif %}
                         {% endfor %}
-                        <td class="analysis-table__total-cell">
+                        <td class="analysis-table__edit-cell analysis-table__total-cell">
                             <div class="analysis-table__allocated-total-wrapper">
                                 <span data-cost-line-item-id="{{ cost_line_item.id }}"
                                     class="analysis-table__allocated-total">100%</span>

@@ -18,6 +18,7 @@
             <th class="analysis-table__subcomponent-header--total" rowspan="2">
                 {% translate 'Sub-Component Total' %}<br/><small><em>{% translate 'Must equal 100%' %}</em></small>
             </th>
+            <th rowspan="2" class="analysis-table__actions-cell">{% translate 'Actions' %}</th>
         </tr>
         <tr>
             {% for subcomponent_label in step.subcomponent_analysis.subcomponent_labels %}
@@ -133,11 +134,6 @@
                                     <label class="analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
                                            for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skipped' %}</label>
                                 </span>
-                                <button class="analysis-table__category-edit analysis-table__category-edit--note{% if cost_line_item.note %} analysis-table__category-edit--note-active {% endif %}">
-                                    {% if cost_line_item.note %}{% translate 'View note' %} {% else %}
-                                        {% translate 'Add note' %}{% endif %}
-                                </button>
-                                <span class="analysis-table__category-edit-active-label analysis-table__category-edit-active-label--note">{% translate 'Editing' %}</span>
                                 {% if errors|dict_get:cost_line_item.id %}
                                     <div class="form__errors form__errors--left form__errors--subcomponent">
                                         <ul class="form__errors-list">
@@ -149,12 +145,17 @@
                                 {% endif %}
                             </div>
                         </td>
+                        <td class="analysis-table__actions-cell">
+                            <button class="analysis-table__action{% if cost_line_item.note %} analysis-table__action--active {% endif %} analysis-table__category-edit analysis-table__category-edit--note">
+                                {% if cost_line_item.note %} {% translate 'View note' %} {% else %} {% translate 'Add note' %} {% endif %}
+                            </button>
+                        </td>
                     </tr>
 
                     {% if dioptra_settings.show_transactions %}
                         {% if transactions_count > 0 %}
                             <tr class="analysis-table__transaction-row">
-                                <td colspan="8" class="analysis-table__transaction-cell">
+                                <td colspan="99" class="analysis-table__transaction-cell">
                                     <div class="analysis-table__transactions-detail">
                                         <table class="analysis-table__transaction-table analysis-table__transaction-table--with-sector-code">
                                             <thead>

@@ -7,8 +7,10 @@
 {% endblock panel-body %}
 
 {% block panel-foot %}
-    <a href="#" class="btn btn-primary" data-correction-choice="save">{% translate 'Save and continue' %}</a>
-    <a href="#" class="btn btn-default" data-correction-choice="discard">{% translate 'Discard' %}</a>
+    <div class="panel-foot-left">
+        <a href="#" class="btn btn-primary" data-correction-choice="save">{% translate 'Save and continue' %}</a>
+        <a href="#" class="btn btn-default" data-correction-choice="discard">{% translate 'Discard' %}</a>
+    </div>
     <a href="#" class="btn btn-cancel" data-panels-action="reject-close">{% translate 'Cancel' %}</a>
 {% endblock panel-foot %}
 

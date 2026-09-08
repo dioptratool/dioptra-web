@@ -464,7 +464,7 @@ $analysis-table-sector_code-cell-width: 6rem;
   min-width: $analysis-table-sector_code-cell-width;
 }
 
-$analysis-table-custom-field-cell-width: 10rem;
+$analysis-table-custom-field-cell-width: 11rem;
 
 // The five optional Budget / Transaction Custom Field columns. Only rendered when the
 // analysis actually has values for them, so this may match zero cells on a given page.
@@ -579,9 +579,11 @@ $analysis-table-dropdown-cell-width: 19rem;
   align-items: center;
   justify-content: center;
   min-width: 3.2rem;
+  @include font-size(13, 1.125);
   font-weight: $font-weight-bold;
   padding: 0.7rem;
   transition: all $transition-duration-default ease;
+  text-wrap: nowrap;
 
   &:hover {
     background-color: #D7E3F3;
@@ -589,9 +591,14 @@ $analysis-table-dropdown-cell-width: 19rem;
 
   &.analysis-table__action--active {
     background-color: #1B77D4;
+    color: #ffffff;
 
     svg {
-      filter: invert(1);
+      filter: invert(1) brightness(2);
+    }
+
+    &:hover {
+      filter: brightness(0.9);
     }
   }
 }
