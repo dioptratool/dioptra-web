@@ -85,8 +85,38 @@ class TestBudgetTemplate:
         assert "Budget Custom Field 1" not in headers
         assert "Budget Custom Field 2" in headers
 
-    def test_generated_template_round_trips_through_the_importer(self):
+    def test_standard_budget_headers_follow_enabled_overrides(self):
+        overrides = FieldLabelOverrides.get()
+        for name, label in {
+            "account_code": "Ledger Code",
+            "sector_code": "Programme Code",
+            "budget_line_description": "Budget Activity",
+        }.items():
+            setattr(overrides, f"ci_{name}", label)
+            setattr(overrides, f"ci_{name}_overridden", True)
+        overrides.save()
+
+        expected = EXPECTED_HEADERS.copy()
+        expected[2] = "Ledger Code *"
+        expected[4] = "Programme Code"
+        expected[5] = "Budget Activity *"
+        assert _headers(get_budget_template()) == expected
+
+        overrides.ci_account_code_overridden = False
+        overrides.ci_sector_code_overridden = False
+        overrides.ci_budget_line_description_overridden = False
+        overrides.save()
+        assert _headers(get_budget_template()) == EXPECTED_HEADERS
+
+    @pytest.mark.parametrize("override_labels", [False, True])
+    def test_generated_template_round_trips_through_the_importer(self, override_labels):
         """The file a user downloads must import cleanly once filled in."""
+        if override_labels:
+            overrides = FieldLabelOverrides.get()
+            for name in ("account_code", "sector_code", "budget_line_description"):
+                setattr(overrides, f"ci_{name}", f"Custom {name}")
+                setattr(overrides, f"ci_{name}_overridden", True)
+            overrides.save()
         template = get_budget_template()
         workbook = template.build_download_workbook()
         worksheet = workbook.active
@@ -120,6 +150,9 @@ class TestBudgetTemplate:
         assert succeeded, result["errors"]
         item = analysis.cost_line_items.get()
         assert item.grant_code == "GX922"
+        assert item.account_code == "9012"
+        assert item.sector_code == "SEC1"
+        assert item.budget_line_description == "Salaries"
         assert item.dummy_field_1 == "CC-100"
         assert item.dummy_field_5 == "Restricted"
 

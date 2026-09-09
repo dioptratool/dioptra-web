@@ -37,7 +37,7 @@ class BudgetTemplate(DownloadTemplate):
                 number = name.removeprefix(CUSTOM_FIELD_PREFIX)
                 label = load_field_label_override(f"ci_dummy_field_{number}", f"Budget Custom Field {number}")
             else:
-                label = str(field.verbose_name)
+                label = load_field_label_override(f"ci_{name}", str(field.verbose_name))
             # The importer's own "required" flag, plus fields the model refuses to leave empty.
             if header.get("required", False) or not field.blank:
                 label += REQUIRED_MARKER

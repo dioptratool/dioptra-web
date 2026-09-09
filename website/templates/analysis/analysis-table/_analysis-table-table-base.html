@@ -21,7 +21,7 @@
             {% if lumpSumTable != 'true' %}
                 <th>{{ 'Site'|label_override:'ci_site_code' }}</th>{% endif %}
             {% if showSectorCode == 'true' and lumpSumTable != 'true' %}
-                <th>{% translate 'Sector Code' %}</th>{% endif %}
+                <th>{{ 'Sector Code'|label_override:'ci_sector_code' }}</th>{% endif %}
             {% if lumpSumTable != 'true' %}
                 <th>{% translate 'Account Code Description' %}</th>{% endif %}
             {% if lumpSumTable != 'true' %}

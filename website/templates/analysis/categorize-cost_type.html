@@ -68,7 +68,7 @@
                       <th colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
                       <th>{{ 'Grant'|label_override:'ci_grant_code' }}</th>
                       <th>{{ 'Site'|label_override:'ci_site_code' }}</th>
-                      <th>{{ 'Sector Code' }}</th>
+                      <th>{{ 'Sector Code'|label_override:'ci_sector_code' }}</th>
                       <th>{% translate 'Account Code Description' %}</th>
                       {% for column in analysis.cost_item_custom_fields %}
                         <th class="analysis-table__custom-field-cell">{{ column.default_label|label_override:column.label_key }}</th>

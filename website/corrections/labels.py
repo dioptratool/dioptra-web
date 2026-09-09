@@ -48,14 +48,15 @@ def field_labels(record_kind: str, custom_family: str) -> dict[str, str]:
         "cost_type": _("Cost Type"),
         "category": _("Category"),
         # The cost item's description; a transaction panel names it the way the import does.
-        "description": (
-            _("Budget Line Description") if record_kind == TRANSACTION else _("Cost Item Description")
+        "description": FieldLabelOverrides.label_for(
+            "ci_budget_line_description",
+            _("Budget Line Description") if record_kind == TRANSACTION else _("Cost Item Description"),
         ),
         "transaction_description": _("Transaction Description"),
         "grant_code": FieldLabelOverrides.label_for("ci_grant_code", _("Grant")),
         "site_code": FieldLabelOverrides.label_for(f"{prefix}_site_code", _("Site")),
-        "sector_code": _("Sector Code"),
-        "account_code": _("Account Code"),
+        "sector_code": FieldLabelOverrides.label_for("ci_sector_code", _("Sector Code")),
+        "account_code": FieldLabelOverrides.label_for("ci_account_code", _("Account Code")),
         "date": FieldLabelOverrides.label_for("tr_date", _("Date")),
         "amount": FieldLabelOverrides.label_for(
             "tr_amount" if record_kind == TRANSACTION else "ci_total_cost", _("Amount")

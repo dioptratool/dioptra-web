@@ -5,7 +5,7 @@
         <tr>
             <th rowspan="2" colspan="2">{{ cost_line_items|length }} {% translate 'Cost Items' %}</th>
             <th rowspan="2">{{ 'Site'|label_override:'ci_site_code' }}</th>
-            <th rowspan="2">{% translate 'Sector Code' %}</th>
+            <th rowspan="2">{{ 'Sector Code'|label_override:'ci_sector_code' }}</th>
             <th rowspan="2">{% translate 'Account Code Description' %}</th>
             <th rowspan="2" class="analysis-table__amount-cell">
                 {% if not cost_line_items|contains_sensitive_data %}

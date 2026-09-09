@@ -35,6 +35,17 @@ class FieldLabelOverrides(models.Model):
     ci_site_code = models.CharField(_("Site Code"), max_length=40, null=True, blank=True)
     ci_site_code_overridden = models.BooleanField(_("Overridden"), default=False)
 
+    ci_account_code = models.CharField(_("Account Code"), max_length=40, null=True, blank=True)
+    ci_account_code_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_sector_code = models.CharField(_("Sector Code"), max_length=40, null=True, blank=True)
+    ci_sector_code_overridden = models.BooleanField(_("Overridden"), default=False)
+
+    ci_budget_line_description = models.CharField(
+        _("Budget Line Description"), max_length=40, null=True, blank=True
+    )
+    ci_budget_line_description_overridden = models.BooleanField(_("Overridden"), default=False)
+
     ci_cost_type = models.CharField(_("Cost Type"), max_length=40, null=True, blank=True)
     ci_cost_type_overridden = models.BooleanField(_("Overridden"), default=False)
 

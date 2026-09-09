@@ -130,6 +130,33 @@ def items(analysis):
 
 @pytest.mark.django_db
 class TestTransactionPanelForm:
+    @pytest.mark.parametrize("kind", ["cost_items", "transactions"])
+    def test_budget_field_labels_follow_overrides(self, transaction_analysis, client_with_admin, kind):
+        analysis = transaction_analysis
+        item = analysis.cost_line_items.first()
+        overrides = FieldLabelOverrides.get()
+        for name, label in {
+            "account_code": "Ledger Code",
+            "sector_code": "Programme Code",
+            "budget_line_description": "Budget Activity",
+        }.items():
+            setattr(overrides, f"ci_{name}", label)
+            setattr(overrides, f"ci_{name}_overridden", True)
+        overrides.save()
+        url = (
+            cost_items_url(analysis, cost_line_item_id=item.id)
+            if kind == "cost_items"
+            else transactions_url(analysis, transaction_id=item.transactions.first().id)
+        )
+
+        response = client_with_admin.get(url)
+
+        assert response.status_code == 200
+        form = response.context["form"]
+        assert form.fields["account_code"].label == "Ledger Code"
+        assert form.fields["sector_code"].label == "Programme Code"
+        assert form.fields["description"].label == "Budget Activity"
+
     def test_single_transaction_prefills_current_values_on_confirm_categories(
         self, transaction_analysis, client_with_admin
     ):

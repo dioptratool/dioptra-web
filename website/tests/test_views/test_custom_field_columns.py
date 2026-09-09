@@ -28,6 +28,20 @@ def _allocate_url(analysis):
 
 @pytest.mark.django_db
 class TestCostItemCustomColumns:
+    @pytest.mark.parametrize("page_url", [_categorize_url, _allocate_url], ids=["categorize", "allocate"])
+    def test_sector_header_follows_override(
+        self, analysis_workflow_with_allocations, client_with_admin, page_url
+    ):
+        overrides = FieldLabelOverrides.get()
+        overrides.ci_sector_code = "Programme Code"
+        overrides.ci_sector_code_overridden = True
+        overrides.save()
+
+        response = client_with_admin.get(page_url(analysis_workflow_with_allocations.analysis))
+
+        assert response.status_code == 200
+        assert "<th>Programme Code</th>" in response.content.decode()
+
     def test_no_columns_render_when_no_custom_data_exists(
         self, analysis_workflow_with_allocations, client_with_admin
     ):

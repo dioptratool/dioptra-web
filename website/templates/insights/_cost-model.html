@@ -13,9 +13,9 @@
                     <tr>
                         <th>{{ 'Cost Type'|label_override:'ci_cost_type' }}</th>
                         <th>{% translate 'Category' %}</th>
-                        <th>{% translate 'Cost Item' %}</th>
+                        <th>{{ 'Cost Item'|label_override:'ci_budget_line_description' }}</th>
                         <th class="analysis-table__grant-cell">{{ 'Grant'|label_override:'ci_grant_code' }}</th>
-                        <th>{{ 'Sector Code' }}</th>
+                        <th>{{ 'Sector Code'|label_override:'ci_sector_code' }}</th>
                         <th>{{ 'Site'|label_override:'ci_site_code' }}</th>
                         <th class="cost-model__table-right-aligned">{{ 'Total Cost'|label_override:'ci_total_cost' }}{% include 'features/_table-header-order-link.html' with column='total_cost' column_name='total_cost' order_by=request.GET.order_by|default:'-allocated_cost' anchor="cost-model" %}</th>
                         <th class="cost-model__table-right-aligned">{% translate '% to Intervention' %}{% include 'features/_table-header-order-link.html' with column='config__allocation' column_name='config__allocation' order_by=request.GET.order_by|default:'-allocated_cost' anchor="cost-model" %}</th>

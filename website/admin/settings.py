@@ -155,6 +155,12 @@ class ManageFieldLabelOverridesForm(ModelFormBase):
                         "ci_grant_code_overridden",
                         "ci_site_code",
                         "ci_site_code_overridden",
+                        "ci_account_code",
+                        "ci_account_code_overridden",
+                        "ci_sector_code",
+                        "ci_sector_code_overridden",
+                        "ci_budget_line_description",
+                        "ci_budget_line_description_overridden",
                         "ci_cost_type",
                         "ci_cost_type_overridden",
                         "ci_total_cost",
@@ -221,6 +227,15 @@ class ManageFieldLabelOverridesForm(ModelFormBase):
             ),
             "ci_cost_type": _("Seen on Confirm Categories step, and the full cost model table."),
             "ci_total_cost": _("Seen on the full cost model table."),
+            "ci_account_code": _(
+                "Seen in the budget upload template and cost item and transaction edit panels."
+            ),
+            "ci_sector_code": _(
+                "Seen in the budget upload template, analysis tables, and cost item and transaction edit panels."
+            ),
+            "ci_budget_line_description": _(
+                "Seen in the budget upload template, cost model, and cost item and transaction edit panels."
+            ),
             **{
                 f"ci_dummy_field_{n}": _(
                     "Seen on Confirm Categories and Allocate Costs steps, "

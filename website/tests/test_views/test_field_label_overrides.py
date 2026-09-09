@@ -7,6 +7,7 @@ from website.models.utils import load_field_label_override
 CUSTOM_FIELD_NAMES = [f"ci_dummy_field_{n}" for n in range(1, 6)] + [
     f"tr_dummy_field_{n}" for n in range(1, 6)
 ]
+BUDGET_FIELD_NAMES = ["ci_account_code", "ci_sector_code", "ci_budget_line_description"]
 
 
 def _post_data(**overrides):
@@ -65,7 +66,7 @@ class TestCustomFieldLabelOverrides:
             load_field_label_override("ci_dummy_field_2", "Budget Custom Field 2") == "Budget Custom Field 2"
         )
 
-    @pytest.mark.parametrize("field_name", CUSTOM_FIELD_NAMES)
+    @pytest.mark.parametrize("field_name", CUSTOM_FIELD_NAMES + BUDGET_FIELD_NAMES)
     def test_override_changes_in_another_worker_are_read_immediately(self, field_name):
         overrides = FieldLabelOverrides.get()
         default = str(FieldLabelOverrides._meta.get_field(field_name).verbose_name)
@@ -94,34 +95,51 @@ class TestCustomFieldLabelOverrides:
             assert f'name="{field_name}"' in content
             assert f'name="{field_name}_overridden"' in content
 
-    def test_panel_saves_a_custom_field_override(self, client_with_admin):
+    @pytest.mark.parametrize("field_name", ["ci_dummy_field_1"] + BUDGET_FIELD_NAMES)
+    def test_panel_saves_a_field_override(self, client_with_admin, field_name):
         overrides = FieldLabelOverrides.get()
         url = reverse("ombucore.admin:website_fieldlabeloverrides_change", args=[overrides.pk])
 
         response = client_with_admin.post(
             url,
-            data=_post_data(
-                ci_dummy_field_1="Cost Centre",
-                ci_dummy_field_1_overridden="on",
-            ),
+            data=_post_data(**{field_name: "Cost Centre", f"{field_name}_overridden": "on"}),
         )
 
         assert response.status_code == 200
         overrides.refresh_from_db()
-        assert overrides.ci_dummy_field_1 == "Cost Centre"
-        assert overrides.ci_dummy_field_1_overridden is True
-        assert load_field_label_override("ci_dummy_field_1", "Budget Custom Field 1") == "Cost Centre"
+        assert getattr(overrides, field_name) == "Cost Centre"
+        assert getattr(overrides, f"{field_name}_overridden") is True
+        assert load_field_label_override(field_name, "Default label") == "Cost Centre"
 
-    def test_panel_rejects_an_enabled_override_with_no_label(self, client_with_admin):
+    @pytest.mark.parametrize("field_name", ["ci_dummy_field_1"] + BUDGET_FIELD_NAMES)
+    def test_panel_rejects_an_enabled_override_with_no_label(self, client_with_admin, field_name):
         overrides = FieldLabelOverrides.get()
         url = reverse("ombucore.admin:website_fieldlabeloverrides_change", args=[overrides.pk])
 
         response = client_with_admin.post(
             url,
-            data=_post_data(ci_dummy_field_1="", ci_dummy_field_1_overridden="on"),
+            data=_post_data(**{field_name: "", f"{field_name}_overridden": "on"}),
         )
 
         assert response.status_code == 200
-        assert response.context["form"].errors["ci_dummy_field_1"] == ["This field is required."]
+        assert response.context["form"].errors[field_name] == ["This field is required."]
         overrides.refresh_from_db()
-        assert overrides.ci_dummy_field_1_overridden is False
+        assert getattr(overrides, f"{field_name}_overridden") is False
+
+    def test_panel_renders_budget_field_overrides_in_cost_items_tab(self, client_with_admin):
+        overrides = FieldLabelOverrides.get()
+        url = reverse("ombucore.admin:website_fieldlabeloverrides_change", args=[overrides.pk])
+
+        response = client_with_admin.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        for field_name in BUDGET_FIELD_NAMES:
+            assert f'name="{field_name}"' in content
+            assert f'name="{field_name}_overridden"' in content
+        cost_item_fieldset = next(
+            options
+            for title, options in response.context["form"].Meta.fieldsets
+            if str(title) == "Cost Items"
+        )
+        assert set(BUDGET_FIELD_NAMES) <= set(cost_item_fieldset["fields"])
