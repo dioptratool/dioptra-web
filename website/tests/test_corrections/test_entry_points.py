@@ -233,7 +233,9 @@ class TestAllocate:
 
         assert "data-unsaved-prompt-url" not in content
 
-    def test_sub_component_table_is_back_to_its_previous_state(self, transaction_analysis, client_with_admin):
+    def test_sub_component_table_has_no_correction_entry_points(
+        self, transaction_analysis, client_with_admin
+    ):
         analysis = transaction_analysis
         program = CostType.objects.get(type=ProgramCost.id)
         SubcomponentCostAnalysisFactory(analysis=analysis)
@@ -251,12 +253,13 @@ class TestAllocate:
 
         assert response.status_code == 200
         assert "Sub-Component" in content
-        assert ">Actions<" not in content
         assert "cost_line_item_id=" not in content
         assert "transaction_edit_url=" not in content
         assert "bulk_select=1" not in content
         assert "correction-bulk-edit" not in content
-        assert "Add note" in content  # the note button is back in the total cell
+        assert "Edit Cost Item" not in content
+        # The Actions column on this table carries the note button and nothing else.
+        assert "Add note" in content
         assert 'class="bulk-checkbox"' in content  # Set Allocation's own selection stays
 
 
