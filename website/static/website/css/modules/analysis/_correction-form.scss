@@ -1,4 +1,4 @@
-/* Correction panels (Feature 91): Tagify select fields, multiple-values placeholder, confirmation step */
+/* Correction panels (Feature 91): closed filterable choice lists, multiple-values placeholder, confirmation step */
 
 // Tagify (select mode) inside a panel form: size it like the other controls.
 .panel-form .tagify {
@@ -6,25 +6,126 @@
   width: 100%;
 }
 
-// Keep selected descriptions within the control, leaving room for its remove button and arrow.
-.correction-form .tagify--select {
-  .tagify__tag,
-  .tagify__tag > div {
-    min-width: 0;
-  }
-
-  .tagify__tag-text {
-    max-width: 100%;
-    white-space: nowrap;
-  }
-}
-
 // The grey <multiple values> placeholder on a bulk panel, for text inputs and Tagify fields.
 .panel-form .correction-field--multiple::placeholder,
+.panel-form .correction-field--multiple .filterable-choice__input::placeholder,
 .panel-form .tagify__input::before {
   color: $color-boulder;
   font-style: italic;
   opacity: 1;
+}
+
+/* Closed lists (Grant, Site, Sector Code, Account Code): see FilterableChoiceWidget. */
+.panel-form .filterable-choice {
+  position: relative;
+  width: 100%;
+}
+
+.panel-form .filterable-choice__control {
+  position: relative;
+}
+
+.panel-form .filterable-choice__input {
+  // Room for the clear and toggle buttons.
+  padding-right: 56px;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.panel-form .filterable-choice__clear,
+.panel-form .filterable-choice__toggle {
+  background: transparent;
+  border: 0;
+  bottom: 1px;
+  color: $color-boulder;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  top: 1px;
+  width: 28px;
+
+  &:hover {
+    color: $color-mineshaft;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.panel-form .filterable-choice__clear {
+  font-size: 18px;
+  right: 28px;
+
+  &::after {
+    content: "\00d7";
+  }
+
+  // Reachable by keyboard, so it needs the same focus ring as the other controls.
+  &:focus {
+    color: $color-mineshaft;
+    outline: 1px dotted #212121;
+    outline: 5px auto -webkit-focus-ring-color;
+  }
+}
+
+.panel-form .filterable-choice__toggle {
+  font-size: 11px;
+  right: 0;
+  
+  &::after {
+    content: "\25be";
+    display: inline-block;
+    transform: scaleX(1.6);
+  }
+}
+
+.panel-form .filterable-choice--open .filterable-choice__toggle::after {
+  transform: scaleX(1.6) rotate(180deg);
+}
+
+.panel-form .filterable-choice__list {
+  background-color: $color-white;
+  border: 1px solid $color-smoke;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  left: 0;
+  list-style: none;
+  margin: 2px 0 0;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 0;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.panel-form .filterable-choice__option {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 6px 10px;
+
+  &[aria-selected="true"] {
+    font-weight: 700;
+  }
+
+  &.filterable-choice__option--active {
+    background-color: $color-moonstone;
+  }
+
+  &:hover {
+    background-color: $color-moonstone-2;
+  }
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 .correction-warning {

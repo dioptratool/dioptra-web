@@ -5,8 +5,8 @@ One form class serves every panel: the field set follows the section 5 matrix (r
 step), every field is a patch input where blank means "make no change", and a bulk selection
 prefills a field only when all selected records agree, otherwise showing a grey
 ``<multiple values>`` placeholder. Grant, Site, Sector Code and Account Code are closed searchable
-lists (section 5) rendered with the site's Tagify widget in select mode: a value that appears on no
-row cannot be entered.
+lists (section 5) rendered with ``FilterableChoiceWidget``: a value that appears on no row cannot be
+entered.
 """
 
 from __future__ import annotations
@@ -16,7 +16,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _l
 
-from ombucore.admin.templatetags.panels_extras import jsonattr
 from ombucore.admin.widgets import FlatpickrDateWidget
 from website.corrections import TRANSACTION, CorrectionPatch, field_labels
 from website.corrections.fields import (
@@ -27,7 +26,7 @@ from website.corrections.fields import (
     visible_custom_fields,
 )
 from website.corrections.patch import CUSTOM_FIELD_NAMES
-from website.forms.widgets import TagEditorWidget
+from website.forms.widgets import FilterableChoiceWidget
 from website.models import Category, CostType
 
 MULTIPLE_VALUES_PLACEHOLDER = "<multiple values>"
@@ -122,8 +121,8 @@ class CorrectionForm(forms.Form):
 
     def _prefill(self, name, field, value):
         if value is MULTIPLE:
-            if isinstance(field.widget, TagEditorWidget):
-                _set_tagify_option(field.widget, "placeholder", MULTIPLE_VALUES_PLACEHOLDER)
+            if isinstance(field.widget, FilterableChoiceWidget):
+                field.widget.attrs["placeholder"] = MULTIPLE_VALUES_PLACEHOLDER
             elif isinstance(field.widget, forms.Select):
                 self._set_blank_label(field, MULTIPLE_VALUES_PLACEHOLDER)
             else:
@@ -181,34 +180,9 @@ class CorrectionForm(forms.Form):
 
 def _closed_list(choices):
     """
-    A searchable dropdown of the given (value, label) pairs; blank means "no change" and only a
+    A filterable dropdown of the given (value, label) pairs; blank means "no change" and only a
     listed value validates.
 
-    Rendered with the site's Tagify widget in single-value select mode (the same component the
-    Define step uses for grants), so the panel needs no bespoke dropdown script. The saved value
-    is always the code; a label such as "code — description" is display only.
+    The saved value is always the code; a label such as "code — description" is display only.
     """
-    options = {
-        "mode": "select",
-        "enforceWhitelist": True,
-        "tagTextProp": "label",
-        "whitelist": [{"value": value, "label": label} for value, label in choices],
-        "dropdown": {
-            "enabled": 0,
-            "maxItems": 200,
-            "searchKeys": ["value", "label"],
-            "mapValueTo": "label",
-            "closeOnSelect": True,
-            "highlightFirst": True,
-        },
-        "placeholder": "",
-    }
-    widget = TagEditorWidget(options=options)
-    widget.tagify_options = options
-    return forms.ChoiceField(required=False, choices=[("", ""), *choices], widget=widget)
-
-
-def _set_tagify_option(widget, name, value):
-    """Update one Tagify option on a widget built by ``_closed_list`` and re-render the attribute."""
-    widget.tagify_options[name] = value
-    widget.attrs["data-tageditor"] = jsonattr(widget.tagify_options)
+    return forms.ChoiceField(required=False, choices=[("", ""), *choices], widget=FilterableChoiceWidget)

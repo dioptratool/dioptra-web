@@ -6826,26 +6826,121 @@ html.is-in-panel .allocation-total-subtitle {
   text-decoration: underline;
 }
 
-/* Correction panels (Feature 91): Tagify select fields, multiple-values placeholder, confirmation step */
+/* Correction panels (Feature 91): closed filterable choice lists, multiple-values placeholder, confirmation step */
 .panel-form .tagify {
   min-height: 34px;
   width: 100%;
 }
 
-.correction-form .tagify--select .tagify__tag,
-.correction-form .tagify--select .tagify__tag > div {
-  min-width: 0;
-}
-.correction-form .tagify--select .tagify__tag-text {
-  max-width: 100%;
-  white-space: nowrap;
-}
-
 .panel-form .correction-field--multiple::placeholder,
+.panel-form .correction-field--multiple .filterable-choice__input::placeholder,
 .panel-form .tagify__input::before {
   color: rgb(118, 118, 118);
   font-style: italic;
   opacity: 1;
+}
+
+/* Closed lists (Grant, Site, Sector Code, Account Code): see FilterableChoiceWidget. */
+.panel-form .filterable-choice {
+  position: relative;
+  width: 100%;
+}
+
+.panel-form .filterable-choice__control {
+  position: relative;
+}
+
+.panel-form .filterable-choice__input {
+  padding-right: 56px;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.panel-form .filterable-choice__clear,
+.panel-form .filterable-choice__toggle {
+  background: transparent;
+  border: 0;
+  bottom: 1px;
+  color: rgb(118, 118, 118);
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  top: 1px;
+  width: 28px;
+}
+.panel-form .filterable-choice__clear:hover,
+.panel-form .filterable-choice__toggle:hover {
+  color: rgb(51, 51, 51);
+}
+.panel-form .filterable-choice__clear[hidden],
+.panel-form .filterable-choice__toggle[hidden] {
+  display: none;
+}
+
+.panel-form .filterable-choice__clear {
+  font-size: 18px;
+  right: 28px;
+}
+.panel-form .filterable-choice__clear::after {
+  content: "×";
+}
+.panel-form .filterable-choice__clear:focus {
+  color: rgb(51, 51, 51);
+  outline: 1px dotted #212121;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+.panel-form .filterable-choice__toggle {
+  font-size: 11px;
+  right: 0;
+}
+.panel-form .filterable-choice__toggle::after {
+  content: "▾";
+  display: inline-block;
+  transform: scaleX(1.6);
+}
+
+.panel-form .filterable-choice--open .filterable-choice__toggle::after {
+  transform: scaleX(1.6) rotate(180deg);
+}
+
+.panel-form .filterable-choice__list {
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(155, 155, 155);
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  left: 0;
+  list-style: none;
+  margin: 2px 0 0;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 0;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+}
+.panel-form .filterable-choice__list[hidden] {
+  display: none;
+}
+
+.panel-form .filterable-choice__option {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 6px 10px;
+}
+.panel-form .filterable-choice__option[aria-selected=true] {
+  font-weight: 700;
+}
+.panel-form .filterable-choice__option.filterable-choice__option--active {
+  background-color: rgb(241, 247, 253);
+}
+.panel-form .filterable-choice__option:hover {
+  background-color: rgb(241, 244, 248);
+}
+.panel-form .filterable-choice__option[hidden] {
+  display: none;
 }
 
 .correction-warning {

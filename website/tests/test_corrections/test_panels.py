@@ -68,11 +68,31 @@ def field_value(content, name):
     return match.group(1) if match else None
 
 
-def tageditor_options(content, name):
-    """The `data-tageditor` options JSON of the Tagify select rendered for ``name``."""
-    match = re.search(rf'<input[^>]*name="{name}"[^>]*data-tageditor="([^"]*)"', content)
-    assert match, f"no Tagify input named {name}"
-    return json.loads(html.unescape(match.group(1)))
+def filterable_choice(content, name):
+    """The FilterableChoiceWidget markup that posts ``name``, from its hidden input to its listbox."""
+    match = re.search(
+        rf'<input type="hidden" name="{name}".*?</ul>',
+        content,
+        re.S,
+    )
+    assert match, f"no filterable choice field named {name}"
+    return match.group(0)
+
+
+def filterable_choice_options(content, name):
+    """value -> label for every option offered by the filterable choice field for ``name``."""
+    return {
+        html.unescape(value): html.unescape(label)
+        for value, label in re.findall(
+            r'data-value="([^"]*)"\s+data-label="([^"]*)"', filterable_choice(content, name)
+        )
+    }
+
+
+def filterable_choice_placeholder(content, name):
+    """The placeholder on the visible input of the filterable choice field for ``name``."""
+    match = re.search(r'placeholder="([^"]*)"', filterable_choice(content, name))
+    return html.unescape(match.group(1)) if match else ""
 
 
 def selected_option(content, name):
@@ -135,9 +155,8 @@ class TestTransactionPanelForm:
         assert selected_option(content, "category") == str(a.config.category_id)
         # No custom field is populated, so none is offered.
         assert "dummy_field" not in content
-        assert tageditor_options(content, "site_code")["mode"] == "select"
-        assert tageditor_options(content, "site_code")["enforceWhitelist"] is True
-        assert "tagify.js" in content
+        assert filterable_choice_options(content, "site_code") == {"S1": "S1", "S2": "S2"}
+        assert "filterable-choice.js" in content
 
     def test_calendar_limits_cover_the_analysis_range(self, transaction_analysis, client_with_admin):
         analysis = transaction_analysis
@@ -185,12 +204,12 @@ class TestTransactionPanelForm:
         assert field_value(content, "sector_code") == "SEC"
         # Site, description and date differ: blank with the grey <multiple values> marker.
         assert field_value(content, "site_code") in (None, "")
-        assert tageditor_options(content, "site_code")["placeholder"] == "<multiple values>"
-        assert tageditor_options(content, "sector_code")["placeholder"] == ""
+        assert filterable_choice_placeholder(content, "site_code") == "<multiple values>"
+        assert filterable_choice_placeholder(content, "sector_code") == ""
         assert re.search(r'name="description"[^>]*placeholder="&lt;multiple values&gt;"', content)
         assert re.search(r'name="date"[^>]*placeholder="&lt;multiple values&gt;"', content)
 
-    def test_bulk_marks_a_tagify_select_multiple_through_its_placeholder(
+    def test_bulk_marks_a_filterable_choice_multiple_through_its_placeholder(
         self, transaction_analysis, client_with_admin
     ):
         analysis = transaction_analysis
@@ -202,7 +221,7 @@ class TestTransactionPanelForm:
         content = client_with_admin.get(url).content.decode()
 
         assert field_value(content, "grant_code") in (None, "")
-        assert tageditor_options(content, "grant_code")["placeholder"] == "<multiple values>"
+        assert filterable_choice_placeholder(content, "grant_code") == "<multiple values>"
 
     def test_custom_field_shown_when_populated_or_label_overridden(
         self, transaction_analysis, client_with_admin
@@ -239,11 +258,9 @@ class TestTransactionPanelForm:
 
         content = client_with_admin.get(url).content.decode()
 
-        options = tageditor_options(content, "account_code")
-        whitelist = {item["value"]: item["label"] for item in options["whitelist"]}
-        assert whitelist["4100"] == "4100 — Salaries"
-        assert whitelist["9999"] == "9999 — Consultants"
-        assert options["tagTextProp"] == "label"
+        options = filterable_choice_options(content, "account_code")
+        assert options["4100"] == "4100 — Salaries"
+        assert options["9999"] == "9999 — Consultants"
         assert field_value(content, "account_code") == "4100"
 
         response = client_with_admin.post(url, data={"account_code": "9999"})
@@ -263,8 +280,7 @@ class TestTransactionPanelForm:
 
         content = client_with_admin.get(url).content.decode()
 
-        whitelist = [item["value"] for item in tageditor_options(content, "grant_code")["whitelist"]]
-        assert whitelist == ["G1", "G2", "G3", "G9"]
+        assert list(filterable_choice_options(content, "grant_code")) == ["G1", "G2", "G3", "G9"]
 
         response = client_with_admin.post(url, data={"grant_code": "G9"})
 
@@ -587,7 +603,7 @@ class TestCostItemPanel:
 
         content = client_with_admin.get(url).content.decode()
         assert "Edit Cost Items" in content
-        assert tageditor_options(content, "site_code")["placeholder"] == "<multiple values>"
+        assert filterable_choice_placeholder(content, "site_code") == "<multiple values>"
         assert re.search(r'name="amount"[^>]*placeholder="&lt;multiple values&gt;"', content)
 
         client_with_admin.post(url, data={"site_code": "S2"})

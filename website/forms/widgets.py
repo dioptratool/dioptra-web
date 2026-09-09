@@ -31,6 +31,44 @@ class TagEditorWidget(forms.TextInput):
         css = {"all": ("lib/tagify/tagify.css",)}
 
 
+class FilterableChoiceWidget(forms.Select):
+    """
+    A single-select dropdown whose options can be narrowed by typing.
+
+    At rest the field shows the selected option's label. Focusing it starts a blank
+    search (the selection stays visible as the placeholder), and leaving the field
+    keeps whichever option is highlighted, so a search that is abandoned still ends
+    on a listed value. Escape leaves the previous selection untouched, and a clear
+    button appears whenever something is selected.
+
+    Only listed values can be chosen, so the posted value is always a choice or blank.
+    Labels may differ from values, e.g. "4100 — Salaries" for the value "4100".
+    """
+
+    template_name = "widgets/filterable-choice.html"
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        widget = context["widget"]
+        selected_value, selected_label = "", ""
+        for _group_name, group_choices, _group_index in widget["optgroups"]:
+            for option in group_choices:
+                if option["selected"] and option["value"] != "":
+                    selected_value = option["value"]
+                    selected_label = option["label"]
+                    break
+            if selected_value:
+                break
+        widget["selected_value"] = selected_value
+        widget["selected_label"] = selected_label
+        # Rendered on the visible input, where the bulk "<multiple values>" marker belongs.
+        widget["placeholder"] = widget["attrs"].pop("placeholder", "")
+        return context
+
+    class Media:
+        js = ("website/js/filterable-choice.js",)
+
+
 class ArraySelectMultiple(forms.SelectMultiple):
     def value_omitted_from_data(self, data, files, name):
         return False
