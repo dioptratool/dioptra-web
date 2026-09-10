@@ -9,7 +9,6 @@ $(function() {
     var suggestionEl = form.querySelector('.program-cost-suggestion');
     var suggestionError = form.querySelector('.program-cost-suggestion-error');
     var suggestionRequested = form.querySelector('[name="suggestion_requested"]');
-    var initialSuggestion = form.getAttribute('data-initial-suggestion');
 
     function updateBulkAllocationTotal() {
       var total = 0;
@@ -62,9 +61,6 @@ $(function() {
         if (!el.value.length) el.value = 0;
         updateBulkAllocationTotal();
       });
-      if (initialSuggestion !== null && initialSuggestion !== '') {
-        el.classList.add('bulk-allocation-input--suggested');
-      }
     });
 
     if (suggestButton) {
@@ -88,9 +84,11 @@ $(function() {
           suggestionEl.innerHTML = data.html;
           suggestionEl.hidden = false;
           suggestionRequested.value = 'True';
-          if (data.allocation !== null) {
+          if (data.allocations) {
             inputs.forEach(function (el) {
-              el.value = data.allocation;
+              var interventionId = el.name.replace('allocation_', '');
+              if (!(interventionId in data.allocations)) return;
+              el.value = data.allocations[interventionId];
               el.classList.add('bulk-allocation-input--suggested');
               $(el).trigger('change');
               $(el).closest('.form-group').addClass('changed');

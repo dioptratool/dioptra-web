@@ -455,6 +455,7 @@ class AllocateInterventionBulk(
     ]
     help_text = _l("What is the percent allocation of the selected cost items to the interventions?")
     suggestion_only = False
+    allocations_saved = False
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -485,20 +486,29 @@ class AllocateInterventionBulk(
             raise Http404(_("Select one Program Cost item"))
 
     @cached_property
+    def interventions(self):
+        return list(self.analysis.interventioninstance_set.select_related("intervention"))
+
+    @cached_property
     def suggestion(self):
         category = get_object_or_404(
-            self.analysis.cost_type_category_grants.select_related("cost_type_category__analysis"),
+            self.analysis.cost_type_category_grants.select_related(
+                "cost_type_category__analysis", "cost_type_category__cost_type"
+            ),
             cost_type_category__cost_type=self.cost_type,
             cost_type_category__category_id=self.configs[0].category_id,
             grant=self.grant,
         )
-        return category.program_cost_suggestion()
+        return category.program_cost_suggestion(
+            excluded_config_ids=[config.pk for config in self.configs],
+            intervention_ids=[intervention.pk for intervention in self.interventions],
+        )
 
     def suggestion_context(self):
         return {
             "analysis": self.analysis,
             "suggestion": self.suggestion,
-            "interventions": self.analysis.interventioninstance_set.all(),
+            "interventions": self.interventions,
         }
 
     def get(self, request, *args, **kwargs):
@@ -507,7 +517,7 @@ class AllocateInterventionBulk(
                 raise Http404(_("Suggestions are only available for Program Costs"))
             response = JsonResponse(
                 {
-                    "allocation": self.suggestion["allocation"],
+                    "allocations": self.suggestion["allocations"],
                     "html": render_to_string(
                         "analysis/_program-cost-suggestion.html",
                         self.suggestion_context(),
@@ -528,8 +538,11 @@ class AllocateInterventionBulk(
         suggestion_requested = form.fields["suggestion_requested"].to_python(
             form["suggestion_requested"].value()
         )
-        context["show_suggestion"] = self.suggestions_enabled and (
-            self.suggestion_only or suggestion_requested
+        # After a successful save the panel closes straight away, so skip the calculation.
+        context["show_suggestion"] = (
+            self.suggestions_enabled
+            and not self.allocations_saved
+            and (self.suggestion_only or suggestion_requested)
         )
         if context["show_suggestion"]:
             context.update(self.suggestion_context())
@@ -545,19 +558,19 @@ class AllocateInterventionBulk(
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["initial"]["config_ids"] = [config.id for config in self.configs]
-        kwargs["analysis"] = self.analysis
+        kwargs["interventions"] = self.interventions
         kwargs["include_notes"] = not self.suggestion_only
         kwargs["allow_empty_allocations"] = self.cost_type.is_program_cost()
         if self.suggestion_only:
             kwargs["initial"]["suggestion_requested"] = True
-            if self.request.method == "GET":
-                for allocation in self.configs[0].allocations.all():
-                    kwargs["initial"][
-                        f"allocation_{allocation.intervention_instance_id}"
-                    ] = allocation.allocation
-                if self.suggestion["allocation"] is not None:
-                    for intervention in self.analysis.interventioninstance_set.all():
-                        kwargs["initial"][f"allocation_{intervention.id}"] = self.suggestion["allocation"]
+            for allocation in self.configs[0].allocations.all():
+                kwargs["initial"][f"allocation_{allocation.intervention_instance_id}"] = allocation.allocation
+            # Only the opening request offers the suggestion. The re-render after a
+            # save shows the values that were just saved, without highlighting.
+            if self.request.method == "GET" and self.suggestion["allocations"] is not None:
+                for intervention_id, allocation in self.suggestion["allocations"].items():
+                    kwargs["initial"][f"allocation_{intervention_id}"] = allocation
+                kwargs["suggested_intervention_ids"] = list(self.suggestion["allocations"])
         return kwargs
 
     @transaction.atomic
@@ -612,6 +625,7 @@ class AllocateInterventionBulk(
         workflow = AnalysisWorkflow(self.analysis)
         workflow.invalidate_step("insights")
         workflow.calculate_if_possible()
+        self.allocations_saved = True
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):

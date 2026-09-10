@@ -10,7 +10,7 @@
 {% endblock extrastyle %}
 
 {% block form-start %}
-    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="max-100" {% if suggestions_enabled %}data-suggestion-url="{{ request.path }}" data-suggestion-error="{% translate 'Unable to load suggestions. Please try again.' %}"{% endif %} {% if suggestion_only and not form.is_bound %}data-initial-suggestion="{{ suggestion.allocation|default_if_none:'' }}"{% endif %} enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form panel-form--analysis bulk-allocate-form" data-total-rule="max-100" {% if suggestions_enabled %}data-suggestion-url="{{ request.path }}" data-suggestion-error="{% translate 'Unable to load suggestions. Please try again.' %}"{% endif %} enctype="{% if form.is_multipart %}multipart/form-data{% else %}application/x-www-form-urlencoded{% endif %}" novalidate="novalidate" {% if not form.allow_abandonment %}data-confirm-abandonment-message="There are unsaved changes on this form. Are you sure you want to leave?"{% endif %}>
 {% endblock form-start %}
 
 {% block panel-scrollable %}{% if form.Meta.fieldsets %}{# Make the main panel body not scrollable #}{% else %}{{ block.super }}{% endif %}{% endblock %}

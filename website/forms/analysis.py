@@ -142,23 +142,28 @@ class AllocateInterventionBulkForm(forms.Form):
     def __init__(
         self,
         *args,
-        analysis,
+        interventions,
         include_notes=True,
         allow_empty_allocations=False,
+        suggested_intervention_ids=(),
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.fields["config_ids"].choices = (
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
-        for intervention_instance in analysis.interventioninstance_set.all():
+        for intervention_instance in interventions:
+            css_class = "bulk-allocation-input"
+            if intervention_instance.id in suggested_intervention_ids:
+                # Highlight fields pre-filled with a suggestion; the JS removes it on edit.
+                css_class += " bulk-allocation-input--suggested"
             self.fields[f"allocation_{intervention_instance.id}"] = PositiveFixedDecimalField(
                 label=intervention_instance.display_name(),
                 max_value=100,
                 min_value=0,
                 initial=0,
                 allow_zero=True,
-                widget=forms.TextInput(attrs={"class": "bulk-allocation-input", "inputmode": "decimal"}),
+                widget=forms.TextInput(attrs={"class": css_class, "inputmode": "decimal"}),
             )
         self.fields["notes"] = forms.CharField(
             label=_l("Notes"),

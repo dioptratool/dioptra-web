@@ -29,7 +29,7 @@ from ..models import (
     CostLineItem,
     Settings,
 )
-from ..models.cost_type import CostType
+from ..models.cost_type import CostType, ProgramCost
 
 User = get_user_model()
 
@@ -54,6 +54,29 @@ def defaults():
         type=30,
         order=3,
     )
+
+
+@pytest.fixture
+def make_program_cost_item(defaults):
+    """Return a builder for one cost line item with its config and saved intervention allocations.
+
+    ``allocations`` pairs with ``interventions`` in order: a ``None`` entry saves a blank
+    allocation row, and a shorter list leaves the remaining interventions without a row.
+    """
+    program_cost = CostType.objects.get(type=ProgramCost.id)
+
+    def make(analysis, amount, allocations=(), *, interventions, grant, category, cost_type=None, **config):
+        item = CostLineItemFactory(analysis=analysis, grant_code=grant, total_cost=Decimal(str(amount)))
+        config = CostLineItemConfigFactory(
+            cost_line_item=item, cost_type=cost_type or program_cost, category=category, **config
+        )
+        for intervention, allocation in zip(interventions, allocations):
+            CostLineItemInterventionAllocationFactory(
+                cli_config=config, intervention_instance=intervention, allocation=allocation
+            )
+        return item
+
+    return make
 
 
 @pytest.fixture
