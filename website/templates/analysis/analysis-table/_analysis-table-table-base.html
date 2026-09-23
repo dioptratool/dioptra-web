@@ -174,9 +174,11 @@
                                                 <br>
                                                 <div class="form__errors form__errors--left form__errors--allocated">
                                                     <ul class="form__errors-list">
-                                                        <li class="form__errors-list-item">
-                                                            <em><strong>{{ errors|dict_get:cost_line_item.id }}</strong></em>
-                                                        </li>
+                                                        {% for message in errors|allocation_error_messages:cost_line_item.id %}
+                                                            <li class="form__errors-list-item">
+                                                                <em><strong>{{ message }}</strong></em>
+                                                            </li>
+                                                        {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% elif errors|dict_get:cost_line_item.id %}

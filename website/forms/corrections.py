@@ -26,6 +26,7 @@ from website.corrections.fields import (
     visible_custom_fields,
 )
 from website.corrections.patch import CUSTOM_FIELD_NAMES
+from website.forms.fields import ThousandsSeparatedDecimalField
 from website.forms.widgets import FilterableChoiceWidget
 from website.models import Category, CostType
 
@@ -102,7 +103,7 @@ class CorrectionForm(forms.Form):
                     end=analysis.end_date.strftime("%d-%b-%Y"),
                 ),
             )
-        self.fields["amount"] = forms.DecimalField(
+        self.fields["amount"] = ThousandsSeparatedDecimalField(
             required=False,
             max_digits=14,
             decimal_places=settings.DECIMAL_PLACES,

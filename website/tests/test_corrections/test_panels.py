@@ -401,6 +401,43 @@ class TestTransactionPanelSave:
         t1.refresh_from_db()
         assert t1.amount_in_instance_currency == Decimal("100")
 
+    @pytest.mark.parametrize(
+        ("entered", "expected"),
+        [
+            ("1,000", Decimal("1000")),
+            ("1,000.50", Decimal("1000.50")),
+            ("12,345,678", Decimal("12345678")),
+            ("-1,000", Decimal("-1000")),
+            (" 1,000 ", Decimal("1000")),
+            ("1000", Decimal("1000")),
+        ],
+    )
+    def test_amount_accepts_the_thousands_separator_it_is_displayed_with(
+        self, transaction_analysis, client_with_admin, entered, expected
+    ):
+        analysis = transaction_analysis
+        a, b, t1, t2, t3 = items(analysis)
+
+        response = client_with_admin.post(
+            transactions_url(analysis, transaction_id=t1.id), data={"amount": entered}
+        )
+
+        assert '"operation": "saved"' in response.content.decode()
+        t1.refresh_from_db()
+        assert t1.amount_in_instance_currency == expected
+
+    def test_amount_that_is_not_a_number_is_still_rejected(self, transaction_analysis, client_with_admin):
+        analysis = transaction_analysis
+        a, b, t1, t2, t3 = items(analysis)
+
+        response = client_with_admin.post(
+            transactions_url(analysis, transaction_id=t1.id), data={"amount": "1,00o"}
+        )
+
+        assert '"operation": "saved"' not in response.content.decode()
+        t1.refresh_from_db()
+        assert t1.amount_in_instance_currency == Decimal("100")
+
     def test_grant_outside_the_data_and_the_defined_list_is_rejected(
         self, transaction_analysis, client_with_admin
     ):

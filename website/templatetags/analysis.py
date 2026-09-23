@@ -187,3 +187,26 @@ def allocated_cost_for_percentage(cost_line_item: CostLineItem, percentage):
 @register.filter(name="get_json")
 def get_json(value):
     return json.loads(unescape(value))
+
+
+@register.filter
+def allocation_error_messages(errors, cost_line_item_id):
+    """
+    The messages to show against one cost line item's allocation row.
+
+    `AllocateMixin._validate_data` records a message per intervention plus an
+    "all" message for the row total. A value outside 0-100 trips both, so the
+    per-intervention messages win when there are any and the row-total message
+    is only shown on its own. This matches the sub-component step, which
+    already reports a single message per row.
+    """
+    row_errors = (errors or {}).get(cost_line_item_id)
+    if not row_errors:
+        return []
+    if not isinstance(row_errors, dict):
+        return [row_errors]
+    messages = [message for key, message in row_errors.items() if key != "all"]
+    if not messages and "all" in row_errors:
+        messages = [row_errors["all"]]
+    # Interventions on the same row usually fail the same way; show it once.
+    return list(dict.fromkeys(messages))
