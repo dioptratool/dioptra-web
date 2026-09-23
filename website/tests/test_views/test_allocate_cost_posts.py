@@ -7,50 +7,52 @@ from django.urls import reverse
 from website.models import Analysis
 from website.templatetags.analysis import allocation_error_messages
 from website.tests.factories import InterventionFactory
-from website.tests.factories import SubcomponentCostAnalysisFactory
-from website.workflows import AnalysisWorkflow
-from website.tests.factories import SubcomponentCostAnalysisFactory
-from website.workflows import AnalysisWorkflow
-from website.tests.factories import InterventionFactory
+from website.views.mixins import AllocateMixin
 
 
 @pytest.mark.django_db
 class TestAllocateCostFormSubmissions:
     def test_all_good_data(
         self,
-        analysis_workflow_with_loaddata_complete,
+        analysis_workflow_with_confirmed_categories_cost_line_item,
         a_user,
         client_with_admin,
     ):
-        analysis_wf = analysis_workflow_with_loaddata_complete
+        # Categories must be confirmed or `Allocate.dependencies_met` is False and
+        # `AnalysisStepMixin.dispatch` redirects away without saving anything.
+        analysis = analysis_workflow_with_confirmed_categories_cost_line_item.analysis
+        intervention_count = analysis.interventioninstance_set.count()
         data = {}
-        for cli in analysis_wf.analysis.cost_line_items.all():
-            for intervention_instance in analysis_wf.analysis.interventioninstance_set.all():
+        for cli in analysis.cost_line_items.all():
+            for intervention_instance in analysis.interventioninstance_set.all():
                 data[f"cost_line_item_allocation_{cli.id}_{intervention_instance.id}"] = "2.00"
 
-        cost_type_category_grant = analysis_wf.analysis.cost_type_category_grants.first()
-        grant = cost_type_category_grant.grant
-        category = cost_type_category_grant.cost_type_category.category
-        cost_type = cost_type_category_grant.cost_type_category.cost_type
+        assert data, "fixture produced no cost line items to allocate"
 
-        response = client_with_admin.post(
-            reverse(
-                "analysis-allocate-cost_type-grant",
-                kwargs={
-                    "pk": analysis_wf.analysis.pk,
-                    "cost_type_pk": cost_type.pk,
-                    "grant": grant,
-                },
-            ),
-            data=data,
-            follow=True,
+        cost_type_category_grant = analysis.cost_type_category_grants.first()
+        grant = cost_type_category_grant.grant
+        cost_type = cost_type_category_grant.cost_type_category.cost_type
+        url = reverse(
+            "analysis-allocate-cost_type-grant",
+            kwargs={
+                "pk": analysis.pk,
+                "cost_type_pk": cost_type.pk,
+                "grant": grant,
+            },
         )
 
-        assert response.status_code == 200
+        response = client_with_admin.post(url, data=data)
 
-        updated_analysis = Analysis.objects.get(pk=analysis_wf.analysis.pk)
+        # A successful save redirects back to the same page; the step guard would
+        # redirect to the analysis overview instead.
+        assert response.status_code == 302
+        assert response.url == url
+
+        updated_analysis = Analysis.objects.get(pk=analysis.pk)
         for cli in updated_analysis.cost_line_items.all():
-            for allocation in cli.config.allocations.all():
+            allocations = cli.config.allocations.all()
+            assert allocations.count() == intervention_count
+            for allocation in allocations:
                 assert allocation.allocation == Decimal("2.00")
 
     def test_all_good_data_with_maximum_interventions(
@@ -191,3 +193,30 @@ class TestAllocateNegativeAllocationRendering:
         assert "&#x27;all&#x27;:" not in content
         assert "'all':" not in content
         assert "Invalid allocation total." not in content
+
+
+class TestValidateAllocationTotal:
+    """
+    The row-total check must use the final total, not a running total taken
+    after each intervention.
+    """
+
+    def validate(self, *allocations):
+        data = {7: {intervention_id: value for intervention_id, value in enumerate(allocations)}}
+        return AllocateMixin()._validate_data(data)[1]
+
+    def test_valid_row_has_no_errors(self):
+        assert self.validate("60", "40") == {}
+
+    def test_total_over_100_is_a_row_error(self):
+        assert self.validate("60", "60")[7] == {
+            "all": "Invalid allocation total. Cost line item Allocation must be between 0 and 100"
+        }
+
+    def test_out_of_range_values_that_net_to_a_valid_total_are_not_a_row_error(self):
+        # A running total passes 100 after the first value; the final total is 100.
+        errors = self.validate("120", "-20")
+        assert errors[7] == {0: "Invalid allocation (0-100)", 1: "Invalid allocation (0-100)"}
+
+    def test_blank_values_do_not_count_toward_the_total(self):
+        assert self.validate("60", None, "40") == {}
