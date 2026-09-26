@@ -12,12 +12,15 @@ CUSTOM_FIELD_COLUMNS = {
 class Template(PositionalTransactionTemplate):
     """Save the Children positional 12-column transaction export.
 
-    ``country_code`` and ``currency_code`` have no source column in this layout:
-    the analysis supplies the country, and the instance currency supplies the currency.
+    The export opens with a header row whose text is ignored: columns are mapped by
+    position only. ``country_code`` and ``currency_code`` have no source column in this
+    layout: the analysis supplies the country, and the instance currency supplies the
+    currency.
     """
 
     id = "save_the_children"
     label = "Save the Children"
+    first_row_is_header = True
     download_headers = [f"column_{column_number}" for column_number in range(1, 13)]
     download_date_fields = ("column_5",)
     download_decimal_fields = ("column_6",)
@@ -28,12 +31,12 @@ class Template(PositionalTransactionTemplate):
         "transaction_date": "column_5",
         "country_code": None,
         "grant_code": "column_1",
-        "budget_line_code": "column_2",
+        "budget_line_code": None,
         "account_code": "column_4",
         "site_code": None,
         "sector_code": "column_7",
         "transaction_code": None,
-        "transaction_description": None,
+        "transaction_description": "column_2",
         "currency_code": None,
         "budget_line_description": "column_3",
         "amount": "column_6",
@@ -54,12 +57,12 @@ class Template(PositionalTransactionTemplate):
                 "transaction_date": row.get("column_5", ""),
                 "country_code": analysis.country.code,
                 "grant_code": row.get("column_1", ""),
-                "budget_line_code": row.get("column_2", ""),
+                "budget_line_code": "",
                 "account_code": row.get("column_4", ""),
                 "site_code": "",
                 "sector_code": row.get("column_7", ""),
                 "transaction_code": "",
-                "transaction_description": "",
+                "transaction_description": row.get("column_2", ""),
                 "currency_code": "",
                 "budget_line_description": row.get("column_3", ""),
                 "amount": row.get("column_6", ""),

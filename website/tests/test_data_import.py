@@ -18,15 +18,16 @@ test_data_dir = Path(__file__).resolve().parent / "test_data"
 
 
 def _save_the_children_upload():
-    """A one-row Save the Children upload: positional columns, no headers, no currency."""
+    """A one-row Save the Children upload: an ignored header row, positional columns, no currency."""
 
     Settings.objects.create(transaction_data_template="save_the_children")
     workbook = Workbook()
     worksheet = workbook.active
+    worksheet.append(["Grant", "Description", "Budget Line", "Account", "Period", "Amount", "Sector"])
     worksheet.append(
         [
             "9116",  # column_1  grant_code
-            "4021014ON14A",  # column_2  budget_line_code
+            "Other nutrition supplies",  # column_2  transaction_description
             "DM - ON14A-Other nutrition",  # column_3  budget_line_description
             "52010",  # column_4  account_code
             "2015-01-01",  # column_5  transaction_date

@@ -47,6 +47,24 @@ def _analysis_with_country(country_code="SL"):
     return types.SimpleNamespace(country=types.SimpleNamespace(code=country_code))
 
 
+# Save the Children exports open with a header row. Its text is ignored: columns are mapped by
+# position, so these labels are deliberately not the column_N keys the template uses.
+SAVE_THE_CHILDREN_HEADER_ROW = [
+    "Grant",
+    "Description",
+    "Budget Line",
+    "Account",
+    "Period",
+    "Amount",
+    "Sector",
+    "Custom 1",
+    "Custom 2",
+    "Custom 3",
+    "Custom 4",
+    "Custom 5",
+]
+
+
 def test_enabled_transaction_template_ids_uses_active_template(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
 
@@ -377,7 +395,7 @@ def test_save_the_children_transaction_template_keeps_day_month_year_period_supp
     template = get_transaction_template()
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [["SC-123", "", "Medical supplies", "5501", "29/05/2026", "1234.56"]],
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "29/05/2026", "1234.56"]],
         analysis=_analysis_with_country(),
     )
 
@@ -427,13 +445,12 @@ def test_transaction_template_reports_source_date_format_errors(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
 
     succeeded, errors = normalize_uploaded_transaction_file(
-        [["SC-123", "", "Medical supplies", "5501", "05-29-2026", "1234.56"]],
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "05-29-2026", "1234.56"]],
         analysis=_analysis_with_country(),
     )
 
     assert not succeeded
-    # "Row 2" for what is physically row 1: source_rows_from_upload enumerates from 2 because
-    # rows_with_source_headers has prepended the synthetic header row. Same in the DRC template.
+    # Row 1 is the ignored header row, so the first data row is physically row 2.
     assert errors == ["Row 2: column_5 must use date format %Y%m or %d/%m/%Y or %Y-%m-%d (got 05-29-2026)"]
 
 
@@ -779,9 +796,10 @@ def test_save_the_children_transaction_template_normalizes_positional_rows(monke
 
     succeeded, normalized = normalize_uploaded_transaction_file(
         [
+            SAVE_THE_CHILDREN_HEADER_ROW,
             [
                 "57801594",  # column_1  grant_code
-                "4021014ON14A",  # column_2  budget_line_code
+                "Other nutrition supplies",  # column_2  transaction_description
                 "DM - ON14A-Other nutrition",  # column_3  budget_line_description
                 "52010",  # column_4  account_code
                 "202306",  # column_5  transaction_date
@@ -792,7 +810,7 @@ def test_save_the_children_transaction_template_normalizes_positional_rows(monke
                 "",  # column_10 custom field 3
                 "6-CAM Support costs -2022",  # column_11 custom field 4
                 "",  # column_12 custom field 5
-            ]
+            ],
         ],
         analysis=_analysis_with_country("SL"),
     )
@@ -803,12 +821,12 @@ def test_save_the_children_transaction_template_normalizes_positional_rows(monke
             "transaction_date": "2023-06-01",
             "country_code": "SL",
             "grant_code": "57801594",
-            "budget_line_code": "4021014ON14A",
+            "budget_line_code": "",
             "account_code": "52010",
             "site_code": "",
             "sector_code": "NUT",
             "transaction_code": "",
-            "transaction_description": "",
+            "transaction_description": "Other nutrition supplies",
             "currency_code": "USD",
             "budget_line_description": "DM - ON14A-Other nutrition",
             "amount": "39.88",
@@ -821,25 +839,41 @@ def test_save_the_children_transaction_template_normalizes_positional_rows(monke
     ]
 
 
-def test_save_the_children_transaction_template_accepts_column_headers(monkeypatch):
-    """A file that already carries column_N headers is used as-is."""
+def test_save_the_children_transaction_template_ignores_header_row_values(monkeypatch):
+    """Row 1 is always the header row and its text is ignored, even column_N keys in another order."""
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
+    rows = [
+        list(reversed(template.get_download_headers())),
+        ["SC-123", "Medical supplies - May", "Medical supplies", "5501", "202605", "1234.56", "", "CC-1"],
+    ]
 
-    succeeded, normalized = normalize_uploaded_transaction_file(
-        [
-            template.get_download_headers(),
-            ["SC-123", "BL-1", "Medical supplies", "5501", "202605", "1234.56", "", "CC-1"],
-        ],
-        analysis=_analysis_with_country("JO"),
-    )
+    succeeded, normalized = normalize_uploaded_transaction_file(rows, analysis=_analysis_with_country("JO"))
 
     assert succeeded
     assert normalized[0]["grant_code"] == "SC-123"
+    assert normalized[0]["transaction_description"] == "Medical supplies - May"
     assert normalized[0]["transaction_date"] == "2026-05-01"
     assert normalized[0]["dummy_field_1"] == "CC-1"
     # Columns absent from a short row simply stay empty.
     assert normalized[0]["dummy_field_5"] == ""
+    # Validation labels follow position too, not the header text.
+    assert template.get_first_data_row_number(rows) == 2
+    assert template.get_source_header_columns(rows)["column_1"] == "A"
+    assert template.get_source_header_columns(rows)["column_12"] == "L"
+
+
+def test_save_the_children_transaction_template_drops_a_data_looking_first_row(monkeypatch):
+    """The first row is the header even when it looks like data, so a one-row file has no transactions."""
+    _set_active_template(monkeypatch, "save_the_children")
+
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
+        analysis=_analysis_with_country(),
+    )
+
+    assert succeeded
+    assert normalized == []
 
 
 def test_save_the_children_transaction_template_takes_country_from_the_analysis(monkeypatch):
@@ -849,7 +883,7 @@ def test_save_the_children_transaction_template_takes_country_from_the_analysis(
     assert get_transaction_template().canonical_field_sources["country_code"] is None
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
         analysis=_analysis_with_country("ET"),
     )
 
@@ -857,22 +891,30 @@ def test_save_the_children_transaction_template_takes_country_from_the_analysis(
     assert normalized[0]["country_code"] == "ET"
 
 
-def test_save_the_children_transaction_template_reports_missing_required_columns(monkeypatch):
+def test_save_the_children_transaction_template_reports_required_cells_of_narrow_rows(monkeypatch):
+    """Headers are always synthesised, so a narrow file fails on its blank required cells, by position."""
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
+    rows = [
+        ["Grant", "Description"],
+        ["SC-123", "Medical supplies - May"],
+    ]
 
-    succeeded, errors = normalize_uploaded_transaction_file(
-        [
-            ["column_1", "column_2"],
-            ["SC-123", "BL-1"],
-        ],
-        analysis=_analysis_with_country(),
+    succeeded, normalized = normalize_uploaded_transaction_file(rows, analysis=_analysis_with_country())
+    errors = validate_uploaded_transaction_file(
+        normalized,
+        analysis=None,
+        field_labels=template.get_validation_field_labels(rows),
+        first_data_row=template.get_first_data_row_number(rows),
+        currency_required=False,
     )
 
-    assert not succeeded
+    assert succeeded
     assert errors == [
-        "The Save the Children transaction file is missing required headers: "
-        "column_3, column_4, column_5, column_6"
+        "Row 2: column_5 (Column E) (Transaction Date) cannot be empty, "
+        "column_4 (Column D) (Account Code) cannot be empty, "
+        "column_3 (Column C) (Budget Line Description) cannot be empty, "
+        "column_6 (Column F) (Amount) cannot be empty"
     ]
     assert set(template.required_source_fields) == {
         "column_1",
