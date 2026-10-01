@@ -1,0 +1,53 @@
+{% extends 'panel-form.html' %}
+{% load i18n panels_form_extras %}
+
+{% block form-start %}
+    <form action="#" method="POST" accept-charset="utf-8" class="panel-form metadata-field-form" novalidate="novalidate"
+          data-metadata-field-form data-mode="{{ mode }}" data-bound="{{ bound|yesno:'true,false' }}" data-option-url="{{ option_url }}">
+{% endblock form-start %}
+
+{% block panel-body %}
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+        <div class="help-block errors">
+            <ul>
+                {% for error in form.non_field_errors %}
+                    <li><em>{{ error }}</em></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    {% if mode == 'field' %}
+        {{ form.draft_id }}{{ form.id }}{{ form.key }}{{ form.in_use }}{{ form.options }}
+        {% include 'bootstrap/field.html' with field=form.name|add_input_classes %}
+        {% include 'bootstrap/field.html' with field=form.field_type|add_input_classes %}
+        <div class="metadata-field-form__number" hidden>
+            {% include 'bootstrap/field.html' with field=form.number_type|add_input_classes %}
+        </div>
+        <div class="metadata-field-form__options form-group{% if form.options.errors %} has-error{% endif %}" hidden>
+            <label class="control-label"><span>{% translate 'Options' %}</span><em><sup title="{% translate 'This is a required field' %}">*</sup></em></label>
+            <ul class="metadata-options__list"></ul>
+            <div class="metadata-options__add">
+                <input type="text" class="form-control notrackchange metadata-options__input" placeholder="{% translate 'Add option label' %}" maxlength="100">
+                <button type="button" class="btn btn-sm btn-primary metadata-options__add-btn" disabled>{% translate 'Add Option' %}</button>
+            </div>
+            <p class="help_text">{% translate 'Maximum of 10' %}</p>
+            {% if form.options.errors %}
+                <div class="help-block errors">
+                    <ul>
+                        {% for error in form.options.errors %}
+                            <li><em>{{ error }}</em></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        {% include 'bootstrap/field.html' with field=form.label|add_input_classes %}
+    {% endif %}
+{% endblock panel-body %}
+
+{% block panel-foot %}
+    <button type="submit" class="btn btn-primary metadata-field-form__save" disabled>{% translate 'Save' %}</button>
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">{% translate 'Cancel' %}</a>
+{% endblock panel-foot %}

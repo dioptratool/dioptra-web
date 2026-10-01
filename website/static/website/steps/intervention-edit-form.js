@@ -1,6 +1,7 @@
 $(function() {
     var $intervention = $('[name="intervention"]');
     var mapping = $intervention.data('mapping');
+    var metadataMapping = $intervention.data('metadata-mapping') || {};
     var $changeWarning = $('.js-intervention-change-warning');
     var iovFields = ['Conditional Cash Transfer', 'Providing Business Grants', 'Unconditional Cash Transfer']
 
@@ -23,6 +24,26 @@ $(function() {
             .addClass('hidden');
     }
 
+    // Metadata controls exist for every intervention. Only the selected intervention's are shown
+    // and enabled; the others are disabled, which keeps their values in the DOM but out of the
+    // submission, so switching back restores what was typed. The wrapper's `disabled` class
+    // (set by bootstrap/field.html for a control rendered disabled) follows the input state: in a
+    // panel it turns off pointer events, so leaving it would make an activated control unclickable.
+    function updateMetadata(interventionID) {
+        var active = metadataMapping[interventionID] || [];
+        Object.keys(metadataMapping).forEach(function (id) {
+            metadataMapping[id].forEach(function (name) {
+                var isActive = active.indexOf(name) >= 0;
+                var $inputs = $('[name="' + name + '"]');
+                $inputs.prop('disabled', !isActive);
+                $inputs.first().closest('.form-group')
+                    .toggleClass('hidden', !isActive)
+                    .toggleClass('disabled', !isActive);
+            });
+        });
+        $('[data-metadata-section]').prop('hidden', active.length === 0);
+    }
+
     function interventionChanged() {
         var interventionID = $intervention.val();
         if ($changeWarning.length) {
@@ -33,6 +54,7 @@ $(function() {
         }
         hideAllParameters();
         hideOutputCountSource();
+        updateMetadata(interventionID);
         if (interventionID) {
             // retrieve lists of parameters grouped by intervention and output metric
             const metrics = mapping[interventionID]

@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _l
 
 from ombucore.admin.forms.base import ModelFormBase
 from ombucore.admin.templatetags.panels_extras import jsonattr
+from website.forms.intervention_metadata import control_for, metadata_field_name, metadata_from_cleaned_data
+from website.intervention_metadata import prune_metadata
 from website.models import CostLineItemInterventionAllocation, Intervention, InterventionInstance
 from website.models.utils import (
     get_all_intervention_parameter_fields,
@@ -92,6 +94,49 @@ class InterventionInstanceForm(ModelFormBase):
                 if field_name in self.fields:
                     self.fields[field_name].initial = value
 
+        self._add_metadata_fields(submitted_intervention_id)
+
+    def _add_metadata_fields(self, submitted_intervention_id):
+        """
+        Controls for every intervention's metadata definitions, as the parameter fields above:
+        the script shows the selected intervention's. Only those are active; the others are
+        disabled, so their posted values are neither validated nor saved, while their controls
+        remain available when the selection changes after a validation error.
+        """
+        self.metadata_definitions = {}
+        for intervention in Intervention.objects.prefetch_related("metadata_fields__options"):
+            definitions = list(intervention.metadata_fields.all())
+            if definitions:
+                self.metadata_definitions[intervention.pk] = definitions
+        mapping = {
+            pk: [metadata_field_name(definition) for definition in definitions]
+            for pk, definitions in self.metadata_definitions.items()
+        }
+        self.fields["intervention"].widget.attrs["data-metadata-mapping"] = jsonattr(mapping)
+
+        if submitted_intervention_id is not None:
+            active_id = submitted_intervention_id
+        else:
+            active_id = self.instance.intervention_id if self.instance.pk else None
+        # Seeded through the live definitions: Django validates a disabled control from its initial
+        # value, so a selection of a since-deleted option must not reach the control at all.
+        stored = {}
+        if self.instance.pk:
+            stored = prune_metadata(
+                self.metadata_definitions.get(self.instance.intervention_id, []), self.instance.metadata
+            )
+        for pk, definitions in self.metadata_definitions.items():
+            for definition in definitions:
+                field = control_for(definition, self.analysis)
+                field.widget.attrs["class"] = (
+                    field.widget.attrs.get("class", "") + " metadata-field"
+                ).strip()
+                field.widget.attrs["data-intervention"] = pk
+                field.disabled = pk != active_id
+                if self.instance.pk and pk == self.instance.intervention_id:
+                    field.initial = stored.get(definition.storage_key)
+                self.fields[metadata_field_name(definition)] = field
+
     def _submitted_intervention_id(self) -> int | None:
         if self.data and self.data.get("intervention"):
             try:
@@ -119,6 +164,11 @@ class InterventionInstanceForm(ModelFormBase):
         elif "intervention" in self.changed_data:
             self._clear_dependent_data()
         self.instance.parameters = self._collect_parameters(self.cleaned_data["intervention"])
+        # Rebuilt from the selected intervention's current definitions: a switch drops the old
+        # intervention's values, and stored orphans disappear.
+        self.instance.metadata = metadata_from_cleaned_data(
+            self.metadata_definitions.get(self.cleaned_data["intervention"].pk, []), self.cleaned_data
+        )
         return super().save(commit=commit)
 
     def _collect_parameters(self, intervention: Intervention) -> dict[str, float]:

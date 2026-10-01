@@ -8,10 +8,12 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet import worksheet
 
 from website.currency import currency_name, currency_symbol
+from website.intervention_metadata import excel_number, excel_number_format
 from website.models import Analysis, AnalysisCostType, FieldLabelOverrides
 from website.models import InterventionInstance
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 from website.models.cost_type import ProgramCost
+from website.models.intervention_metadata import MetadataFieldType
 from website.models.output_metric import OutputMetric
 
 _gray_fill = PatternFill(start_color="00DADADA", end_color="00DADADA", fill_type="solid")
@@ -71,12 +73,17 @@ def _write_metadata_table(
     parameter_metadata: dict,
     analysis_url: str,
     starting_row: int = 1,
+    metadata_rows=(),
 ) -> int:
     """
     Write the metadata table to the provided worksheet in the upper left corner.
 
     Mutate the incoming parameter_metadata dictionary to contain row information for each parameter to be used later
     in the spreadsheet workflow
+
+    `metadata_rows` are the intervention instance's resolved metadata values (see
+    `website.intervention_metadata.resolve_metadata`); they are written right after the calculation
+    parameters, so the parameter cell references above stay where they are.
 
     Returns the last row with data on it to position other things on the page.
     """
@@ -111,6 +118,9 @@ def _write_metadata_table(
             parameter_metadata[parameter_key] = parameter_row
             parameter_row += 1
 
+    # The rows written so far; the intervention metadata goes right after them.
+    leading_count = len(metadata)
+
     metadata += [
         ("Output count data source", an_analysis.output_count_source),
     ]
@@ -125,15 +135,11 @@ def _write_metadata_table(
         ("Analysis URL", analysis_url),
     ]
 
-    for key, val in metadata:
+    for index, (key, val) in enumerate(metadata):
+        if index == leading_count:
+            row = _write_intervention_metadata_rows(ws, row, metadata_rows, an_analysis)
+        _style_key_value_row(ws, row)
         ws[f"A{row}"] = key
-        ws[f"A{row}"].fill = _gray_fill
-        ws[f"A{row}"].font = Font(bold=True)
-        ws[f"A{row}"].border = _black_border
-
-        ws[f"B{row}"].fill = _gray_fill
-        ws[f"B{row}"].border = _black_border
-        ws[f"B{row}"].alignment = Alignment(horizontal="left")
         if key in [
             "Value of Cash Distributed",
             "Value of Business Grant Amount",
@@ -155,6 +161,46 @@ def _write_metadata_table(
 
         row += 1
 
+    return row
+
+
+def _style_key_value_row(ws: worksheet, row: int) -> None:
+    ws[f"A{row}"].fill = _gray_fill
+    ws[f"A{row}"].font = Font(bold=True)
+    ws[f"A{row}"].border = _black_border
+    ws[f"B{row}"].fill = _gray_fill
+    ws[f"B{row}"].border = _black_border
+    ws[f"B{row}"].alignment = Alignment(horizontal="left")
+
+
+def _write_text_cell(cell, text: str) -> None:
+    # User text, never a formula: a value starting with "=" stays the literal string.
+    cell.value = text
+    cell.data_type = "s"
+    cell.number_format = "@"
+
+
+def _write_intervention_metadata_rows(ws: worksheet, row: int, metadata_rows, an_analysis: Analysis) -> int:
+    """
+    One row per resolved metadata value, formatted by field type rather than by label, so a
+    free-text field named like a special parameter is still written as text. Numbers become
+    numeric cells only when the spreadsheet can hold them exactly, formatted with the entered
+    decimal places so the sheet shows what Insights shows; otherwise the exact text.
+    """
+    symbol = currency_symbol(an_analysis)
+    for metadata_row in metadata_rows:
+        _style_key_value_row(ws, row)
+        _write_text_cell(ws[f"A{row}"], metadata_row.name)
+        cell = ws[f"B{row}"]
+        number = (
+            excel_number(metadata_row.raw) if metadata_row.field_type == MetadataFieldType.NUMBER else None
+        )
+        if number is None:
+            _write_text_cell(cell, metadata_row.display)
+        else:
+            cell.value = number
+            cell.number_format = excel_number_format(metadata_row.raw, metadata_row.number_type, symbol)
+        row += 1
     return row
 
 

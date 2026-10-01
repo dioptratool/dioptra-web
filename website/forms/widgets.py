@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from ombucore.admin.templatetags.panels_extras import jsonattr
+from website.models.intervention_metadata import MAX_FIELDS_PER_INTERVENTION, MetadataFieldType
 
 
 class CurrencyWidget(forms.Widget):
@@ -14,6 +15,28 @@ class CurrencyWidget(forms.Widget):
 
 class PercentWidget(forms.Widget):
     template_name = "django/forms/widgets/percent.html"
+
+
+class MetadataNumberWidget(forms.TextInput):
+    """
+    A text-backed numeric input for intervention metadata, with the currency or percent affix of
+    the existing currency and percent widgets but none of their numeric input restrictions, so an
+    exact value of up to 20 digits round-trips as the string entered.
+    """
+
+    template_name = "widgets/intervention-metadata-number.html"
+
+    def __init__(self, number_type, currency_symbol=None, attrs=None):
+        self.number_type = number_type
+        self.currency_symbol = currency_symbol
+        attrs = {"inputmode": "decimal", **(attrs or {})}
+        super().__init__(attrs=attrs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["number_type"] = self.number_type
+        context["widget"]["currency_symbol"] = self.currency_symbol or ""
+        return context
 
 
 class TagEditorWidget(forms.TextInput):
@@ -108,6 +131,56 @@ class SortableSelectMultipleSubcomponentLabelsWidget(forms.Select):
         context["sortable"] = True
         context["choices"] = choices
         return context
+
+
+class MetadataEditorWidget(forms.Widget):
+    """
+    The Metadata tab of the intervention form: the staged definition draft in a hidden input and
+    the field list the editor script renders, reorders and edits through child panels.
+    """
+
+    template_name = "widgets/intervention-metadata-editor.html"
+    form_instance = None
+
+    def format_value(self, value):
+        if value in (None, ""):
+            value = {"fields": []}
+        return value if isinstance(value, str) else json.dumps(value)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        draft_json = self.format_value(value)
+        try:
+            draft = json.loads(draft_json)
+        except ValueError:
+            draft = {}
+        fields = (
+            draft.get("fields") if isinstance(draft, dict) and isinstance(draft.get("fields"), list) else []
+        )
+        instance = getattr(self.form_instance, "instance", None)
+        query = f"?intervention={instance.pk}" if instance is not None and instance.pk else ""
+        context["widget"].update(
+            {
+                "draft_json": draft_json,
+                "fields": [self._row(field) for field in fields if isinstance(field, dict)],
+                "field_url": reverse("intervention-metadata-draft", kwargs={"mode": "field"}) + query,
+                "option_url": reverse("intervention-metadata-draft", kwargs={"mode": "option_label"}) + query,
+                "max_fields": MAX_FIELDS_PER_INTERVENTION,
+            }
+        )
+        return context
+
+    @staticmethod
+    def _row(field):
+        try:
+            type_label = MetadataFieldType(field.get("field_type")).label
+        except ValueError:
+            type_label = ""
+        return {
+            "draft_id": field.get("draft_id", ""),
+            "name": field.get("name", ""),
+            "type_label": type_label,
+        }
 
 
 class TemplateDownloadWidget(forms.Widget):

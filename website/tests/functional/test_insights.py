@@ -1,12 +1,17 @@
+import os
+import re
 from datetime import date
 
 import pytest
-from django.test import TestCase
+from django.db import connection
 from django.template.loader import render_to_string
+from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from website.models import AnalysisCostType
+from website.models import AnalysisCostType, InterventionInstance
+from website.models.intervention_metadata import MetadataFieldType, MetadataNumberType
 from website.tests.factories import (
     AnalysisFactory,
     CostLineItemConfigFactory,
@@ -16,12 +21,26 @@ from website.tests.factories import (
     CountryFactory,
     InsightComparisonDataFactory,
     InterventionFactory,
+    InterventionMetadataFieldFactory,
+    InterventionMetadataOptionFactory,
     SubcomponentCostAllocationFactory,
     SubcomponentCostAnalysisFactory,
+    UserFactory,
 )
 from website.users.models import User
-from website.views.analysis.steps.insights import Insights
+from website.views.analysis.steps.insights import Insights, InsightsPrint
 from website.views.intervention import InterventionInsights
+
+# The complete-workflow fixtures come in several variants; these tests need one, plus the one
+# that repeats an intervention for the prefetch check.
+ONE_WORKFLOW_VARIANT = pytest.mark.parametrize(
+    "analysis_workflow_with_loaddata_complete", ["analysis_workflow_with_analysis"], indirect=True
+)
+WITH_A_REPEATED_INTERVENTION = pytest.mark.parametrize(
+    "analysis_workflow_with_loaddata_complete",
+    ["analysis_workflow_with_analysis", "analysis_workflow_with_analysis_multiintervention_duplicates"],
+    indirect=True,
+)
 
 
 class InsightsTestCase(TestCase):
@@ -395,3 +414,122 @@ class InterventionInsightsTestCase(TestCase):
             },
         ]
         assert insights_chart_data == expected_data
+
+
+def _metadata_pairs(html):
+    """(label, value) pairs of every metadata section in the rendered page, in page order."""
+    sections = re.findall(r'<div class="insights__metadata">(.*?)</div>', html, re.S)
+    return [
+        re.findall(
+            r'<dd class="insights__data-label">(.*?)</dd>\s*<dl class="insights__data-value">(.*?)</dl>',
+            section,
+            re.S,
+        )
+        for section in sections
+    ]
+
+
+@pytest.fixture
+def complete_analysis_with_metadata(analysis_workflow_main_flow_complete):
+    """
+    A complete analysis whose instance has a text, a zero, a retired single choice, a partly
+    retired multiple choice, a blank, and an orphan key stored.
+    """
+    analysis = analysis_workflow_main_flow_complete.analysis
+    instance = analysis.interventioninstance_set.first()
+    intervention = instance.intervention
+    text = InterventionMetadataFieldFactory(intervention=intervention, name="Partner", order=1)
+    number = InterventionMetadataFieldFactory(
+        intervention=intervention,
+        name="Volunteers",
+        field_type=MetadataFieldType.NUMBER,
+        number_type=MetadataNumberType.INTEGER,
+        order=2,
+    )
+    single = InterventionMetadataFieldFactory(
+        intervention=intervention, name="Age", field_type=MetadataFieldType.SINGLE_CHOICE, order=3
+    )
+    InterventionMetadataOptionFactory(field=single, label="Under 18", order=0)
+    gone = InterventionMetadataOptionFactory(field=single, label="Gone", order=1)
+    multi = InterventionMetadataFieldFactory(
+        intervention=intervention, name="Approach", field_type=MetadataFieldType.MULTIPLE_CHOICE, order=4
+    )
+    options = {
+        label: InterventionMetadataOptionFactory(field=multi, label=label, order=i)
+        for i, label in enumerate("XYZ")
+    }
+    blank = InterventionMetadataFieldFactory(intervention=intervention, name="Notes", order=5)
+    InterventionInstance.objects.filter(pk=instance.pk).update(
+        metadata={
+            text.storage_key: "<b>Save</b> the Children",
+            number.storage_key: "0",
+            single.storage_key: gone.storage_key,
+            multi.storage_key: [options["Z"].storage_key, "stale-option-key", options["X"].storage_key],
+            blank.storage_key: "",
+            "stale-field-key": "orphan",
+        }
+    )
+    gone.delete()
+    analysis.calculate_output_costs()
+    analysis.save()
+    return analysis
+
+
+EXPECTED_METADATA = [
+    ("Partner", "&lt;b&gt;Save&lt;/b&gt; the Children"),
+    ("Volunteers", "0"),
+    ("Approach", "X, Z"),
+]
+
+
+@pytest.mark.django_db
+@WITH_A_REPEATED_INTERVENTION
+def test_insights_page_shows_intervention_metadata(client_with_admin, complete_analysis_with_metadata):
+    """Live values only, in configured order, escaped; zero shown; blanks, retired and orphan keys omitted."""
+    with CaptureQueriesContext(connection) as context:
+        response = client_with_admin.get(
+            reverse("analysis-insights", kwargs={"pk": complete_analysis_with_metadata.pk})
+        )
+
+    assert response.status_code == 200
+    assert _metadata_pairs(response.content.decode()) == [EXPECTED_METADATA]
+    assert sum("website_interventionmetadatafield" in query["sql"] for query in context.captured_queries) == 1
+    assert (
+        sum("website_interventionmetadataoption" in query["sql"] for query in context.captured_queries) == 1
+    )
+
+
+@pytest.mark.django_db
+@ONE_WORKFLOW_VARIANT
+def test_insights_page_omits_the_metadata_section_without_values(
+    client_with_admin, analysis_workflow_main_flow_complete
+):
+    analysis = analysis_workflow_main_flow_complete.analysis
+    instance = analysis.interventioninstance_set.first()
+    InterventionMetadataFieldFactory(intervention=instance.intervention, name="Partner")
+    analysis.calculate_output_costs()
+    analysis.save()
+
+    response = client_with_admin.get(reverse("analysis-insights", kwargs={"pk": analysis.pk}))
+
+    assert response.status_code == 200
+    assert "insights__metadata" not in response.content.decode()
+
+
+@pytest.mark.django_db
+@ONE_WORKFLOW_VARIANT
+def test_insights_print_html_shows_the_same_metadata(rf, complete_analysis_with_metadata):
+    """The PDF is printed from this HTML; it uses the same partial and lookup as the page."""
+    request = rf.get(reverse("analysis-insights-print", kwargs={"pk": complete_analysis_with_metadata.pk}))
+    request.user = UserFactory(role=User.ADMIN)
+    view = InsightsPrint()
+    view.setup(request, pk=complete_analysis_with_metadata.pk)
+
+    html_file = view._create_html_file(request)
+    try:
+        with open(html_file) as f:
+            html = f.read()
+    finally:
+        os.remove(html_file)
+
+    assert _metadata_pairs(html) == [EXPECTED_METADATA]

@@ -1,4 +1,5 @@
 import io
+import re
 import random
 from datetime import date
 from decimal import Decimal
@@ -33,6 +34,10 @@ from website.utils.documents import (
     _write_full_cost_model_table,
     _write_metadata_table,
 )
+from website.currency import currency_symbol
+from website.intervention_metadata import resolve_metadata
+from website.models.intervention_metadata import MetadataFieldType, MetadataNumberType
+from website.tests.factories import InterventionMetadataFieldFactory, InterventionMetadataOptionFactory
 
 
 @pytest.mark.django_db
@@ -827,3 +832,256 @@ class TestSubcomponentSectionPositions:
                 numerator += item_total * split_cell
             assert denominator > 0
             assert abs(numerator / denominator - Decimal(percentage) / 100) < Decimal("0.001")
+
+
+def _cash_analysis():
+    """One intervention with the cash parameter (row 9) on a USD analysis."""
+    intervention = InterventionFactory(output_metrics=["ValueOfCashDistributed"])
+    analysis = AnalysisFactory(currency_code="USD", output_count_source="My Output Count Source")
+    instance = analysis.add_intervention(intervention, parameters={"value_of_cash_distributed": 10000})
+    return intervention, analysis, instance
+
+
+def _write_table(analysis, instance):
+    worksheet = Workbook().active
+    parameter_metadata = {}
+    next_row = _write_metadata_table(
+        ws=worksheet,
+        an_analysis=analysis,
+        intervention_instance=instance,
+        parameter_metadata=parameter_metadata,
+        analysis_url="https://example.com/analysis/1/insights/",
+        metadata_rows=resolve_metadata(instance, analysis=analysis),
+    )
+    return worksheet, parameter_metadata, next_row
+
+
+def _number_field(intervention, number_type, name="Amount"):
+    return InterventionMetadataFieldFactory(
+        intervention=intervention, name=name, field_type=MetadataFieldType.NUMBER, number_type=number_type
+    )
+
+
+@pytest.mark.django_db
+class TestMetadataRowsInTheSpreadsheet:
+    def test_rows_follow_the_parameters_and_shift_the_trailing_rows(self):
+        intervention, analysis, instance = _cash_analysis()
+        text = InterventionMetadataFieldFactory(intervention=intervention, name="Partner", order=1)
+        number = _number_field(intervention, MetadataNumberType.INTEGER, name="Volunteers")
+        number.order = 2
+        number.save()
+        single = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Age", field_type=MetadataFieldType.SINGLE_CHOICE, order=3
+        )
+        option = InterventionMetadataOptionFactory(field=single, label="Under 18")
+        blank = InterventionMetadataFieldFactory(intervention=intervention, name="Notes", order=4)
+        instance.metadata = {
+            text.storage_key: "Save the Children",
+            number.storage_key: "0",
+            single.storage_key: option.storage_key,
+            blank.storage_key: "",
+        }
+        instance.save()
+
+        worksheet, parameter_metadata, next_row = _write_table(analysis, instance)
+
+        # The parameter row and its recorded position are untouched.
+        assert worksheet["A9"].value == "Value of Cash Distributed"
+        assert worksheet["B9"].value == 10000
+        assert parameter_metadata == {"value_of_cash_distributed": 9}
+        # Then the metadata, in configured order, blanks omitted and zero kept.
+        assert [(worksheet[f"A{row}"].value, worksheet[f"B{row}"].value) for row in (10, 11, 12)] == [
+            ("Partner", "Save the Children"),
+            ("Volunteers", 0),
+            ("Age", "Under 18"),
+        ]
+        assert worksheet["A12"].font.bold
+        assert worksheet["A12"].fill.start_color.rgb == worksheet["A9"].fill.start_color.rgb
+        # The trailing rows moved down by three, and so did the next free row.
+        assert worksheet["A13"].value == "Output count data source"
+        assert worksheet["B13"].value == "My Output Count Source"
+        assert worksheet["A16"].value == "Analysis URL"
+        assert next_row == 17
+
+    def test_without_metadata_nothing_changes(self):
+        intervention, analysis, instance = _cash_analysis()
+        InterventionMetadataFieldFactory(intervention=intervention, name="Partner")
+
+        worksheet, parameter_metadata, next_row = _write_table(analysis, instance)
+
+        assert worksheet["A10"].value == "Output count data source"
+        assert next_row == 14
+
+    @pytest.mark.parametrize(
+        ("number_type", "raw", "value", "number_format"),
+        [
+            (MetadataNumberType.INTEGER, "42", 42, "#,##0"),
+            (MetadataNumberType.INTEGER, "0", 0, "#,##0"),
+            (MetadataNumberType.INTEGER, "-10000000000000000000", -1e19, "#,##0"),
+            (MetadataNumberType.DECIMAL, "-1234567890.12345", -1234567890.12345, "#,##0.00000"),
+            (MetadataNumberType.DECIMAL, "123456789012345", 123456789012345, "#,##0"),
+            (MetadataNumberType.DECIMAL, "0.25", 0.25, "#,##0.00"),
+            (MetadataNumberType.DECIMAL, "12.50", 12.5, "#,##0.00"),
+            (MetadataNumberType.PERCENTAGE, "12.5", 12.5, '#,##0.0"%"'),
+            (MetadataNumberType.PERCENTAGE, "125", 125, '#,##0"%"'),
+            (MetadataNumberType.CURRENCY, "1234.5", 1234.5, '"$"#,##0.0'),
+            (MetadataNumberType.CURRENCY, "0.001", 0.001, '"$"#,##0.000'),
+        ],
+        ids=[
+            "integer",
+            "integer-zero",
+            "integer-20-digits-one-significant",
+            "decimal-15-significant",
+            "decimal-15-digit-integer-part",
+            "decimal-fraction",
+            "decimal-trailing-zero-kept",
+            "percentage",
+            "percentage-over-100",
+            "currency",
+            "currency-below-a-cent",
+        ],
+    )
+    def test_exact_numbers_are_numeric_cells(self, number_type, raw, value, number_format):
+        intervention, analysis, instance = _cash_analysis()
+        field = _number_field(intervention, number_type)
+        instance.metadata = {field.storage_key: raw}
+        instance.save()
+
+        worksheet, _, _ = _write_table(analysis, instance)
+
+        assert worksheet["A10"].value == "Amount"
+        assert worksheet["B10"].value == value
+        assert worksheet["B10"].data_type == "n"
+        assert worksheet["B10"].number_format == number_format
+
+    @pytest.mark.parametrize(
+        ("number_type", "raw", "text"),
+        [
+            (MetadataNumberType.DECIMAL, "1234567890123456", "1,234,567,890,123,456"),
+            (MetadataNumberType.DECIMAL, "-1234567890.123456", "-1,234,567,890.123456"),
+            (MetadataNumberType.INTEGER, "12345678901234567890", "12,345,678,901,234,567,890"),
+            (MetadataNumberType.PERCENTAGE, "99999999999999999999", "99,999,999,999,999,999,999%"),
+            (MetadataNumberType.CURRENCY, "1234567890123456.7890", "$1,234,567,890,123,456.7890"),
+        ],
+        ids=[
+            "16-significant",
+            "16-significant-decimal",
+            "20-digits",
+            "20-digit-percentage",
+            "currency-20-digits",
+        ],
+    )
+    def test_numbers_beyond_the_spreadsheet_precision_are_exact_text(self, number_type, raw, text):
+        intervention, analysis, instance = _cash_analysis()
+        field = _number_field(intervention, number_type)
+        instance.metadata = {field.storage_key: raw}
+        instance.save()
+
+        worksheet, _, _ = _write_table(analysis, instance)
+
+        assert worksheet["B10"].value == text
+        assert worksheet["B10"].data_type == "s"
+        assert worksheet["B10"].number_format == "@"
+
+    def test_text_values_and_labels_are_literal_strings(self):
+        intervention, analysis, instance = _cash_analysis()
+        formula_like = InterventionMetadataFieldFactory(intervention=intervention, name="=Partner", order=1)
+        # A free-text field named like the special currency parameter is still text.
+        lookalike = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Value of Cash Distributed", order=2
+        )
+        multi = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Approach", field_type=MetadataFieldType.MULTIPLE_CHOICE, order=3
+        )
+        options = [
+            InterventionMetadataOptionFactory(field=multi, label=label, order=i)
+            for i, label in enumerate("XY")
+        ]
+        instance.metadata = {
+            formula_like.storage_key: "=1+1",
+            lookalike.storage_key: "10000",
+            multi.storage_key: [option.storage_key for option in reversed(options)],
+        }
+        instance.save()
+
+        worksheet, _, _ = _write_table(analysis, instance)
+
+        assert (worksheet["A10"].value, worksheet["A10"].data_type) == ("=Partner", "s")
+        assert (worksheet["B10"].value, worksheet["B10"].data_type) == ("=1+1", "s")
+        assert worksheet["B10"].number_format == "@"
+        assert (worksheet["B11"].value, worksheet["B11"].data_type) == ("10000", "s")
+        assert worksheet["B11"].number_format == "@"
+        # The real parameter above keeps its numeric currency cell.
+        assert worksheet["B9"].value == 10000
+        assert worksheet["B9"].number_format == '"$"#,##0.00'
+        assert worksheet["B12"].value == "X, Y"
+
+    def test_full_cost_model_spreadsheet_formulas_follow_the_inserted_rows(self, spreadsheet_analysis, rf):
+        """
+        Two metadata rows push everything below them down two rows, and every formula moves with
+        the cells it points at; the parameter rows above stay where the formulas expect them.
+        """
+        instance = spreadsheet_analysis.interventioninstance_set.first()
+        text = InterventionMetadataFieldFactory(intervention=instance.intervention, name="=Partner", order=1)
+        number = _number_field(instance.intervention, MetadataNumberType.CURRENCY, name="Budget")
+        number.order = 2
+        number.save()
+        rf.user = UserFactory()
+
+        plain = _download(rf, spreadsheet_analysis)
+        instance.metadata = {text.storage_key: "=1+1", number.storage_key: "1234567890123456.78"}
+        instance.save()
+        with_metadata = _download(rf, spreadsheet_analysis)
+
+        assert [with_metadata[f"A{row}"].value for row in (9, 10, 11)] == [
+            "Number of Teachers",
+            "Number of Days of Training",
+            "Number of Years of Support",
+        ]
+        assert [with_metadata[f"B{row}"].value for row in (9, 10, 11)] == [40, 80, 10]
+        # Text survives the file round trip as text, never as a formula.
+        assert (with_metadata["A12"].value, with_metadata["A12"].data_type) == ("=Partner", "s")
+        assert (with_metadata["B12"].value, with_metadata["B12"].data_type) == ("=1+1", "s")
+        symbol = currency_symbol(spreadsheet_analysis)
+        assert (with_metadata["B13"].value, with_metadata["B13"].data_type) == (
+            f"{symbol}1,234,567,890,123,456.78",
+            "s",
+        )
+        assert with_metadata["B16"].value == "The True Author"
+        assert (
+            with_metadata["B17"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
+        )
+        assert (
+            with_metadata["B23"].value
+            == "=FIXED((IFERROR(C36 / (B9 * B10), 0)) + (IFERROR(SUM(E47) / (B9 * B10), 0)), 2)"
+        )
+        # Rows 1-11 are identical; from row 12 on, the plain layout reappears two rows lower with
+        # every formula reference at or below row 12 shifted by two.
+        assert with_metadata.max_row == plain.max_row + 2
+        for row in range(1, plain.max_row + 1):
+            for column in range(1, plain.max_column + 1):
+                source = plain.cell(row=row, column=column)
+                target = with_metadata.cell(row=row + 2 if row >= 12 else row, column=column)
+                assert target.value == _shifted(source.value, shift=2, from_row=12), (row, column)
+                assert target.number_format == source.number_format, (row, column)
+
+
+def _download(rf, analysis):
+    response = full_cost_model_spreadsheet(rf, analysis.pk)
+    assert response.status_code == 200
+    return load_workbook(filename=io.BytesIO(b"".join(response.streaming_content))).active
+
+
+def _shifted(value, shift, from_row):
+    """A formula with every reference to a row at or below `from_row` moved down by `shift`."""
+    if not isinstance(value, str) or not value.startswith("="):
+        return value
+    return re.sub(
+        r"([A-Z]{1,2})([0-9]+)",
+        lambda match: (
+            f"{match.group(1)}{int(match.group(2)) + shift}"
+            if int(match.group(2)) >= from_row
+            else match.group(0)
+        ),
+        value,
+    )

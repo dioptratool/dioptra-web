@@ -1,0 +1,5 @@
+<div class="currency-wrapper metadata-number metadata-number--{{ widget.number_type }}">
+  {% if widget.number_type == "currency" and widget.currency_symbol %}<span class="input-group-text input-group-text__before">{{ widget.currency_symbol }}</span>{% endif %}
+  <input type="text" name="{{ widget.name }}" class="form-control {% if widget.number_type == "currency" and widget.currency_symbol %}border-radius-right{% elif widget.number_type == "percentage" %}border-radius-left{% endif %} {{ widget.attrs.class }}"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}{% for name, value in widget.attrs.items %}{% if name != "class" %} {{ name }}{% if value is not True %}="{{ value }}"{% endif %}{% endif %}{% endfor %}>
+  {% if widget.number_type == "percentage" %}<span class="input-group-text input-group-text__after">%</span>{% endif %}
+</div>

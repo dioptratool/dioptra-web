@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import DetailView
 
 from website.analysis_lifecycle import permitted_status_targets
+from website.intervention_metadata import metadata_lookup
 from website.currency import currency_symbol, get_currency_locale
 from website.models import (
     AnalysisCostType,
@@ -154,6 +155,7 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
                 self._get_subcomponent_analysis_breakdown_data(each_intervention_instance)
             )
         context["parameters_lookup"] = self._get_formatted_parameter_values()
+        context["metadata_lookup"] = metadata_lookup(self.analysis)
 
         if self.analysis.currency_code and self.analysis.currency_code != settings.ISO_CURRENCY_CODE:
             context["data_excluded_footnote"] = (

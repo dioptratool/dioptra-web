@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils.translation import gettext_lazy as _
 
-from website.models.field_types import InterventionParametersType
+from website.models.field_types import InterventionMetadataType, InterventionParametersType
 from website.models.fields import TypedJsonField
 
 
@@ -32,6 +32,13 @@ class InterventionInstance(models.Model):
     parameters = TypedJsonField(
         typed_json=InterventionParametersType,
         default=dict,
+    )
+    # Values for the intervention's metadata definitions, keyed by field key. Independent of the
+    # metric parameters above; blank fields are simply absent. See website.intervention_metadata.
+    metadata = TypedJsonField(
+        typed_json=InterventionMetadataType,
+        default=dict,
+        blank=True,
     )
 
     objects = InterventionInstanceManager()

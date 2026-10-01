@@ -7651,6 +7651,23 @@ input[type=text].analysis-table__allocated-input {
   margin-top: 0;
 }
 
+.insights__metadata {
+  margin: 1.2rem 0.5rem 0;
+  max-width: 75.5rem;
+}
+.insights__metadata .insights__data-list {
+  grid-template-columns: max-content auto;
+  column-gap: 2rem;
+}
+.insights__metadata .insights__data-label {
+  min-width: 0;
+  max-width: 24rem;
+  overflow-wrap: anywhere;
+}
+.insights__metadata .insights__data-value {
+  overflow-wrap: anywhere;
+}
+
 .insights__created {
   color: rgb(118, 118, 118);
   font-size: 14px;

@@ -11,6 +11,7 @@ from openpyxl import Workbook
 from openpyxl.workbook.child import INVALID_TITLE_REGEX
 
 from website.app_log import loggers as app_loggers
+from website.intervention_metadata import resolve_metadata
 from website.models import Analysis, AnalysisCostType
 from website.utils.documents import (
     _fill_in_cost_breakdown_functions,
@@ -42,6 +43,8 @@ def full_cost_model_spreadsheet(request, pk):
             "cost_type_categories__cost_type",
             "interventioninstance_set",
             "interventioninstance_set__intervention",
+            "interventioninstance_set__intervention__metadata_fields",
+            "interventioninstance_set__intervention__metadata_fields__options",
             "interventioninstance_set__subcomponent_cost_analysis",
             "interventioninstance_set__subcomponent_cost_analysis__allocations",
             "unfiltered_cost_line_items",
@@ -87,6 +90,7 @@ def full_cost_model_spreadsheet(request, pk):
             parameter_metadata=parameter_metadata,
             intervention_instance=each_intervention_instance,
             analysis_url=analysis_url,
+            metadata_rows=resolve_metadata(each_intervention_instance, analysis=analysis),
         )
 
         row = last_metadata_row

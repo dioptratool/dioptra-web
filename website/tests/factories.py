@@ -25,6 +25,9 @@ from website.models import (
     Intervention,
     InterventionGroup,
     InterventionInstance,
+    InterventionMetadataField,
+    InterventionMetadataOption,
+    MetadataFieldType,
     Region,
     SubcomponentCostAllocation,
     SubcomponentCostAnalysis,
@@ -132,6 +135,25 @@ class InterventionInstanceFactory(DjangoModelFactory):
 
     class Meta:
         model = InterventionInstance
+
+
+class InterventionMetadataFieldFactory(DjangoModelFactory):
+    intervention = factory.SubFactory(InterventionFactory)
+    name = factory.Sequence(lambda n: f"Metadata Field {n}")
+    field_type = MetadataFieldType.FREE_TEXT
+    order = factory.Sequence(lambda n: n)
+
+    class Meta:
+        model = InterventionMetadataField
+
+
+class InterventionMetadataOptionFactory(DjangoModelFactory):
+    field = factory.SubFactory(InterventionMetadataFieldFactory, field_type=MetadataFieldType.SINGLE_CHOICE)
+    label = factory.Sequence(lambda n: f"Option {n}")
+    order = factory.Sequence(lambda n: n)
+
+    class Meta:
+        model = InterventionMetadataOption
 
 
 class CostTypeFactory(DjangoModelFactory):

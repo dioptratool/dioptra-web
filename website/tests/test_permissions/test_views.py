@@ -130,6 +130,8 @@ class TestPageAccess:
             ("analysis-change-status", {"pk": analysis_pk, "status": "complete"}),
             ("analysis-archive", {"pk": analysis_pk}),
             ("analysis-unarchive", {"pk": analysis_pk}),
+            ("intervention-metadata-draft", {"mode": "field"}),
+            ("intervention-metadata-draft", {"mode": "option_label"}),
         ]
 
     def test_anonymous_user_access_is_blocked_simple_pages(self, client):

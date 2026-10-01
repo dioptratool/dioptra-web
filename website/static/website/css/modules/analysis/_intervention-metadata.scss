@@ -1,0 +1,72 @@
+// Intervention metadata: the definition editor on the intervention panel and its field panel.
+// Panels have a 40px root font size, so sizes are in px/em like the other panel styles.
+
+.metadata-editor__list,
+.metadata-options__list {
+  list-style: none;
+  margin: 0 0 15px;
+  padding: 0;
+}
+
+.metadata-editor__row,
+.metadata-options__row {
+  align-items: center;
+  background-color: $color-moonstone-2;
+  border-radius: 2px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding: 9px 12px;
+}
+
+.metadata-editor__handle,
+.metadata-options__handle {
+  color: $color-smoke;
+  cursor: grab;
+}
+
+.metadata-editor__type {
+  color: $color-boulder;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.metadata-editor__name,
+.metadata-options__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.metadata-editor__actions a,
+.metadata-options__actions a {
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.metadata-options__add {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+
+  .metadata-options__input {
+    flex: 1 1 auto;
+  }
+}
+
+
+// The metadata section of the intervention instance panel.
+.intervention-metadata-section {
+  border-top: 1px solid $color-gray;
+  margin-top: 24px;
+  padding-top: 20px;
+}
+
+.intervention-metadata-section__title {
+  font-size: 16px;
+  margin: 0 0 16px;
+}

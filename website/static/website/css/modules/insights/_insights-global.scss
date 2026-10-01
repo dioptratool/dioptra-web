@@ -122,6 +122,27 @@
   margin-top: 0;
 }
 
+// An intervention's metadata, below its parameters.
+.insights__metadata {
+  margin: 1.2rem 0.5rem 0;
+  max-width: 75.5rem;
+
+  .insights__data-list {
+    grid-template-columns: max-content auto;
+    column-gap: 2rem;
+  }
+
+  .insights__data-label {
+    min-width: 0;
+    max-width: 24rem;
+    overflow-wrap: anywhere;
+  }
+
+  .insights__data-value {
+    overflow-wrap: anywhere;
+  }
+}
+
 .insights__created {
   color: $color-boulder;
   @include font-size(14, 1.142857143);

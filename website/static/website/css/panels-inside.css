@@ -6962,3 +6962,70 @@ html.is-in-panel .allocation-total-subtitle {
   line-height: 1.4;
   margin: 0;
 }
+
+.metadata-editor__list,
+.metadata-options__list {
+  list-style: none;
+  margin: 0 0 15px;
+  padding: 0;
+}
+
+.metadata-editor__row,
+.metadata-options__row {
+  align-items: center;
+  background-color: rgb(241, 244, 248);
+  border-radius: 2px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding: 9px 12px;
+}
+
+.metadata-editor__handle,
+.metadata-options__handle {
+  color: rgb(155, 155, 155);
+  cursor: grab;
+}
+
+.metadata-editor__type {
+  color: rgb(118, 118, 118);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.metadata-editor__name,
+.metadata-options__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.metadata-editor__actions a,
+.metadata-options__actions a {
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.metadata-options__add {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.metadata-options__add .metadata-options__input {
+  flex: 1 1 auto;
+}
+
+.intervention-metadata-section {
+  border-top: 1px solid rgb(204, 204, 204);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+
+.intervention-metadata-section__title {
+  font-size: 16px;
+  margin: 0 0 16px;
+}

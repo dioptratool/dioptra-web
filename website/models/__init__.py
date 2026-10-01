@@ -21,6 +21,12 @@ from .field_label import FieldLabelOverrides
 from .insight_comparison_data import InsightComparisonData
 from .intervention import Intervention, InterventionGroup
 from .intervention_instance import InterventionInstance
+from .intervention_metadata import (
+    InterventionMetadataField,
+    InterventionMetadataOption,
+    MetadataFieldType,
+    MetadataNumberType,
+)
 from .region import Country, Region
 from .settings import Settings
 from .subcomponent import SubcomponentCostAllocation, SubcomponentCostAnalysis

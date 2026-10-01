@@ -147,6 +147,7 @@ class InterventionInstanceChangeView(ChangeView):
         # data to lose.
         context["has_dependent_data"] = (
             hasattr(self.object, "subcomponent_cost_analysis")
+            or bool(self.object.metadata)
             or website_models.CostLineItemInterventionAllocation.objects.filter(
                 intervention_instance=self.object
             ).exists()

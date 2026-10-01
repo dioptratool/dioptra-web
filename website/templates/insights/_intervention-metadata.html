@@ -1,0 +1,11 @@
+{# The intervention's nonblank metadata values, current labels in configured order; nothing when there are none. #}
+{% if metadata_rows %}
+    <div class="insights__metadata">
+        <dl class="insights__data-list insights__metadata-list">
+            {% for row in metadata_rows %}
+                <dd class="insights__data-label">{{ row.name }}</dd>
+                <dl class="insights__data-value">{{ row.display }}</dl>
+            {% endfor %}
+        </dl>
+    </div>
+{% endif %}

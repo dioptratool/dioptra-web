@@ -46,6 +46,14 @@ def chunks(iterable, chunk_size):
 
 
 @register.filter
+def is_metadata_field(field_name):
+    """Whether a form field name belongs to an intervention metadata control."""
+    from website.forms.intervention_metadata import is_metadata_field_name
+
+    return is_metadata_field_name(str(field_name))
+
+
+@register.filter
 def exclude_field(form, exclude_field_name=None):
     """
     Provides an iterator over form fields that excludes the given field name.

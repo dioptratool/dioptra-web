@@ -8,6 +8,15 @@ from website.models.analysis import AnalysisCostTypeCategoryGrantIntervention
 from website.models.subcomponent import SubcomponentCostAllocation
 from website.tests.factories import AnalysisFactory, UserFactory
 from website.utils.duplicator import clone_analysis
+from website.intervention_metadata import resolve_metadata
+from website.models import InterventionInstance
+from website.models.intervention_metadata import MetadataFieldType, MetadataNumberType
+from website.tests.factories import (
+    InterventionFactory,
+    InterventionInstanceFactory,
+    InterventionMetadataFieldFactory,
+    InterventionMetadataOptionFactory,
+)
 
 
 class TestClonedAnalysis:
@@ -171,3 +180,78 @@ class TestClonedAnalysis:
         assert source.is_archived is True
         assert source.archived_by == actor
         assert source.archived_at == long_ago
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "new_dates",
+        [
+            {},
+            {"start_date": datetime.date(2022, 1, 1), "end_date": datetime.date(2022, 12, 31)},
+        ],
+        ids=["same_dates", "new_dates"],
+    )
+    def test_cloning_copies_intervention_metadata_exactly(self, new_dates):
+        """Each copied instance carries its own metadata JSON unchanged, under the same field and option keys."""
+        intervention = InterventionFactory()
+        text = InterventionMetadataFieldFactory(intervention=intervention, name="Partner", order=1)
+        number = InterventionMetadataFieldFactory(
+            intervention=intervention,
+            name="Budget",
+            field_type=MetadataFieldType.NUMBER,
+            number_type=MetadataNumberType.DECIMAL,
+            order=2,
+        )
+        multi = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Approach", field_type=MetadataFieldType.MULTIPLE_CHOICE, order=3
+        )
+        options = [
+            InterventionMetadataOptionFactory(field=multi, label=label, order=i)
+            for i, label in enumerate("XY")
+        ]
+        tricky_text = (
+            "Quote \" backslash \\ tab \t cr \r lf \r\n newline \n apostrophe ' Ñandú 日本語 🙂 =SUM(A1)"
+        )
+        metadata = {
+            text.storage_key: tricky_text,
+            number.storage_key: "-1234567890.123456789",
+            multi.storage_key: [option.storage_key for option in options],
+            "0d5a2c1e-orphan": "invisible but copied as is",
+        }
+        analysis = AnalysisFactory(owner=UserFactory())
+        first = InterventionInstanceFactory(
+            analysis=analysis, intervention=intervention, label="First", metadata=metadata
+        )
+        # The same intervention again, with its own values.
+        second = InterventionInstanceFactory(
+            analysis=analysis, intervention=intervention, label="Second", metadata={text.storage_key: "Other"}
+        )
+
+        cloned_analysis = clone_analysis(analysis.pk, owner=UserFactory(), **new_dates)
+
+        copies = {
+            copy.cloned_from_id: copy
+            for copy in InterventionInstance.objects.filter(analysis=cloned_analysis)
+        }
+        assert set(copies) == {first.pk, second.pk}
+        first_copy, second_copy = copies[first.pk], copies[second.pk]
+        assert first_copy.metadata == metadata
+        assert first_copy.metadata[text.storage_key] == tricky_text
+        assert first_copy.intervention_id == intervention.pk
+        assert first_copy.label == "First"
+        assert second_copy.metadata == {text.storage_key: "Other"}
+        assert second_copy.label == "Second"
+        # The copy resolves against the same definitions as the source: same labels, same values.
+        assert (
+            [(row.name, row.display) for row in resolve_metadata(first_copy)]
+            == [(row.name, row.display) for row in resolve_metadata(first)]
+            == [("Partner", tricky_text), ("Budget", "-1,234,567,890.123456789"), ("Approach", "X, Y")]
+        )
+
+        # Independent objects: editing the copy leaves the source alone, and vice versa.
+        first_copy.metadata = {text.storage_key: "Changed on the copy"}
+        first_copy.save()
+        assert InterventionInstance.objects.get(pk=first.pk).metadata == metadata
+        InterventionInstance.objects.filter(pk=first.pk).update(metadata={})
+        assert InterventionInstance.objects.get(pk=first_copy.pk).metadata == {
+            text.storage_key: "Changed on the copy"
+        }

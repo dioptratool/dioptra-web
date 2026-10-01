@@ -75,6 +75,7 @@
                             <p class="insights__intervention-metric"><b>{{ label }}:</b> {{ value }}</p>
                         {% endfor %}
                     {% endwith %}
+                    {% include 'insights/_intervention-metadata.html' with metadata_rows=metadata_lookup|dict_get:intervention_instance.id %}
                     {% with output_metrics=output_metrics_by_intervention|dict_get:intervention_instance.id %}
                     {% with subcomponent_analysis_breakdown=subcomponent_analysis_breakdown_by_intervention|dict_get:intervention_instance.id %}
                         <div class="insights__group">
