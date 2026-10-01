@@ -533,18 +533,6 @@ $analysis-table-dropdown-cell-width: 19rem;
   margin-inline: auto;
 }
 
-table .actions-menu__trigger {
-  background-color: transparent;
-
-  &:hover,
-  &:focus {
-    background-color: #d7e3f3;
-  }
-}
-table .actions-menu__trigger--active {
-  background-color: #1b77d4;
-}
-
 .analysis-table .actions-menu__trigger {
   min-width: 3.6rem;
 }

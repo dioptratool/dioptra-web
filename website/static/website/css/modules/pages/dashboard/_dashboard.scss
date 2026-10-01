@@ -148,6 +148,18 @@
 .dashboard__table-actions {
   text-align: center;
   white-space: nowrap;
+
+  .actions-menu__trigger {
+    background-color: transparent;
+  
+    &:hover,
+    &:focus {
+      background-color: #d7e3f3;
+    }
+  }
+  .actions-menu__trigger--active {
+    background-color: #1b77d4;
+  }
 }
 
 .dashboard__date-cell {

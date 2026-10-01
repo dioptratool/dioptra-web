@@ -3145,6 +3145,9 @@ details summary {
 .actions-menu__trigger:hover, .actions-menu__trigger:focus {
   background-color: #d7e3f3;
 }
+.actions-menu__trigger[hidden] {
+  display: none !important;
+}
 
 .actions-menu__trigger--active {
   background-color: #1b77d4;
@@ -4902,6 +4905,15 @@ th .help__button svg *, .analysis-table__category--active .analysis-table__categ
   text-align: center;
   white-space: nowrap;
 }
+.dashboard__table-actions .actions-menu__trigger {
+  background-color: transparent;
+}
+.dashboard__table-actions .actions-menu__trigger:hover, .dashboard__table-actions .actions-menu__trigger:focus {
+  background-color: #d7e3f3;
+}
+.dashboard__table-actions .actions-menu__trigger--active {
+  background-color: #1b77d4;
+}
 
 .dashboard__date-cell {
   min-width: 13.5rem;
@@ -6250,17 +6262,6 @@ a.analysis-navigation__prev-next:hover {
   align-items: center;
   justify-content: center;
   margin-inline: auto;
-}
-
-table .actions-menu__trigger {
-  background-color: transparent;
-}
-table .actions-menu__trigger:hover, table .actions-menu__trigger:focus {
-  background-color: #d7e3f3;
-}
-
-table .actions-menu__trigger--active {
-  background-color: #1b77d4;
 }
 
 .analysis-table .actions-menu__trigger {

@@ -45,12 +45,19 @@ $(function() {
                 }).then(function (r) {
                     $saveButton.attr('disabled', false)
                     closeEditRow($editRow)
-                    var button = $editRow.closest('tbody').find('.analysis-table__edit-cell button').not('.help__button, .help__close');
-                    if (noteContent) {
-                        button.html('View note').addClass('analysis-table__category-edit--note-active');
-                    } else {
-                        button.html('Add note').removeClass('analysis-table__category-edit--note-active')
-                    }
+                    var hasNote = !!noteContent
+                    $editRow.closest('tbody').find('.analysis-table__category-edit--note').each(function () {
+                        var $control = $(this)
+                        var isIcon = $control.children('svg').length > 0
+                        if ($control.hasClass('actions-menu__trigger')) {
+                            $control.toggleClass('actions-menu__trigger--active', hasNote)
+                        }
+                        if (isIcon) {
+                            $control.prop('hidden', !hasNote)
+                        } else {
+                            $control.text(hasNote ? 'View note' : 'Add note')
+                        }
+                    })
                     showSaveNext()
 
                 }).fail(function (e) {

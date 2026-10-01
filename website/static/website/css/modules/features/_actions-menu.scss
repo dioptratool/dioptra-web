@@ -96,6 +96,10 @@
   &:focus {
     background-color: #d7e3f3;
   }
+
+  &[hidden] {
+    display: none !important;
+  }
 }
 
 .actions-menu__trigger--active {

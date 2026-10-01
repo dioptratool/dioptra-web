@@ -1,12 +1,11 @@
 {% load i18n %}
 {# Row action menu on Allocate: Add/View note, and Edit Cost Item unless the row is a special-country lump sum. #}
 <div class="analysis-table__actions-group">
-    {% if cost_line_item.note %}
-        <button type="button" aria-label="{% translate 'View Note' %}"
-            class="actions-menu__trigger actions-menu__trigger--active analysis-table__category-edit analysis-table__category-edit--note">
-            {% include 'icons/note-small.svg' %}
-        </button>
-    {% endif %}
+    <button type="button" aria-label="{% translate 'View Note' %}"
+        class="actions-menu__trigger{% if cost_line_item.note %} actions-menu__trigger--active{% endif %} analysis-table__category-edit analysis-table__category-edit--note"
+        {% if not cost_line_item.note %}hidden{% endif %}>
+        {% include 'icons/note-small.svg' %}
+    </button>
     <div class="actions-menu">
         <button type="button"
                 id="cost-line-item-actions-trigger-{{ cost_line_item.id }}"
