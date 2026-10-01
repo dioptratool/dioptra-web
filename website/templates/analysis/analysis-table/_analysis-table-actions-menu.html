@@ -3,14 +3,14 @@
 <div class="analysis-table__actions-group">
     {% if cost_line_item.note %}
         <button type="button" aria-label="{% translate 'View Note' %}"
-            class="analysis-table__action analysis-table__action--active analysis-table__category-edit analysis-table__category-edit--note">
+            class="actions-menu__trigger actions-menu__trigger--active analysis-table__category-edit analysis-table__category-edit--note">
             {% include 'icons/note-small.svg' %}
         </button>
     {% endif %}
-    <div class="analysis-table__actions-menu">
+    <div class="actions-menu">
         <button type="button"
                 id="cost-line-item-actions-trigger-{{ cost_line_item.id }}"
-                class="analysis-table__action analysis-table__actions-menu__trigger"
+                class="actions-menu__trigger"
                 popovertarget="cost-line-item-actions-{{ cost_line_item.id }}"
                 aria-label="{% translate 'Cost item actions' %}">
             {% include 'icons/edit-small.svg' %}
@@ -18,21 +18,21 @@
         <div id="cost-line-item-actions-{{ cost_line_item.id }}"
             popover="auto"
             anchor="cost-line-item-actions-trigger-{{ cost_line_item.id }}"
-            class="analysis-table__actions-menu__popover">
+            class="actions-menu__popover">
             <button type="button"
-                    class="analysis-table__actions-menu__item analysis-table__category-edit analysis-table__category-edit--note">
+                    class="actions-menu__item analysis-table__category-edit analysis-table__category-edit--note">
                 {% if cost_line_item.note %}{% translate 'View note' %}{% else %}{% translate 'Add note' %}{% endif %}
             </button>
             {% if editable != 'false' and step.cost_type.is_program_cost and not lumpSumTable %}
             <a href="{% url 'analysis-allocate-cost_type-grant-suggest' pk=analysis.pk cost_type_pk=step.cost_type.pk grant=step.grant %}?config_ids={{ cost_line_item.config.pk }}"
-               class="analysis-table__actions-menu__item program-cost-suggest-item"
+               class="actions-menu__item program-cost-suggest-item"
                data-dialog-confirm="{% translate 'There are unsaved allocation changes in this table that may be affected. Continue?' %}">
                 {% translate 'Suggest Allocation' %}
             </a>
             {% endif %}
             {% if editable != 'false' and cost_item_edit_url %}
             <a href="{{ cost_item_edit_url }}{% if '?' in cost_item_edit_url %}&amp;{% else %}?{% endif %}cost_line_item_id={{ cost_line_item.pk }}"
-            class="analysis-table__actions-menu__item"
+            class="actions-menu__item"
             data-panels-trigger
             data-panels-reload-on="saved">
                 {% translate 'Edit Cost Item' %}

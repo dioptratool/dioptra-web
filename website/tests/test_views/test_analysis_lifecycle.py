@@ -466,8 +466,8 @@ class TestArchivePanels:
         analysis = AnalysisFactory()
         for url in (archive_url(analysis), unarchive_url(analysis)):
             response = client.get(url)
-            assert response.status_code == 302
-            assert response.url.startswith("/accounts/login/")
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
 
     def test_repeated_archive_changes_nothing_more(self, client):
         analysis = AnalysisFactory()
@@ -556,7 +556,10 @@ class TestInsightsHeader:
         assert "lifecycle-status-control" not in content
         assert "Edit Analysis" not in content
         assert "cannot be edited" not in content
-        assert "actions-menu" not in content
+        assert "analysis-actions-trigger" not in content
+        assert f'/analysis/{complete_analysis.pk}/copy"' not in content
+        assert archive_url(complete_analysis) not in content
+        assert ">Delete<" not in content
 
     def test_archived_analysis_shows_the_tag_and_offers_unarchive(self, complete_analysis, admin_client):
         Analysis.objects.filter(pk=complete_analysis.pk).update(is_archived=True)

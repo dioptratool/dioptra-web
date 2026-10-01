@@ -44,7 +44,11 @@ def is_multiple_checkbox(field):
 
 @register.filter
 def is_radio(field):
-    return isinstance(field.field.widget, forms.RadioSelect)
+    # Django 5 subclasses CheckboxSelectMultiple from RadioSelect, so a checkbox
+    # group would otherwise match the radio branch before multiple-checkbox.
+    return isinstance(field.field.widget, forms.RadioSelect) and not isinstance(
+        field.field.widget, forms.CheckboxSelectMultiple
+    )
 
 
 @register.filter

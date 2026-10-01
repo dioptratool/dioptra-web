@@ -533,74 +533,20 @@ $analysis-table-dropdown-cell-width: 19rem;
   margin-inline: auto;
 }
 
-.analysis-table__actions-menu {
-  display: inline-flex;
-  position: relative;
-}
-
-.analysis-table__actions-menu__popover {
-  background-color: $color-white;
-  border: 1px solid $color-table-accent-blue;
-  border-radius: 2px;
-  box-shadow: 0 4px 4px rgba(16, 69, 122, 0.2);
-  margin: 0;
-  min-width: 14rem;
-  padding: 0.4rem 0;
-  position-area: bottom left;
-  right: anchor(right);
-}
-
-.analysis-table__actions-menu__item {
-  background: transparent;
-  border: none;
-  color: $color-mineshaft;
-  display: block;
-  font-weight: $font-weight-bold;
-  padding: 0.8rem 1.2rem;
-  text-align: left;
-  text-decoration: none;
-  transition: background-color $transition-duration-default ease;
-  width: 100%;
-  @include font-size(13, 1.125);
+table .actions-menu__trigger {
+  background-color: transparent;
 
   &:hover,
   &:focus {
-    background-color: $color-moonstone;
-    color: $color-mineshaft;
-    text-decoration: none;
+    background-color: #d7e3f3;
   }
 }
+table .actions-menu__trigger--active {
+  background-color: #1b77d4;
+}
 
-.analysis-table__action {
-  background-color: #F1F4F8;
-  border: none;
-  border-radius: 2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 3.2rem;
-  @include font-size(13, 1.125);
-  font-weight: $font-weight-bold;
-  padding: 0.7rem;
-  transition: all $transition-duration-default ease;
-  text-wrap: nowrap;
-
-  &:hover {
-    background-color: #D7E3F3;
-  }
-
-  &.analysis-table__action--active {
-    background-color: #1B77D4;
-    color: #ffffff;
-
-    svg {
-      filter: invert(1) brightness(2);
-    }
-
-    &:hover {
-      filter: brightness(0.9);
-    }
-  }
+.analysis-table .actions-menu__trigger {
+  min-width: 3.6rem;
 }
 
 .analysis-table__table > thead > tr > th.analysis-table__edit-cell {

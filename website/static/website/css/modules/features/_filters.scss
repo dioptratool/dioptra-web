@@ -9,7 +9,7 @@
 }
 
 .form-group-search {
-  margin-right: 0.5rem;
+  margin-right: 1rem;
   position: relative;
 }
 
@@ -90,7 +90,7 @@ input[type="text"].filters__search-input {
   background-color: $color-filter-background;
   border: none;
   border-radius: 2px;
-  box-shadow: 4px 0 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0.3rem 0.4rem rgba(0, 0, 0, 0.25);
   margin: 2px 0 0;
   min-width: 33rem;
   padding: 2rem 3.1rem;
@@ -116,6 +116,86 @@ input[type="text"].filters__search-input {
 .filter__facet {
   padding-top: 0.5rem;
   padding-bottom: 1rem;
+
+  &:has(.multiple-checkbox) > .form-group {
+    display: block;
+  }
+
+  .multiple-checkbox {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-block-start: 1rem;
+
+    .checkbox {
+      margin: 0 0 0.4rem 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        display: block;
+        font-weight: $font-weight-regular;
+        margin: 0;
+        padding: 0;
+        position: relative;
+      }
+    }
+
+    input {
+      @include element-invisible();
+    }
+
+    span {
+      background-image: url('../images/checkbox--unchecked.svg');
+      background-position: 1rem center;
+      background-repeat: no-repeat;
+      border-radius: 2px;
+      color: $color-mineshaft;
+      display: block;
+      font-weight: $font-weight-bold;
+      min-height: $input-height;
+      padding: 1.1rem 1rem 1.1rem 3.6rem;
+      margin-left: -1rem;
+      @include font-size(13, 18px);
+    }
+
+    input:hover + span,
+    input:focus + span {
+      background-color: $color-moonstone;
+    }
+
+    input:checked + span {
+      background-color: $color-moonstone;
+      background-image: url('../images/checkbox--checked.svg');
+    }
+
+    input:focus + span {
+      @include default-focus();
+    }
+  }
+
+  .btn {
+    @include button-submit();
+    background-color: $color-lapis;
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 1.1rem 3rem;
+    text-decoration: none;
+    @include font-size(13, 1.3846);
+
+    &:after {
+      content: none;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: darken($color-lapis, 10%);
+      color: $color-white;
+      text-decoration: none;
+    }
+  }
 }
 
 .filter-results {

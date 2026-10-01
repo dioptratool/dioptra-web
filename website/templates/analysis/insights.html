@@ -12,20 +12,26 @@
                 <div class="insight__header-primary">
                     <div class="insights__title-row">
                         <h1 class="insights__title">{{ analysis.title }}</h1>
-                        {% include 'analysis/_lifecycle-badges.html' with analysis=analysis archived_only=True %}
                         {% include 'analysis/_lifecycle-status-control.html' with analysis=analysis status_targets=status_targets %}
+                        {% include 'analysis/_lifecycle-badges.html' with analysis=analysis archived_only=True %}
                     </div>
                     <p class="insights__description">{{ analysis.description }}</p>
 
                     <div class="insights__actions">
-                        <details class="analysis__dropdown download" onblur="this.removeAttribute('open')">
-                            <summary>
-                                Download {% include "icons/dropdown-arrow.svg" %}
-                            </summary>
-                            <ul>
-                                <li><a href="{% url 'analysis-insights-print' analysis.pk %}">PDF Report</a></li>
-                            </ul>
-                        </details>
+                        <div class="actions-menu actions-menu--labelled actions-menu--emphasis">
+                            <button type="button"
+                                    id="insights-download-trigger-{{ analysis.pk }}"
+                                    class="actions-menu__trigger actions-menu__trigger--labelled"
+                                    popovertarget="insights-download-{{ analysis.pk }}">
+                                {% translate 'Download' %} {% include 'icons/dropdown-arrow.svg' %}
+                            </button>
+                            <div id="insights-download-{{ analysis.pk }}"
+                                 popover="auto"
+                                 anchor="insights-download-trigger-{{ analysis.pk }}"
+                                 class="actions-menu__popover actions-menu__popover--align-start">
+                                <a href="{% url 'analysis-insights-print' analysis.pk %}" class="actions-menu__item">{% translate 'PDF Report' %}</a>
+                            </div>
+                        </div>
                         {% translate 'Actions' as actions_label %}
                         {% include 'analysis/_lifecycle-actions.html' with analysis=analysis trigger_label=actions_label %}
                         {% has_perm 'website.change_analysis' user analysis as can_change_analysis %}
@@ -152,13 +158,4 @@
     <script type="text/javascript" src="{% static 'website/js/chart.umd.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'website/js/insights-charts.js' %}"></script>
     <script type="text/javascript" src="{% static 'website/js/content-tabs.js' %}"></script>
-    <script type="text/javascript">
-        window.addEventListener('click', (e) => {
-            document.querySelectorAll('.analysis__dropdown')?.forEach((dropdown) => {
-                if (!(e.target.closest('.analysis__dropdown') == dropdown)) {
-                    dropdown.removeAttribute('open')
-                }
-            });
-        });
-    </script>
 {% endblock extrascript %}

@@ -128,10 +128,10 @@
                                            data-cost-line-item-id="{{ cost_line_item.id }}"
                                            data-subcomponent-analysis-id="{{ subcomponent_data.analysis.id }}"
                                            {% if subcomponent_data.skipped %}checked{% endif %}>
-                                    <label class="analysis-table__subcomponent-skip__label"
+                                    <label class="actions-menu__trigger analysis-table__subcomponent-skip__label"
                                            for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skip' %}</label>
                                     {# Sibling order matters: the stylesheet swaps visibility via input:checked + label + .--skipped #}
-                                    <label class="analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
+                                    <label class="actions-menu__trigger analysis-table__subcomponent-skip__label analysis-table__subcomponent-skip__label--skipped"
                                            for="cost_line_item_{{ cost_line_item.id }}_subcomponent_analysis_{{ subcomponent_data.analysis.id }}_skip">{% translate 'Skipped' %}</label>
                                 </span>
                                 {% if errors|dict_get:cost_line_item.id %}
@@ -146,7 +146,7 @@
                             </div>
                         </td>
                         <td class="analysis-table__actions-cell">
-                            <button class="analysis-table__action{% if cost_line_item.note %} analysis-table__action--active {% endif %} analysis-table__category-edit analysis-table__category-edit--note">
+                            <button class="actions-menu__trigger{% if cost_line_item.note %} actions-menu__trigger--active{% endif %} analysis-table__category-edit analysis-table__category-edit--note">
                                 {% if cost_line_item.note %} {% translate 'View note' %} {% else %} {% translate 'Add note' %} {% endif %}
                             </button>
                         </td>

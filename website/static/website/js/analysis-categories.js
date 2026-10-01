@@ -23,7 +23,7 @@ $(function() {
     $('.analysis-table__actions').hide();
   });
 
-  $('body').on('click', '.analysis-table__actions-menu__item', function () {
+  $('body').on('click', '.actions-menu__item', function () {
     var popover = this.closest('[popover]');
     if (popover && typeof popover.hidePopover === 'function') {
       popover.hidePopover();

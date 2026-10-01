@@ -20,7 +20,7 @@
         <div id="analysis-actions-{{ analysis.pk }}"
              popover="auto"
              anchor="analysis-actions-trigger-{{ analysis.pk }}"
-             class="actions-menu__popover">
+             class="actions-menu__popover{% if trigger_label %} actions-menu__popover--align-start{% endif %}">
             {% if can_duplicate %}
                 <a href="{% url 'analysis-create-copy' analysis.pk %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="duplicated">{% translate 'Duplicate' %}</a>
             {% endif %}

@@ -7,17 +7,17 @@
                 class="lifecycle-badge lifecycle-badge--{{ analysis.analysis_status }} lifecycle-status-control__trigger"
                 popovertarget="analysis-status-{{ analysis.pk }}"
                 aria-label="{% translate 'Change status' %}">
-            {{ analysis.get_analysis_status_display }} {% include 'icons/dropdown-arrow.svg' %}
+            {{ analysis.get_analysis_status_display }} {% include 'icons/chevron-down-14.svg' %}
         </button>
         <div id="analysis-status-{{ analysis.pk }}"
              popover="auto"
              anchor="analysis-status-trigger-{{ analysis.pk }}"
-             class="actions-menu__popover">
+             class="actions-menu__popover actions-menu__popover--align-start">
             {% for target in status_targets %}
                 {% if target == analysis.analysis_status %}
-                    <span class="actions-menu__item actions-menu__item--current">{{ target.label }}</span>
+                    <span class="actions-menu__item actions-menu__item--option actions-menu__item--current">{{ target.label }}</span>
                 {% else %}
-                    <a href="{% url 'analysis-change-status' analysis.pk target.value %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="status-changed">{{ target.label }}</a>
+                    <a href="{% url 'analysis-change-status' analysis.pk target.value %}" class="actions-menu__item actions-menu__item--option" data-panels-trigger data-panels-reload-on="status-changed">{{ target.label }}</a>
                 {% endif %}
             {% endfor %}
         </div>

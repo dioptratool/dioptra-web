@@ -45,12 +45,14 @@
                                     {% endfor %}
                                     </td>
                                     <td>
-                                        {% if can_view_analysis %}
-                                            <a class="dashboard__title-link" href="{% url 'analysis' analysis.id %}"><strong>{{ analysis.title }}</strong></a>
-                                        {% else %}
-                                            <strong>{{ analysis.title }}</strong>
-                                        {% endif %}
-                                        {% include 'analysis/_lifecycle-badges.html' with analysis=analysis archived_only=True %}
+                                        <div class="dashboard__title-line">
+                                            {% if can_view_analysis %}
+                                                <a class="dashboard__title-link" href="{% url 'analysis' analysis.id %}"><strong>{{ analysis.title }}</strong></a>
+                                            {% else %}
+                                                <strong>{{ analysis.title }}</strong>
+                                            {% endif %}
+                                            {% include 'analysis/_lifecycle-badges.html' with analysis=analysis archived_only=True %}
+                                        </div>
                                     </td>
                                     <td class="dashboard__status-cell">{% include 'analysis/_lifecycle-badges.html' with analysis=analysis status_only=True %}</td>
                                     <td class="dashboard__date-cell">{{ analysis.updated|date }}</td>

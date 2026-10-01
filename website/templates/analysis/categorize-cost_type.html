@@ -146,7 +146,7 @@
                               {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                             <td class="analysis-table__actions-cell">
                               <a href="{{ cost_item_edit_url }}{% if '?' in cost_item_edit_url %}&amp;{% else %}?{% endif %}cost_line_item_id={{ cost_line_item.pk }}"
-                                 class="analysis-table__action"
+                                 class="actions-menu__trigger"
                                  data-panels-trigger
                                  data-panels-reload-on="saved"
                                  aria-label="{% translate 'Edit Cost Item' %}">{% include 'icons/edit-small.svg' %}</a>
