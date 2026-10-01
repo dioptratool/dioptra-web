@@ -125,13 +125,13 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
             if good_data:
                 self._save_data(good_data)
                 self.workflow.invalidate_step("insights")
-                self.workflow.calculate_if_possible()
+                self.workflow.calculate_if_possible(request.user)
 
             return self.render_to_response(context)
         else:
             self._save_data(data)
             self.workflow.invalidate_step("insights")
-            self.workflow.calculate_if_possible()
+            self.workflow.calculate_if_possible(request.user)
         query = f"?{request.GET.urlencode()}" if request.GET else ""
         return redirect(self.request.path + query)
 
@@ -376,13 +376,13 @@ class AllocateCostTypeGrant(
             if good_data:
                 self._save_data(good_data)
                 self.workflow.invalidate_step("insights")
-                self.workflow.calculate_if_possible()
+                self.workflow.calculate_if_possible(request.user)
 
             return self.render_to_response(context)
         else:
             self._save_data(data)
             self.workflow.invalidate_step("insights")
-            self.workflow.calculate_if_possible()
+            self.workflow.calculate_if_possible(request.user)
         query = f"?{request.GET.urlencode()}" if request.GET else ""
         return redirect(self.request.path + query)
 
@@ -624,7 +624,7 @@ class AllocateInterventionBulk(
 
         workflow = AnalysisWorkflow(self.analysis)
         workflow.invalidate_step("insights")
-        workflow.calculate_if_possible()
+        workflow.calculate_if_possible(self.request.user)
         self.allocations_saved = True
         return super().form_valid(form)
 

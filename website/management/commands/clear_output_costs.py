@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 
 from website.models import Analysis
 from website.workflows import AnalysisWorkflow
-from website.workflows.analysis.steps.insights import Insights
 
 
 class Command(BaseCommand):
@@ -19,8 +18,7 @@ class Command(BaseCommand):
 
             each_analysis.output_costs = {}
             each_analysis.save()
-            analysis_wf = AnalysisWorkflow(each_analysis)
-            insight_step: Insights = analysis_wf.get_step("insights")
-            insight_step.calculate_if_possible()
+            # System work: the wrapper reconciles the lifecycle status with no actor.
+            AnalysisWorkflow(each_analysis).calculate_if_possible()
 
         self.stdout.write(self.style.SUCCESS("Success!"), ending="\n")

@@ -6,6 +6,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from website.models import CostLineItem, CostLineItemConfig
+from website.workflows import AnalysisWorkflow
 from .forms import CostLineItemCostTypeCategoryForm, CostLineItemNoteForm
 from ..views.mixins import AnalysisPermissionRequiredMixin
 
@@ -77,6 +78,12 @@ class CostLineItemUpdateCostTypeCategoryView(AnalysisPermissionRequiredMixin, Vi
             cost_type=cost_type_id,
             category=category_id,
         ).update(confirmed=False)
+
+        # The category now needs confirming again, so the outputs and the lifecycle status must
+        # follow, as they do when the categorize step itself changes a cost item.
+        workflow = AnalysisWorkflow(analysis)
+        workflow.invalidate_step("insights")
+        workflow.calculate_if_possible(request.user)
 
         return JsonResponse(
             {

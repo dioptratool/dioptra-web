@@ -10,7 +10,11 @@
         <div class="container">
             <div class="insights__header">
                 <div class="insight__header-primary">
-                    <h1 class="insights__title">{{ analysis.title }}</h1>
+                    <div class="insights__title-row">
+                        <h1 class="insights__title">{{ analysis.title }}</h1>
+                        {% include 'analysis/_lifecycle-badges.html' with analysis=analysis archived_only=True %}
+                        {% include 'analysis/_lifecycle-status-control.html' with analysis=analysis status_targets=status_targets %}
+                    </div>
                     <p class="insights__description">{{ analysis.description }}</p>
 
                     <div class="insights__actions">
@@ -22,11 +26,15 @@
                                 <li><a href="{% url 'analysis-insights-print' analysis.pk %}">PDF Report</a></li>
                             </ul>
                         </details>
+                        {% translate 'Actions' as actions_label %}
+                        {% include 'analysis/_lifecycle-actions.html' with analysis=analysis trigger_label=actions_label %}
                         {% has_perm 'website.change_analysis' user analysis as can_change_analysis %}
                         {% if can_change_analysis %}
                             <a href="{% url 'analysis-define-update' analysis.pk %}" class="insights__action_edit">
                                 Edit Analysis
                             </a>
+                        {% elif edit_blocked_by_validation %}
+                            <span class="insights__edit-restriction">{% translate 'A validated analysis cannot be edited' %}</span>
                         {% endif %}
                     </div>
                 </div>

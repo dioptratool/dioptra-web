@@ -26,7 +26,7 @@ class CostLineItemDeleteView(DeleteView):
 
         # Hack to make sure deleting other CostLineItems correctly refreshes output costs
         workflow = AnalysisWorkflow(self.object.analysis)
-        workflow.calculate_if_possible()
+        workflow.calculate_if_possible(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

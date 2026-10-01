@@ -61,7 +61,7 @@ class DefineUpdate(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionReq
 
         # Invalidate the insights, try to recalculate.
         self.workflow.invalidate_step("insights")
-        self.workflow.calculate_if_possible()
+        self.workflow.calculate_if_possible(self.request.user)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):

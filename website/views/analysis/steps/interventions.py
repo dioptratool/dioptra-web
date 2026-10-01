@@ -95,7 +95,7 @@ class InterventionSubcomponentLabels(InterventionInstancePanelMixin, PermissionR
 
     def form_valid(self, form):
         form.save()
-        recalculate_analysis(self.analysis)
+        recalculate_analysis(self.analysis, self.request.user)
         return super().form_valid(form)
 
     def get_success_commands(self):
@@ -122,7 +122,7 @@ class InterventionSubcomponentLabelsDelete(
             subcomponent_analysis = self.intervention_instance.subcomponent_cost_analysis
             subcomponent_analysis.reset_cost_line_items()
             subcomponent_analysis.delete()
-            recalculate_analysis(self.analysis)
+            recalculate_analysis(self.analysis, self.request.user)
         return super().form_valid(form)
 
     def get_success_commands(self):

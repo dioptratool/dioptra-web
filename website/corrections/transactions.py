@@ -269,9 +269,11 @@ def plan_transaction_correction(
     )
 
 
-def apply_transaction_correction(plan: TransactionCorrectionPlan) -> CorrectionResult:
+def apply_transaction_correction(plan: TransactionCorrectionPlan, actor=None) -> CorrectionResult:
     """
     Write a planned correction: every selected transaction is updated or none are.
+
+    `actor` is the correcting user, recorded if the correction resets the lifecycle status.
 
     Empty source cost items are deleted only after their transactions have been reassigned
     (Transaction.cost_line_item cascades on delete). A cost item is removed only when it has no
@@ -354,7 +356,7 @@ def apply_transaction_correction(plan: TransactionCorrectionPlan) -> CorrectionR
 
         workflow = AnalysisWorkflow(analysis)
         workflow.invalidate_step("insights")
-        workflow.calculate_if_possible()
+        workflow.calculate_if_possible(actor)
 
     return CorrectionResult(
         record_count=len(plan.transactions),

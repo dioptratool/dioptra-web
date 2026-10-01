@@ -1,6 +1,20 @@
 from website.models import Analysis
 from website.workflows._steps_base import MultiStep, Step
 
+# The relations the workflow steps read through require_prefetch(). Load them together with an
+# analysis whenever a workflow will be built from it.
+WORKFLOW_PREFETCHES = (
+    "cost_type_categories",
+    "interventioninstance_set",
+    "interventioninstance_set__intervention",
+    "interventioninstance_set__subcomponent_cost_analysis",
+    "interventioninstance_set__subcomponent_cost_analysis__allocations",
+    "unfiltered_cost_line_items",
+    "unfiltered_cost_line_items__config",
+    "unfiltered_cost_line_items__config__allocations",
+    "unfiltered_cost_line_items__config__subcomponent_cost_allocations",
+)
+
 
 class Workflow:
     step_classes: list[type[Step]] = []
@@ -95,6 +109,11 @@ class Workflow:
         for step in self.steps:
             if step.is_final:
                 return step
+
+    @property
+    def all_steps_complete(self) -> bool:
+        """Every enabled step, including the final Insights step, reports complete."""
+        return all(step.is_complete for step in self.steps if step.is_enabled)
 
     def invalidate_step(self, step_name: str) -> None:
         for step in self.steps:

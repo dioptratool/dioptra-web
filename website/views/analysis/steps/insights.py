@@ -15,12 +15,15 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import DetailView
 
+from website.analysis_lifecycle import permitted_status_targets
 from website.currency import currency_symbol, get_currency_locale
 from website.models import (
     AnalysisCostType,
+    AnalysisStatus,
     CostEfficiencyStrategy,
     InsightComparisonData,
 )
+from website.permissions import has_basic_edit_access
 from website.models import InterventionInstance
 from website.models.output_metric import OutputMetric
 from website.views.mixins import AnalysisObjectMixin, AnalysisPermissionRequiredMixin, AnalysisStepMixin
@@ -38,12 +41,24 @@ class Insights(AnalysisStepMixin, AnalysisObjectMixin, AnalysisPermissionRequire
             self.step.calculate_if_possible()
         if not self.has_permission():
             return self.handle_no_permission()
+        # Readiness can change outside analysis edits (an output-metric definition, say); viewing
+        # is not an edit, so a reset here is system work with no actor.
+        self.workflow.reconcile_lifecycle_status()
         if not (self.step.dependencies_met and self.step.is_complete):
             return redirect(reverse("analysis", kwargs={"pk": self.analysis.pk}))
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        context["status_targets"] = permitted_status_targets(user, self.analysis)
+        # A basic user who could otherwise edit sees why Edit Analysis is missing.
+        context["edit_blocked_by_validation"] = (
+            self.analysis.analysis_status == AnalysisStatus.VALIDATED
+            and not user.has_perm("website.change_analysis", self.analysis)
+            and has_basic_edit_access.test(user, self.analysis)
+        )
 
         context["output_metrics_by_intervention"] = {}
         context["cost_efficiency_strategies_by_intervention"] = {}

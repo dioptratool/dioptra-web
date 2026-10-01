@@ -69,6 +69,7 @@ var jsFiles = [
   './js/allocate-bulk.js',
   './js/ajax-transactions.js',
   './js/filters.js',
+  './js/actions-menu.js',
   './js/help.js',
   './js/table-edit-row.js',
   './js/analysis-table.js',

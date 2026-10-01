@@ -21,6 +21,19 @@ class DashboardView(LoginRequiredMixin, FilterMixin, FilterView):
         dioptra_settings = Settings.objects.first()
         return dioptra_settings.paginate_by
 
+    def paginate_queryset(self, queryset, page_size):
+        # Archiving the last item on the last page reloads that page number; serve the last page
+        # that exists rather than a 404.
+        paginator = self.get_paginator(
+            queryset,
+            page_size,
+            orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty(),
+        )
+        page_number = self.kwargs.get(self.page_kwarg) or self.request.GET.get(self.page_kwarg) or 1
+        page = paginator.get_page(page_number)
+        return paginator, page, page.object_list, page.has_other_pages()
+
     def get_queryset(self):
         qs = self.request.user.all_analyses()
         filtered_list = AnalysisFilterSet(self.request.GET, queryset=qs)

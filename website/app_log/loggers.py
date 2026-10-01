@@ -1,4 +1,7 @@
-from app_log.logger import log
+from app_log.logger import create_entry, log
+
+# Actor recorded for work no user performed, matching the auth signal entries.
+SYSTEM_ACTOR = "System"
 
 
 def log_analysis_created(analysis, user=None):
@@ -373,3 +376,44 @@ def log_analysis_transactions_corrected(analysis, message, user=None):
 
 def log_analysis_cost_items_corrected(analysis, message, user=None):
     log(user, "Cost Items Corrected", analysis, message)
+
+
+# Lifecycle events. These create the entry only, so the caller's transaction decides whether it
+# stays; the caller notifies subscribers after commit with `app_log.logger.notify_of_log_entry`.
+# The broad `log()` wrapper is not used: it swallows errors and notifies synchronously.
+
+
+def log_analysis_status_changed(analysis, old_status_label, new_status_label, user=None, automatic=False):
+    """
+    `user` is None for system work, which is recorded under the "System" actor.
+    """
+    if automatic:
+        action = "Status reset"
+        message = (
+            f"Status of analysis {analysis.title} automatically reset from {old_status_label} "
+            f"to {new_status_label} because the analysis is no longer complete."
+        )
+    else:
+        action = "Status changed"
+        message = (
+            f"Changed status of analysis {analysis.title} from {old_status_label} to {new_status_label}."
+        )
+    return create_entry(actor=user or SYSTEM_ACTOR, action=action, obj=analysis, message=message)
+
+
+def log_analysis_archived(analysis, user=None):
+    return create_entry(
+        actor=user or SYSTEM_ACTOR,
+        action="Archived",
+        obj=analysis,
+        message=f"Archived analysis {analysis.title}.",
+    )
+
+
+def log_analysis_unarchived(analysis, user=None):
+    return create_entry(
+        actor=user or SYSTEM_ACTOR,
+        action="Unarchived",
+        obj=analysis,
+        message=f"Unarchived analysis {analysis.title}.",
+    )

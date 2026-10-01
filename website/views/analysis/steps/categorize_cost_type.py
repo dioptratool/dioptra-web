@@ -146,7 +146,7 @@ class CategorizeCostType(
             )
 
             self.workflow.invalidate_step("insights")
-            self.workflow.calculate_if_possible()
+            self.workflow.calculate_if_possible(request.user)
 
             # If the previous cost_type is no longer used, return a redirect to
             # the newly assigned cost_type.
@@ -164,7 +164,7 @@ class CategorizeCostType(
         )
         cost_type_category.confirmed = True
         cost_type_category.save()
-        self.workflow.calculate_if_possible()
+        self.workflow.calculate_if_possible(request.user)
 
     def handle_confirm_cost_type_category_all(self, request, *args, **kwargs):
         cost_type_categories = (
@@ -175,4 +175,4 @@ class CategorizeCostType(
         for cost_type_category in cost_type_categories:
             cost_type_category.confirmed = True
             cost_type_category.save()
-        self.workflow.calculate_if_possible()
+        self.workflow.calculate_if_possible(request.user)

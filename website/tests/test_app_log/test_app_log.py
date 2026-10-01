@@ -14,8 +14,13 @@ from app_log.logger import create_entry, get_subscriptions_for_entry, log
 from app_log.management.commands import app_log__send_emails
 from app_log.models import AppLogEntry, Email, Subscription
 from app_log.notifiers import Notifier, SendEmailNotifier
+from website.app_log.loggers import (
+    log_analysis_archived,
+    log_analysis_status_changed,
+    log_analysis_unarchived,
+)
 from .models import ExampleObject1, ExampleObject2
-from ..factories import UserFactory
+from ..factories import AnalysisFactory, UserFactory
 
 
 @pytest.fixture
@@ -387,3 +392,58 @@ class TestNotifierLoadedFromSettings:
         assert isinstance(mock_notifier, MockNotifier)
         with pytest.raises(ImproperlyConfigured):
             app_config.get_notifier("app_log.bad_path.MockNotifier")
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("reload_app_log_notifiers")
+class TestAnalysisLifecycleLoggers:
+    """The lifecycle helpers create the entry only; the caller notifies after its commit."""
+
+    def test_status_change_entry(self):
+        user = UserFactory(name="Pat")
+        analysis = AnalysisFactory(title="Cash transfers")
+        entry = log_analysis_status_changed(analysis, "In Progress", "Complete", user=user)
+        assert entry.action == "Status changed"
+        assert entry.actor_user == user
+        assert entry.actor_name == "Pat"
+        assert entry.obj == analysis
+        assert entry.message == "Changed status of analysis Cash transfers from In Progress to Complete."
+
+    def test_automatic_reset_entry_without_a_user_is_system_work(self):
+        analysis = AnalysisFactory(title="Cash transfers")
+        entry = log_analysis_status_changed(analysis, "Validated", "In Progress", user=None, automatic=True)
+        assert entry.action == "Status reset"
+        assert entry.actor_user is None
+        assert entry.actor_name == "System"
+        assert "automatically reset from Validated to In Progress" in entry.message
+
+    def test_automatic_reset_entry_records_the_editing_user(self):
+        user = UserFactory(name="Pat")
+        entry = log_analysis_status_changed(
+            AnalysisFactory(), "Complete", "In Progress", user=user, automatic=True
+        )
+        assert entry.action == "Status reset"
+        assert entry.actor_user == user
+
+    def test_archive_entries(self):
+        user = UserFactory()
+        analysis = AnalysisFactory(title="Cash transfers")
+        archived = log_analysis_archived(analysis, user=user)
+        unarchived = log_analysis_unarchived(analysis, user=user)
+        assert (archived.action, archived.message) == ("Archived", "Archived analysis Cash transfers.")
+        assert (unarchived.action, unarchived.message) == (
+            "Unarchived",
+            "Unarchived analysis Cash transfers.",
+        )
+        assert archived.actor_user == unarchived.actor_user == user
+        assert archived.obj == unarchived.obj == analysis
+
+    def test_helpers_do_not_notify_subscribers(self, settings):
+        settings.APP_LOG = {"notifiers": ["app_log.notifiers.SendEmailNotifier"]}
+        apps.get_app_config("app_log").load_notifiers()
+        Subscription.objects.create(
+            owner=UserFactory(), notifier="app_log.notifiers.SendEmailNotifier", action="Archived"
+        )
+        log_analysis_archived(AnalysisFactory(), user=UserFactory())
+        assert AppLogEntry.objects.filter(action="Archived").count() == 1
+        assert Email.objects.count() == 0

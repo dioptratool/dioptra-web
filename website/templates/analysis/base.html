@@ -52,7 +52,7 @@
               <div class="analysis-navigation__summary">
                 {# Nav text (e.g. "Choose data source") #}
                 {% if analysis.pk %}
-                  <strong>{{ analysis.title }}</strong><span class="analysis__navigation-intervention-name">{{ analysis.intervention_name }}</span>
+                  <strong>{{ analysis.title }}</strong>{% include 'analysis/_lifecycle-badges.html' with analysis=analysis %}<span class="analysis__navigation-intervention-name">{{ analysis.intervention_name }}</span>
                 {% endif %}
               </div>
 

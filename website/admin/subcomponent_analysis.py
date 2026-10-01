@@ -25,7 +25,8 @@ class SubcomponentsDeleteView(DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         subcomponent_analysis = self.get_object()
-        if not request.user.has_perm("website.delete_analysis", subcomponent_analysis.analysis):
+        # Resetting a sub-component analysis edits the analysis; it is not a deletion.
+        if not request.user.has_perm("website.change_analysis", subcomponent_analysis.analysis):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 

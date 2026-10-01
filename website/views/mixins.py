@@ -17,6 +17,7 @@ from website.models import Analysis, CostLineItem, Settings
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 from website.models.subcomponent import SubcomponentCostAllocation
 from website.workflows import AnalysisWorkflow
+from website.workflows.utils import WORKFLOW_PREFETCHES
 
 
 class AnalysisPermissionRequiredMixin(PermissionRequiredMixin):
@@ -72,17 +73,7 @@ class AnalysisObjectMixin(ContextMixin):
         pk = self.kwargs.get("pk")
         if pk is not None:
             queryset = queryset.filter(pk=pk)
-            queryset = queryset.prefetch_related(
-                "cost_type_categories",
-                "interventioninstance_set",
-                "interventioninstance_set__intervention",
-                "interventioninstance_set__subcomponent_cost_analysis",
-                "interventioninstance_set__subcomponent_cost_analysis__allocations",
-                "unfiltered_cost_line_items",
-                "unfiltered_cost_line_items__config",
-                "unfiltered_cost_line_items__config__allocations",
-                "unfiltered_cost_line_items__config__subcomponent_cost_allocations",
-            )
+            queryset = queryset.prefetch_related(*WORKFLOW_PREFETCHES)
 
         if pk is None:
             raise AttributeError(

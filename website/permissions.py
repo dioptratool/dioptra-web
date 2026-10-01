@@ -3,7 +3,7 @@ from __future__ import annotations
 import rules
 from django.contrib.auth import get_user_model
 
-from website.models import Analysis
+from website.models import Analysis, AnalysisStatus
 
 User = get_user_model()
 
@@ -51,14 +51,22 @@ def is_analysis_complete(user: User, analysis: Analysis = None) -> bool:
     return False
 
 
-rules.add_perm(
-    "website.change_analysis",
-    is_dioptra_admin | is_analysis_owner | is_analysis_in_users_primary_countries,
-)
-rules.add_perm(
-    "website.duplicate_analysis",
-    is_dioptra_admin | is_analysis_owner | is_analysis_in_users_primary_countries,
-)
+@rules.predicate
+def is_analysis_validated(user: User, analysis: Analysis = None) -> bool | None:
+    # None, not False, without an object: the other object predicates return None too, and
+    # `rules` treats None as "no opinion" so object-less checks keep their current answers.
+    if analysis:
+        return analysis.analysis_status == AnalysisStatus.VALIDATED
+    return None
+
+
+# Basic users work on analyses they own or that fall in their primary countries. A Validated
+# analysis is the exception: only an administrator may edit it or change its status.
+has_basic_edit_access = is_analysis_owner | is_analysis_in_users_primary_countries
+can_edit_analysis = is_dioptra_admin | (~is_analysis_validated & has_basic_edit_access)
+
+rules.add_perm("website.change_analysis", can_edit_analysis)
+rules.add_perm("website.duplicate_analysis", is_dioptra_admin | has_basic_edit_access)
 rules.add_perm(
     "website.view_analysis",
     (
@@ -68,7 +76,15 @@ rules.add_perm(
         | is_analysis_in_users_secondary_countries
     ),
 )
-rules.add_perm("website.delete_analysis", is_dioptra_admin | is_analysis_owner)
+# Who may change the status at all. Which target statuses a basic user may pick (In Progress and
+# Complete only) is enforced by the lifecycle service, which knows the transition being made.
+rules.add_perm("website.change_analysis_status", can_edit_analysis)
+# Owners archive and unarchive their own analyses in every status, Validated included. Country
+# based edit access alone grants neither on someone else's analysis.
+rules.add_perm("website.archive_analysis", is_dioptra_admin | is_analysis_owner)
+rules.add_perm("website.unarchive_analysis", is_dioptra_admin | is_analysis_owner)
+# Permanent deletion is administrator-only; basic users archive instead.
+rules.add_perm("website.delete_analysis", is_dioptra_admin)
 
 
 class SiteRolePermissionBackend:
@@ -111,6 +127,9 @@ class SiteRolePermissionBackend:
             "website.reassign_analysis",
             "website.delete_analysis",
             "website.duplicate_analysis",
+            "website.change_analysis_status",
+            "website.archive_analysis",
+            "website.unarchive_analysis",
             "website.add_costtype",
             "website.change_costtype",
             "website.delete_costtype",

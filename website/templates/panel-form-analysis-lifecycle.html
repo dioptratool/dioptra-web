@@ -1,0 +1,20 @@
+{% extends 'panel-form.html' %}
+
+{% block panel-body %}
+    {% if done %}
+        <p class="lead">{{ done_message }}</p>
+    {% else %}
+        <p class="delete-confirmation lead">{{ question }}</p>
+        {% if explanation %}
+            <p>{{ explanation }}</p>
+        {% endif %}
+    {% endif %}
+    {{ block.super }}
+{% endblock panel-body %}
+
+{% block panel-foot %}
+    {% if not done %}
+        <button type="submit" class="btn btn-primary">{{ confirm_label }}</button>
+    {% endif %}
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">{% if done %}Close{% else %}No, cancel{% endif %}</a>
+{% endblock panel-foot %}

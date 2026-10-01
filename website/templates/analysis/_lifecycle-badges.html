@@ -1,0 +1,4 @@
+{% load i18n %}
+{# The Archived tag (when archived) and the status badge. Pass status_only or archived_only to render one. #}
+{% if not status_only and analysis.is_archived %}<span class="lifecycle-tag">{% translate 'Archived' %}</span>{% endif %}
+{% if not archived_only %}<span class="lifecycle-badge lifecycle-badge--{{ analysis.analysis_status }}">{{ analysis.get_analysis_status_display }}</span>{% endif %}

@@ -1,0 +1,19 @@
+{# Sort links that keep every current query parameter (repeated values included) and restart at page 1. #}
+{% with desc="-"|add:column %}
+{% if order_by == column %}
+    <div class="table-header-order-link-group">
+        <span class="table-header-order-link--sorted-link"><span class="results__heading-sort results__heading-sort--ascending results__heading-sort__active">{% include 'svg/arrow-up.svg.html' %}</span></span>
+        <a class="table-header-order-link--sorted-link" title="Sort descending" href="{% querystring order_by=desc page=None %}"><span class="results__heading-sort results__heading-sort--descending">{% include 'svg/arrow-down.svg.html' %}</span></a>
+    </div>
+{% elif order_by == desc %}
+    <div class="table-header-order-link-group">
+        <a class="table-header-order-link--sorted-link" href="{% querystring order_by=column page=None %}"><span class="results__heading-sort results__heading-sort--ascending" title="Sort ascending">{% include 'svg/arrow-up.svg.html' %}</span></a>
+        <span class="table-header-order-link--sorted-link"><span class="results__heading-sort results__heading-sort--descending results__heading-sort__active">{% include 'svg/arrow-down.svg.html' %}</span></span>
+    </div>
+{% else %}
+    <div class="table-header-order-link-group">
+        <a class="table-header-order-link--unsorted-link table-header-order-link--unsorted-link--ascending" href="{% querystring order_by=column page=None %}"><span class="results__heading-sort results__heading-sort--ascending" title="Sort ascending">{% include 'svg/arrow-up.svg.html' %}</span></a>
+        <a class="table-header-order-link--unsorted-link table-header-order-link--unsorted-link--descending" href="{% querystring order_by=desc page=None %}" title="Sort descending"><span class="results__heading-sort results__heading-sort--descending">{% include 'svg/arrow-down.svg.html' %}</span></a>
+    </div>
+{% endif %}
+{% endwith %}

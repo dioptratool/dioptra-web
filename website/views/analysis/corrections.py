@@ -400,7 +400,7 @@ class TransactionCorrectionPanel(CorrectionPanelBase):
         return plan_transaction_correction(self.analysis, self.selection_ids, patch)
 
     def apply_plan(self, plan):
-        return apply_transaction_correction(plan)
+        return apply_transaction_correction(plan, self.request.user)
 
     def get_success_message(self, cleaned_data):
         count = self.result.record_count if self.result else len(self.records)
@@ -469,8 +469,8 @@ class CostItemCorrectionPanel(CorrectionPanelBase):
 
     def apply_plan(self, plan):
         if self.transaction_based:
-            return apply_transaction_correction(plan)
-        return apply_cost_item_correction(plan)
+            return apply_transaction_correction(plan, self.request.user)
+        return apply_cost_item_correction(plan, self.request.user)
 
     def get_success_message(self, cleaned_data):
         return _("{count} cost items updated").format(count=len(self.records))

@@ -1,0 +1,39 @@
+{% load i18n rules %}
+{# The analysis actions menu: Duplicate, Delete and Archive/Unarchive, each only when permitted. Nothing renders when none is. #}
+{# Pass trigger_label for a labelled button; the default trigger is the edit icon. #}
+{% has_perm 'website.duplicate_analysis' user analysis as can_duplicate %}
+{% has_perm 'website.delete_analysis' user analysis as can_delete %}
+{% if analysis.is_archived %}
+    {% has_perm 'website.unarchive_analysis' user analysis as can_change_archive %}
+{% else %}
+    {% has_perm 'website.archive_analysis' user analysis as can_change_archive %}
+{% endif %}
+{% if can_duplicate or can_delete or can_change_archive %}
+    <div class="actions-menu{% if trigger_label %} actions-menu--labelled{% endif %}">
+        <button type="button"
+                id="analysis-actions-trigger-{{ analysis.pk }}"
+                class="actions-menu__trigger{% if trigger_label %} actions-menu__trigger--labelled{% endif %}"
+                popovertarget="analysis-actions-{{ analysis.pk }}"
+                aria-label="{% translate 'Analysis actions' %}">
+            {% if trigger_label %}{{ trigger_label }} {% include 'icons/dropdown-arrow.svg' %}{% else %}{% include 'icons/edit-small.svg' %}{% endif %}
+        </button>
+        <div id="analysis-actions-{{ analysis.pk }}"
+             popover="auto"
+             anchor="analysis-actions-trigger-{{ analysis.pk }}"
+             class="actions-menu__popover">
+            {% if can_duplicate %}
+                <a href="{% url 'analysis-create-copy' analysis.pk %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="duplicated">{% translate 'Duplicate' %}</a>
+            {% endif %}
+            {% if can_delete %}
+                <a href="{% url 'ombucore.admin:website_analysis_delete' analysis.pk %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="deleted,saved">{% translate 'Delete' %}</a>
+            {% endif %}
+            {% if can_change_archive %}
+                {% if analysis.is_archived %}
+                    <a href="{% url 'analysis-unarchive' analysis.pk %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="unarchived">{% translate 'Unarchive' %}</a>
+                {% else %}
+                    <a href="{% url 'analysis-archive' analysis.pk %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="archived">{% translate 'Archive' %}</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

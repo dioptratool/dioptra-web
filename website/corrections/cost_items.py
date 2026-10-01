@@ -92,8 +92,11 @@ def plan_cost_item_correction(
     )
 
 
-def apply_cost_item_correction(plan: CostItemCorrectionPlan) -> CorrectionResult:
-    """Write a planned cost-item correction: every selected row is updated or none are."""
+def apply_cost_item_correction(plan: CostItemCorrectionPlan, actor=None) -> CorrectionResult:
+    """Write a planned cost-item correction: every selected row is updated or none are.
+
+    `actor` is the correcting user, recorded if the correction resets the lifecycle status.
+    """
     with db_transaction.atomic():
         analysis = Analysis.objects.get(pk=plan.analysis.pk)
         ids = [c.id for c in plan.cost_line_items]
@@ -118,7 +121,7 @@ def apply_cost_item_correction(plan: CostItemCorrectionPlan) -> CorrectionResult
 
         workflow = AnalysisWorkflow(analysis)
         workflow.invalidate_step("insights")
-        workflow.calculate_if_possible()
+        workflow.calculate_if_possible(actor)
 
     return CorrectionResult(
         record_count=len(plan.cost_line_items),

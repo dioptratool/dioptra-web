@@ -64,6 +64,11 @@ from website.views.analysis.steps.load_data import (
 )
 from website.views.dashboard import DashboardView
 from website.views.documents import full_cost_model_spreadsheet
+from website.views.analysis_lifecycle import (
+    AnalysisArchiveView,
+    AnalysisStatusChangeView,
+    AnalysisUnarchiveView,
+)
 from website.views.duplicator import DuplicateView
 from website.views.analysis.steps.interventions import (
     EditSubcomponentLabel,
@@ -265,6 +270,21 @@ urlpatterns = [
         "analysis/<int:pk>/copy",
         DuplicateView.as_view(),
         name="analysis-create-copy",
+    ),
+    path(
+        "analysis/<int:pk>/status/<str:status>/",
+        AnalysisStatusChangeView.as_view(),
+        name="analysis-change-status",
+    ),
+    path(
+        "analysis/<int:pk>/archive/",
+        AnalysisArchiveView.as_view(),
+        name="analysis-archive",
+    ),
+    path(
+        "analysis/<int:pk>/unarchive/",
+        AnalysisUnarchiveView.as_view(),
+        name="analysis-unarchive",
     ),
     path(
         "panels/analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/delete/",

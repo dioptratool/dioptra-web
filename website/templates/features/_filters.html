@@ -35,7 +35,7 @@
                             {% if field.name != 'search' and field.name != 'order_by' %}
                                 <div class="hidden filter__facet" data-filter="{{ field.name }}">
                                     {% include 'bootstrap/field.html' with field=field|add_input_classes hide_help=True %}
-                                    {% if field|filter_field_should_use_button %}
+                                    {% if field|filter_field_should_use_button or field|is_multiple_checkbox %}
                                         <button type="submit" class="btn btn-primary">Apply</button>
                                     {% endif %}
                                 </div>

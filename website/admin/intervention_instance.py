@@ -128,7 +128,7 @@ class InterventionInstanceAddView(AddView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        recalculate_analysis(self.analysis)
+        recalculate_analysis(self.analysis, self.request.user)
         return response
 
 
@@ -155,7 +155,7 @@ class InterventionInstanceChangeView(ChangeView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        recalculate_analysis(self.object.analysis)
+        recalculate_analysis(self.object.analysis, self.request.user)
         return response
 
 
@@ -205,7 +205,7 @@ class InterventionInstanceDeleteView(DeleteView):
             messages.error(self.request, self.get_protected_error_message(obj_dict))
 
         if self.deleted:
-            recalculate_analysis(analysis)
+            recalculate_analysis(analysis, self.request.user)
 
 
 class InterventionInstanceReorderView(ReorderView):

@@ -125,6 +125,7 @@ class LoadData(
                 _("%(imported_count)s transactions imported successfully.") % result,
             )
 
+        self.workflow.reconcile_lifecycle_status(request.user)
         return None  # Normal routing.
 
     def handle_upload_budget(self, request, *args, **kwargs):
@@ -156,6 +157,7 @@ class LoadData(
             self.object.currency_code = request.POST.get("currency_code")
             self.object.save()
 
+        self.workflow.reconcile_lifecycle_status(request.user)
         return None  # Normal routing.
 
     def handle_upload_transactions(self, request, *args, **kwargs):
@@ -190,6 +192,7 @@ class LoadData(
                 _("%(imported_count)s transactions imported successfully.") % result,
             )
 
+        self.workflow.reconcile_lifecycle_status(request.user)
         return None  # Normal routing.
 
     def handle_reset_data(self, request, *args, **kwargs):
@@ -198,6 +201,7 @@ class LoadData(
         self.object.save()
 
         self.step.invalidate()
+        self.workflow.reconcile_lifecycle_status(request.user)
         return None  # Normal routing.
 
     def handle_transaction_resync(self, request, *args, **kwargs):
@@ -212,6 +216,7 @@ class LoadData(
         self.object.output_costs = {}
         self.object.needs_transaction_resync = False
         self.object.save()
+        self.workflow.reconcile_lifecycle_status(request.user)
         messages.success(self.request, _("Transactions have been synced successfully."))
 
 

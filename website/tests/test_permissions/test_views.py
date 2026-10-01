@@ -127,6 +127,9 @@ class TestPageAccess:
             ),
             ("analysis-insights-print", {"pk": analysis_pk}),
             ("analysis-cost-model-spreadsheet", {"pk": analysis_pk}),
+            ("analysis-change-status", {"pk": analysis_pk, "status": "complete"}),
+            ("analysis-archive", {"pk": analysis_pk}),
+            ("analysis-unarchive", {"pk": analysis_pk}),
         ]
 
     def test_anonymous_user_access_is_blocked_simple_pages(self, client):

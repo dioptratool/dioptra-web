@@ -109,6 +109,21 @@ class AnalysisFactory(DjangoModelFactory):
 
     class Meta:
         model = Analysis
+        # The lifecycle hook writes to the database itself; no second save() after it.
+        skip_postgeneration_save = True
+
+    @factory.post_generation
+    def lifecycle(obj, create, extracted, **kwargs):
+        """Put an analysis straight into a lifecycle/archive state for a test.
+
+        Analysis.save() always initializes the lifecycle fields on insert, so they cannot be set
+        through ordinary factory attributes. Pass them as ``lifecycle__<field>=...`` and they are
+        written directly, the way the lifecycle services write them, e.g.
+        ``AnalysisFactory(lifecycle__analysis_status=AnalysisStatus.VALIDATED)``.
+        """
+        if create and kwargs:
+            Analysis.objects.filter(pk=obj.pk).update(**kwargs)
+            obj.refresh_from_db(fields=list(kwargs))
 
 
 class InterventionInstanceFactory(DjangoModelFactory):

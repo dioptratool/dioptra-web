@@ -124,7 +124,7 @@ class SaveSuggestedToAllConfirmView(AnalysisPermissionRequiredMixin, AnalysisObj
         response = super().form_valid(form)
         self._apply_suggested_value_to_all_cost_line_items()
         self.workflow.invalidate_step("insights")
-        self.workflow.calculate_if_possible()
+        self.workflow.calculate_if_possible(self.request.user)
         return response
 
     def get_context_data(self, **kwargs):
@@ -308,7 +308,7 @@ class CostLineItemUpsertView(AnalysisPermissionRequiredMixin, AnalysisObjectMixi
 
         # Hack to make sure adding other CostLineItems correctly refreshes output costs
         workflow = AnalysisWorkflow(self.analysis)
-        workflow.calculate_if_possible()
+        workflow.calculate_if_possible(self.request.user)
 
         return super().form_valid(form)
 

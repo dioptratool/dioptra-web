@@ -4,9 +4,10 @@ from decimal import Decimal
 
 from django_ckeditor_5.fields import CKEditor5Field
 from django.conf import settings
-from django.db import connection, models
+from django.db import connection, models, transaction as db_transaction
 from django.db.models import F, JSONField, Max, Q, Sum, Value
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
@@ -37,6 +38,14 @@ logger = logging.getLogger(__name__)
 # Transactions and cost line items each carry five user-defined "custom" columns,
 # stored as dummy_field_1..5. See CANONICAL_TRANSACTION_FIELDS for the transaction side.
 CUSTOM_FIELD_COUNT = 5
+
+
+class AnalysisStatus(models.TextChoices):
+    """Lifecycle status of an analysis; independent of the archive flag and of workflow completion."""
+
+    IN_PROGRESS = "in_progress", _("In Progress")
+    COMPLETE = "complete", _("Complete")
+    VALIDATED = "validated", _("Validated")
 
 
 class Analysis(models.Model):
@@ -124,6 +133,38 @@ class Analysis(models.Model):
     )
     needs_transaction_resync = models.BooleanField(default=False, editable=False)
 
+    # Lifecycle status and archive flag, with their audit columns. These six fields are written
+    # only by the lifecycle services and by the new-record initialization in save(): an ordinary
+    # save() of an existing row leaves them alone (see LIFECYCLE_FIELDS), so a stale instance or
+    # a recalculation can never copy old values back over a newer status/archive change.
+    analysis_status = models.CharField(
+        verbose_name=_("Status"),
+        max_length=20,
+        choices=AnalysisStatus,
+        default=AnalysisStatus.IN_PROGRESS,
+        editable=False,
+    )
+    status_changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="status_changed_analyses",
+        editable=False,
+    )
+    # Initialized to `created` on insert, then written only on an actual status transition.
+    status_changed_at = models.DateTimeField(editable=False)
+    is_archived = models.BooleanField(verbose_name=_("Archived"), default=False, editable=False)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="archived_analyses",
+        editable=False,
+    )
+    archived_at = models.DateTimeField(null=True, blank=True, editable=False)
+
     efficiency_lesson = CKEditor5Field(
         blank=True,
         null=True,
@@ -172,6 +213,71 @@ class Analysis(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    # The lifecycle/archive columns that an ordinary save() never writes for an existing row.
+    LIFECYCLE_FIELDS = (
+        "analysis_status",
+        "status_changed_by",
+        "status_changed_at",
+        "is_archived",
+        "archived_by",
+        "archived_at",
+    )
+
+    def save(self, *args, **kwargs):
+        """Initialize the lifecycle fields on insert; protect them on every ordinary update.
+
+        New rows (including duplicates built from a source row's values) always start In Progress
+        and not archived, audited to their owner at their own creation time -- whatever the caller
+        put in those six fields. Existing rows saved without ``update_fields`` get every other
+        concrete field written, so the lifecycle services' update-only writes cannot be undone by a
+        stale instance. An explicit ``update_fields`` is honored unchanged; that is how the
+        services write these columns.
+        """
+        if self._state.adding:
+            self._save_new_with_lifecycle_defaults(*args, **kwargs)
+            return
+        if kwargs.get("update_fields") is None and not kwargs.get("force_insert") and self.pk is not None:
+            kwargs["update_fields"] = self.ordinary_update_fields()
+        super().save(*args, **kwargs)
+
+    def copy_lifecycle_fields_from(self, other: "Analysis") -> None:
+        """Take the six lifecycle fields from a fresher copy of this analysis, without queries."""
+        for name in self.LIFECYCLE_FIELDS:
+            field = self._meta.get_field(name)
+            setattr(self, field.attname, getattr(other, field.attname))
+            if field.is_relation and field.is_cached(self):
+                field.delete_cached_value(self)
+
+    def ordinary_update_fields(self) -> list[str]:
+        """Every loaded, concrete, non-primary-key field except LIFECYCLE_FIELDS.
+
+        Computed from the model's current fields rather than a hard-coded list, so a field added
+        later still persists through a plain save(). Deferred fields are left out, matching what
+        Django itself does for a partially loaded instance.
+        """
+        deferred = self.get_deferred_fields()
+        return [
+            field.name
+            for field in self._meta.concrete_fields
+            if not field.primary_key
+            and field.name not in self.LIFECYCLE_FIELDS
+            and field.attname not in deferred
+        ]
+
+    def _save_new_with_lifecycle_defaults(self, *args, **kwargs):
+        self.analysis_status = AnalysisStatus.IN_PROGRESS
+        self.status_changed_by_id = self.owner_id
+        # `created` is auto_now_add, so its value is only known once the row is inserted: insert
+        # with a provisional timestamp, then align it with the stored `created` before commit.
+        self.status_changed_at = timezone.now()
+        self.is_archived = False
+        self.archived_by = None
+        self.archived_at = None
+        with db_transaction.atomic(using=kwargs.get("using")):
+            super().save(*args, **kwargs)
+            Analysis.objects.using(self._state.db).filter(pk=self.pk).update(status_changed_at=F("created"))
+            self.status_changed_at = self.created
 
     @property
     def cost_line_items(self):

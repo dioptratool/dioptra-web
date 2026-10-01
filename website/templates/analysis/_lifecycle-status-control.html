@@ -1,0 +1,27 @@
+{% load i18n %}
+{# The status badge as a dropdown of the statuses the user may choose (status_targets); a plain badge when there are none. #}
+{% if status_targets %}
+    <div class="actions-menu lifecycle-status-control">
+        <button type="button"
+                id="analysis-status-trigger-{{ analysis.pk }}"
+                class="lifecycle-badge lifecycle-badge--{{ analysis.analysis_status }} lifecycle-status-control__trigger"
+                popovertarget="analysis-status-{{ analysis.pk }}"
+                aria-label="{% translate 'Change status' %}">
+            {{ analysis.get_analysis_status_display }} {% include 'icons/dropdown-arrow.svg' %}
+        </button>
+        <div id="analysis-status-{{ analysis.pk }}"
+             popover="auto"
+             anchor="analysis-status-trigger-{{ analysis.pk }}"
+             class="actions-menu__popover">
+            {% for target in status_targets %}
+                {% if target == analysis.analysis_status %}
+                    <span class="actions-menu__item actions-menu__item--current">{{ target.label }}</span>
+                {% else %}
+                    <a href="{% url 'analysis-change-status' analysis.pk target.value %}" class="actions-menu__item" data-panels-trigger data-panels-reload-on="status-changed">{{ target.label }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    {% include 'analysis/_lifecycle-badges.html' with analysis=analysis status_only=True %}
+{% endif %}

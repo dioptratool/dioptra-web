@@ -1,7 +1,9 @@
 import datetime
 
 import pytest
+from django.utils import timezone
 
+from website.models import Analysis, AnalysisStatus
 from website.models.analysis import AnalysisCostTypeCategoryGrantIntervention
 from website.models.subcomponent import SubcomponentCostAllocation
 from website.tests.factories import AnalysisFactory, UserFactory
@@ -123,3 +125,49 @@ class TestClonedAnalysis:
         cloned_allocation = cloned_subcomponent_analysis.allocations.get(cloned_from=allocation)
         assert cloned_allocation.allocations == {"0": "100"}
         assert cloned_allocation.cli_config.cost_line_item.analysis == cloned_analysis
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize(
+        "new_dates",
+        [
+            {},
+            {"start_date": datetime.date(2022, 1, 1), "end_date": datetime.date(2022, 12, 31)},
+        ],
+        ids=["same_dates", "new_dates"],
+    )
+    def test_cloning_resets_lifecycle_and_archive_fields(self, new_dates):
+        """A duplicate starts its own lifecycle; the source's status, archive state and audits are not copied."""
+        actor = UserFactory()
+        long_ago = timezone.now() - datetime.timedelta(days=90)
+        analysis = AnalysisFactory(
+            owner=UserFactory(),
+            lifecycle__analysis_status=AnalysisStatus.VALIDATED,
+            lifecycle__status_changed_by=actor,
+            lifecycle__status_changed_at=long_ago,
+            lifecycle__is_archived=True,
+            lifecycle__archived_by=actor,
+            lifecycle__archived_at=long_ago,
+        )
+        new_owner = UserFactory()
+
+        cloned_analysis = clone_analysis(analysis.pk, owner=new_owner, **new_dates)
+
+        stored_clone = Analysis.objects.get(pk=cloned_analysis.pk)
+        assert stored_clone.cloned_from == analysis
+        assert stored_clone.analysis_status == AnalysisStatus.IN_PROGRESS
+        assert stored_clone.is_archived is False
+        assert stored_clone.status_changed_by == new_owner
+        assert stored_clone.status_changed_at == stored_clone.created
+        assert stored_clone.created > analysis.created
+        assert stored_clone.archived_by is None
+        assert stored_clone.archived_at is None
+        # The returned instance carries the stored values, not the provisional ones.
+        assert cloned_analysis.status_changed_at == stored_clone.status_changed_at
+
+        source = Analysis.objects.get(pk=analysis.pk)
+        assert source.analysis_status == AnalysisStatus.VALIDATED
+        assert source.status_changed_by == actor
+        assert source.status_changed_at == long_ago
+        assert source.is_archived is True
+        assert source.archived_by == actor
+        assert source.archived_at == long_ago
