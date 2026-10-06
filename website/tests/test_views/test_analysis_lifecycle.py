@@ -451,11 +451,31 @@ class TestArchivePanels:
         assert row.archived_by is None
         assert row.analysis_status == AnalysisStatus.VALIDATED
 
-    def test_primary_country_editor_is_forbidden(self, client):
-        analysis = AnalysisFactory()
+    def test_primary_country_editor_archives_and_unarchives_a_validated_analysis(self, client):
+        analysis = AnalysisFactory(lifecycle__analysis_status=AnalysisStatus.VALIDATED)
         editor = UserFactory()
         editor.primary_countries.add(analysis.country)
         client.force_login(editor)
+
+        assert client.get(archive_url(analysis)).status_code == 200
+        response = client.post(archive_url(analysis), data={})
+        assert '"operation": "archived"' in response.content.decode()
+        row = stored(analysis)
+        assert row.is_archived is True
+        assert row.archived_by == editor
+
+        response = client.post(unarchive_url(analysis), data={})
+        assert '"operation": "unarchived"' in response.content.decode()
+        row = stored(analysis)
+        assert row.is_archived is False
+        assert row.archived_by is None
+        assert row.analysis_status == AnalysisStatus.VALIDATED
+
+    def test_secondary_country_viewer_is_forbidden(self, client):
+        analysis = AnalysisFactory()
+        viewer = UserFactory()
+        viewer.secondary_countries.add(analysis.country)
+        client.force_login(viewer)
 
         assert client.get(archive_url(analysis)).status_code == 403
         assert client.post(archive_url(analysis), data={}).status_code == 403

@@ -79,10 +79,10 @@ rules.add_perm(
 # Who may change the status at all. Which target statuses a basic user may pick (In Progress and
 # Complete only) is enforced by the lifecycle service, which knows the transition being made.
 rules.add_perm("website.change_analysis_status", can_edit_analysis)
-# Owners archive and unarchive their own analyses in every status, Validated included. Country
-# based edit access alone grants neither on someone else's analysis.
-rules.add_perm("website.archive_analysis", is_dioptra_admin | is_analysis_owner)
-rules.add_perm("website.unarchive_analysis", is_dioptra_admin | is_analysis_owner)
+# Owners and primary-country editors archive and unarchive in every status, Validated included:
+# archiving only changes dashboard visibility, so the Validated edit lock does not apply.
+rules.add_perm("website.archive_analysis", is_dioptra_admin | has_basic_edit_access)
+rules.add_perm("website.unarchive_analysis", is_dioptra_admin | has_basic_edit_access)
 # Permanent deletion is administrator-only; basic users archive instead.
 rules.add_perm("website.delete_analysis", is_dioptra_admin)
 

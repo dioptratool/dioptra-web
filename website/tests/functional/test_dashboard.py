@@ -241,6 +241,18 @@ class TestDashboardLifecycle:
         assert f'/analysis/{analysis.pk}/archive/"' in content
         assert ">Delete<" not in content
 
+    def test_primary_country_editor_sees_duplicate_and_archive_but_not_delete(self, client, defaults):
+        analysis = AnalysisFactory()
+        editor = UserFactory()
+        editor.primary_countries.add(analysis.country)
+        client.force_login(editor)
+
+        content = client.get("/").content.decode()
+
+        assert f'/analysis/{analysis.pk}/copy"' in content
+        assert f'/analysis/{analysis.pk}/archive/"' in content
+        assert ">Delete<" not in content
+
     def test_viewer_gets_no_actions_menu(self, client, defaults):
         analysis = AnalysisFactory()
         viewer = UserFactory()

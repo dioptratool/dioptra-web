@@ -536,10 +536,26 @@ class TestSetAnalysisArchived:
         assert row.archived_at is None
         assert row.analysis_status == status
 
-    def test_users_who_do_not_own_the_analysis_are_denied(self):
+    @pytest.mark.parametrize("status", list(AnalysisStatus))
+    def test_primary_country_editor_archives_and_unarchives_in_every_status(self, status):
+        analysis = AnalysisFactory(lifecycle__analysis_status=status)
+        editor = primary_country_editor(analysis)
+
+        set_analysis_archived(analysis.pk, editor, True)
+        row = stored(analysis)
+        assert row.is_archived is True
+        assert row.archived_by == editor
+
+        set_analysis_archived(analysis.pk, editor, False)
+        row = stored(analysis)
+        assert row.is_archived is False
+        assert row.archived_by is None
+        assert row.archived_at is None
+        assert row.analysis_status == status
+
+    def test_users_without_edit_access_are_denied(self):
         analysis = AnalysisFactory()
         actors = [
-            primary_country_editor(analysis),
             secondary_country_viewer(analysis),
             UserFactory(),
             AnonymousUser(),
@@ -551,7 +567,7 @@ class TestSetAnalysisArchived:
         assert stored(analysis).is_archived is False
 
         archived = AnalysisFactory(lifecycle__is_archived=True)
-        for actor in actors[:3] + [AnonymousUser(), None]:
+        for actor in actors:
             with pytest.raises(AnalysisLifecyclePermissionDenied):
                 set_analysis_archived(archived.pk, actor, False)
         assert stored(archived).is_archived is True

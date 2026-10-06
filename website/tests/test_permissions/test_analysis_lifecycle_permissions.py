@@ -15,8 +15,8 @@ ROLES = ["admin", "owner", "primary_country_editor", "secondary_country_viewer",
 STATUS_INDEPENDENT = {
     "website.view_analysis": {"admin", "owner", "primary_country_editor", "secondary_country_viewer"},
     "website.duplicate_analysis": {"admin", "owner", "primary_country_editor"},
-    "website.archive_analysis": {"admin", "owner"},
-    "website.unarchive_analysis": {"admin", "owner"},
+    "website.archive_analysis": {"admin", "owner", "primary_country_editor"},
+    "website.unarchive_analysis": {"admin", "owner", "primary_country_editor"},
     "website.delete_analysis": {"admin"},
 }
 
@@ -70,12 +70,12 @@ def test_only_admins_edit_a_validated_analysis(permission, role):
 
 
 @pytest.mark.django_db
-def test_archive_and_delete_do_not_follow_from_country_edit_access():
+def test_archive_follows_from_country_edit_access_but_delete_does_not():
     analysis = AnalysisFactory()
     editor = user_in_role("primary_country_editor", analysis)
     assert editor.has_perm("website.change_analysis", analysis)
-    assert not editor.has_perm("website.archive_analysis", analysis)
-    assert not editor.has_perm("website.unarchive_analysis", analysis)
+    assert editor.has_perm("website.archive_analysis", analysis)
+    assert editor.has_perm("website.unarchive_analysis", analysis)
     assert not editor.has_perm("website.delete_analysis", analysis)
 
 
