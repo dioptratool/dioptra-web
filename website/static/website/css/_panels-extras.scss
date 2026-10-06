@@ -304,3 +304,86 @@ input[type="file"].clearable-file__upload {
     transform: translate(-150%,-50%) scaleX(2) rotate(270deg)
   }
 }
+
+/* Center checkbox with label */
+.radio, .checkbox {
+  margin-top: 0;
+}
+.radio input[type=radio],
+.radio-inline input[type=radio] {
+  height: 1lh;
+}
+
+.checkbox label,
+.checkbox-inline {
+  align-items: center;
+  color: #111;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 400;
+  gap: 7px;
+  line-height: normal;
+  min-height: 0;
+  padding-left: 0;
+}
+
+.checkbox.disabled label,
+fieldset[disabled] .checkbox label,
+.checkbox-inline.disabled,
+fieldset[disabled] .checkbox-inline {
+  color: #666;
+}
+
+.filter-list form.filter-list-form > .form-inline .form-group .checkbox {
+  label {
+    display: inline-flex;
+    margin-left: 0;
+  }
+
+  input {
+    float: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.checkbox + .help-block {
+  padding-left: 27px;
+}
+
+.checkbox input[type=checkbox],
+.checkbox-inline input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  background-position: center;
+  border: 0;
+  flex: 0 0 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  position: static;
+  width: 20px;
+  @include checkbox-box(off);
+
+  &:checked {
+    @include checkbox-box(on);
+  }
+
+  &:indeterminate {
+    @include checkbox-box(indeterminate);
+  }
+
+  &:disabled {
+    @include checkbox-box(disabled);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+}
+
+.form-group .help-block {
+  font-size: 16px;
+}

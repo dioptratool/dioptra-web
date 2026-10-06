@@ -3534,6 +3534,8 @@ details summary {
 }
 
 .form__checkbox span {
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
   background-image: url("../images/checkbox--unchecked.svg");
 }
 .form__checkbox input:checked + span {
@@ -3542,20 +3544,41 @@ details summary {
 
 .form__checkbox--simple span {
   background-color: transparent;
+  background-position: 1rem center;
+  color: #111;
+  font-weight: 400;
   min-width: 0;
+  padding-left: 3.7rem;
   padding-right: 0.5rem;
 }
 .form__checkbox--simple input:checked + span, .form__checkbox--simple input:hover + span {
   background-color: transparent;
 }
 .form__checkbox--simple input:checked + span {
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
   background-image: url("../images/checkbox--checked--green.svg");
 }
 .form__checkbox--simple input:indeterminate + span {
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
   background-image: url("../images/checkbox--indeterminate.svg");
 }
 .form__checkbox--simple input[disabled] + span {
   background-color: transparent;
+  color: #666;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  background-image: url("../images/checkbox--disabled.svg");
+}
+
+.form__checkbox--no-label span {
+  background-position: center;
+  height: 2rem;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  width: 2rem;
 }
 
 .form__checkbox--simple-cash-transfer {
@@ -3930,6 +3953,8 @@ input[type=text].filters__search-input {
   clip: rect(1px, 1px, 1px, 1px);
 }
 .filter__facet .multiple-checkbox span {
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
   background-image: url("../images/checkbox--unchecked.svg");
   background-position: 1rem center;
   background-repeat: no-repeat;
@@ -3950,7 +3975,9 @@ input[type=text].filters__search-input {
 }
 .filter__facet .multiple-checkbox input:checked + span {
   background-color: rgb(241, 247, 253);
-  background-image: url("../images/checkbox--checked.svg");
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  background-image: url("../images/checkbox--checked--green.svg");
 }
 .filter__facet .multiple-checkbox input:focus + span {
   outline: 1px dotted #212121;
@@ -6430,16 +6457,9 @@ a.analysis-navigation__prev-next:hover {
 }
 .analysis-table__transaction-table tbody .analysis-table__transaction-checkbox {
   flex-shrink: 0;
-  margin: -0.6rem;
 }
 .analysis-table__transaction-table tbody .analysis-table__transaction-checkbox label {
   display: block;
-}
-.analysis-table__transaction-table tbody .analysis-table__transaction-checkbox .form__checkbox--simple span {
-  background-position: center center;
-  min-height: 2rem;
-  min-width: 2rem;
-  padding: 0;
 }
 .analysis-table__transaction-table tbody .analysis-table__transaction-description {
   flex: 1 1 auto;
@@ -7062,8 +7082,9 @@ input[type=text].analysis-table__allocated-input {
   line-height: 1.1429;
 }
 
-.analysis-table__table > tbody > tr > td.analysis-table__bulk-update-checkbox {
-  padding: 0;
+.analysis-table__table > tbody > tr > td.analysis-table__bulk-update-checkbox .form__checkbox--no-label label {
+  display: flex;
+  justify-content: center;
 }
 
 .analysis-table__pagination {

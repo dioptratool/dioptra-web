@@ -338,7 +338,7 @@
 
 .form__checkbox {
   span {
-    background-image: url('../images/checkbox--unchecked.svg');
+    @include checkbox-box(off);
   }
 
   input {
@@ -352,7 +352,11 @@
 .form__checkbox--simple {
   span {
     background-color: transparent;
+    background-position: 1rem center;
+    color: #111;
+    font-weight: $font-weight-regular;
     min-width: 0;
+    padding-left: 3.7rem;
     padding-right: 0.5rem;
   }
 
@@ -363,17 +367,28 @@
     }
 
     &:checked + span {
-      background-image: url('../images/checkbox--checked--green.svg');
+      @include checkbox-box(on);
     }
 
     &:indeterminate + span {
-      background-image: url('../images/checkbox--indeterminate.svg');
+      @include checkbox-box(indeterminate);
     }
 
     &[disabled] + span {
       background-color: transparent;
+      color: #666;
+      @include checkbox-box(disabled);
     }  
   }
+}
+
+.form__checkbox--no-label span {
+  background-position: center;
+  height: 2rem;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  width: 2rem;
 }
 
 .form__checkbox--simple-cash-transfer {

@@ -30,7 +30,7 @@
         {% endfor %}
         {# Metadata controls for every intervention; the script shows the selected intervention's. #}
         <div class="intervention-metadata-section" data-metadata-section hidden>
-            <h3 class="intervention-metadata-section__title">{% translate 'Metadata' %}</h3>
+            <h3 class="intervention-metadata-section__title sr-only">{% translate 'Metadata' %}</h3>
             {% for field in form %}
                 {% if field.name|is_metadata_field %}
                     {% include 'bootstrap/field.html' with field=field|add_input_classes %}

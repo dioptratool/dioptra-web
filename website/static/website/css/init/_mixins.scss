@@ -35,6 +35,23 @@
   outline: 5px auto -webkit-focus-ring-color;
 }
 
+// Figma checkbox (Dioptra Components, node 0:870). Callers keep their own
+// position, padding, and label styles.
+@mixin checkbox-box($state: off) {
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+
+  @if $state == on {
+    background-image: url('../images/checkbox--checked--green.svg');
+  } @else if $state == indeterminate {
+    background-image: url('../images/checkbox--indeterminate.svg');
+  } @else if $state == disabled {
+    background-image: url('../images/checkbox--disabled.svg');
+  } @else {
+    background-image: url('../images/checkbox--unchecked.svg');
+  }
+}
+
 @mixin button-submit() {
   background-color: $color-green;
   border: none;

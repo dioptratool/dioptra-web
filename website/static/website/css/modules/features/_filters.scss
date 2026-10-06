@@ -148,7 +148,7 @@ input[type="text"].filters__search-input {
     }
 
     span {
-      background-image: url('../images/checkbox--unchecked.svg');
+      @include checkbox-box(off);
       background-position: 1rem center;
       background-repeat: no-repeat;
       border-radius: 2px;
@@ -168,7 +168,7 @@ input[type="text"].filters__search-input {
 
     input:checked + span {
       background-color: $color-moonstone;
-      background-image: url('../images/checkbox--checked.svg');
+      @include checkbox-box(on);
     }
 
     input:focus + span {
