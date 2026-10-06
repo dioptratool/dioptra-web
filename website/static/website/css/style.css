@@ -7789,20 +7789,36 @@ button.lifecycle-badge--validated:hover, button.lifecycle-badge--validated:focus
 }
 
 .insights__metadata {
-  margin: 1.2rem 0.5rem 0;
-  max-width: 75.5rem;
+  background-color: #f1f7fd;
+  border-radius: 0.4rem;
+  box-sizing: border-box;
+  color: rgb(51, 51, 51);
+  margin: 1.2rem 0 0;
+  max-width: 100%;
+  overflow: clip;
+  padding: 1.2rem;
+  width: fit-content;
+  word-break: break-word;
 }
 .insights__metadata .insights__data-list {
-  grid-template-columns: max-content auto;
-  column-gap: 2rem;
+  column-gap: 1.2rem;
+  grid-template-columns: minmax(8rem, 50%) auto;
+  row-gap: 0.8rem;
+  font-size: 13px;
+  font-size: 1.3rem;
+  line-height: normal;
+}
+.insights__metadata .insights__data-label,
+.insights__metadata .insights__data-value {
+  margin: 0;
+  min-width: 0;
 }
 .insights__metadata .insights__data-label {
-  min-width: 0;
-  max-width: 24rem;
-  overflow-wrap: anywhere;
+  font-weight: 700;
+  max-width: none;
 }
 .insights__metadata .insights__data-value {
-  overflow-wrap: anywhere;
+  font-weight: 400;
 }
 
 .insights__created {

@@ -123,23 +123,39 @@
 }
 
 // An intervention's metadata, below its parameters.
+// Figma: Dioptra 2.4 Intervention Metadata, node 1059:1573.
 .insights__metadata {
-  margin: 1.2rem 0.5rem 0;
-  max-width: 75.5rem;
+  background-color: #f1f7fd;
+  border-radius: 0.4rem;
+  box-sizing: border-box;
+  color: $color-mineshaft;
+  margin: 1.2rem 0 0;
+  max-width: 100%;
+  overflow: clip;
+  padding: 1.2rem;
+  width: fit-content;
+  word-break: break-word;
 
   .insights__data-list {
-    grid-template-columns: max-content auto;
-    column-gap: 2rem;
+    column-gap: 1.2rem;
+    grid-template-columns: minmax(8rem, 50%) auto;
+    row-gap: 0.8rem;
+    @include font-size(13, normal);
+  }
+
+  .insights__data-label,
+  .insights__data-value {
+    margin: 0;
+    min-width: 0;
   }
 
   .insights__data-label {
-    min-width: 0;
-    max-width: 24rem;
-    overflow-wrap: anywhere;
+    font-weight: $font-weight-bold;
+    max-width: none;
   }
 
   .insights__data-value {
-    overflow-wrap: anywhere;
+    font-weight: $font-weight-regular;
   }
 }
 
