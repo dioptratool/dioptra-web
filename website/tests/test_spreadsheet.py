@@ -10,7 +10,7 @@ from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
 
-from website.models import AnalysisCostType, AnalysisType, CostType, FieldLabelOverrides
+from website.models import AnalysisCostType, AnalysisStatus, AnalysisType, CostType, FieldLabelOverrides
 from website.tests.factories import (
     AnalysisCostTypeCategoryFactory,
     AnalysisCostTypeCategoryGrantFactory,
@@ -531,9 +531,33 @@ class TestAnalysisSpreadsheet:
             analysis_url="https://example.com/analysis/1/insights/",
         )
 
-        assert worksheet["A9"].value == "Value of Cash Distributed"
-        assert worksheet["B9"].value == 10000
-        assert worksheet["B9"].number_format == '"$"#,##0.00'
+        assert worksheet["A10"].value == "Value of Cash Distributed"
+        assert worksheet["B10"].value == 10000
+        assert worksheet["B10"].number_format == '"$"#,##0.00'
+
+    @pytest.mark.django_db
+    def test_metadata_table_shows_the_lifecycle_status(self):
+        intervention = InterventionFactory(output_metrics=["ValueOfCashDistributed"])
+        analysis = AnalysisFactory(lifecycle__analysis_status=AnalysisStatus.VALIDATED)
+        intervention_instance = analysis.add_intervention(
+            intervention, parameters={"value_of_cash_distributed": 10000}
+        )
+        worksheet = Workbook().active
+
+        _write_metadata_table(
+            ws=worksheet,
+            an_analysis=analysis,
+            intervention_instance=intervention_instance,
+            parameter_metadata={},
+            analysis_url="https://example.com/analysis/1/insights/",
+        )
+
+        assert [worksheet[f"A{row}"].value for row in (2, 3, 4)] == [
+            "Analysis Type",
+            "Analysis Status",
+            "Analysis Description",
+        ]
+        assert worksheet["B3"].value == "Validated"
 
     @pytest.mark.django_db
     def test_full_cost_model_spreadsheet(self, spreadsheet_analysis, rf):
@@ -553,29 +577,29 @@ class TestAnalysisSpreadsheet:
 
         worksheet = wb.active
 
-        assert worksheet["A9"].value == "Number of Teachers"
-        assert worksheet["A10"].value == "Number of Days of Training"
-        assert worksheet["A11"].value == "Number of Years of Support"
-        assert worksheet["B9"].value == 40
-        assert worksheet["B10"].value == 80
-        assert worksheet["B11"].value == 10
-        assert worksheet["B14"].value == "The True Author"  # Author
+        assert worksheet["A10"].value == "Number of Teachers"
+        assert worksheet["A11"].value == "Number of Days of Training"
+        assert worksheet["A12"].value == "Number of Years of Support"
+        assert worksheet["B10"].value == 40
+        assert worksheet["B11"].value == 80
+        assert worksheet["B12"].value == 10
+        assert worksheet["B15"].value == "The True Author"  # Author
         assert (
-            worksheet["B15"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
+            worksheet["B16"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
         )  # Analysis URL
-        assert worksheet["B19"].value, "=FIXED(SUM(C30) / (B9 * B10) ==  2)"
-        assert worksheet["B20"].value, "=FIXED(C32 / (B9 * B10) ==  2)"
+        assert worksheet["B20"].value, "=FIXED(SUM(C31) / (B10 * B11) ==  2)"
+        assert worksheet["B21"].value, "=FIXED(C33 / (B10 * B11) ==  2)"
         assert (
-            worksheet["B21"].value
-            == "=FIXED((IFERROR(C34 / (B9 * B10), 0)) + (IFERROR(SUM(E45) / (B9 * B10), 0)), 2)"
+            worksheet["B22"].value
+            == "=FIXED((IFERROR(C35 / (B10 * B11), 0)) + (IFERROR(SUM(E46) / (B10 * B11), 0)), 2)"
         )
-        assert worksheet["B22"].value, "=FIXED(SUM(C30) / (B9 / B11) ==  2)"
-        assert worksheet["B23"].value, "=FIXED(C32 / (B9 / B11) ==  2)"
+        assert worksheet["B23"].value, "=FIXED(SUM(C31) / (B10 / B12) ==  2)"
+        assert worksheet["B24"].value, "=FIXED(C33 / (B10 / B12) ==  2)"
         assert (
-            worksheet["B24"].value
-            == "=FIXED((IFERROR(C34 / (B9 / B11), 0)) + (IFERROR(SUM(E45) / (B9 / B11), 0)), 2)"
+            worksheet["B25"].value
+            == "=FIXED((IFERROR(C35 / (B10 / B12), 0)) + (IFERROR(SUM(E46) / (B10 / B12), 0)), 2)"
         )
-        assert worksheet["B25"].value, "=FIXED(SUM(E42) ==  2)"
+        assert worksheet["B26"].value, "=FIXED(SUM(E43) ==  2)"
         column_a_values = [cell.value for cell in worksheet["A"]]
         assert "Other Costs" in column_a_values
         assert "Other HQ Costs" not in column_a_values
@@ -886,22 +910,22 @@ class TestMetadataRowsInTheSpreadsheet:
         worksheet, parameter_metadata, next_row = _write_table(analysis, instance)
 
         # The parameter row and its recorded position are untouched.
-        assert worksheet["A9"].value == "Value of Cash Distributed"
-        assert worksheet["B9"].value == 10000
-        assert parameter_metadata == {"value_of_cash_distributed": 9}
+        assert worksheet["A10"].value == "Value of Cash Distributed"
+        assert worksheet["B10"].value == 10000
+        assert parameter_metadata == {"value_of_cash_distributed": 10}
         # Then the metadata, in configured order, blanks omitted and zero kept.
-        assert [(worksheet[f"A{row}"].value, worksheet[f"B{row}"].value) for row in (10, 11, 12)] == [
+        assert [(worksheet[f"A{row}"].value, worksheet[f"B{row}"].value) for row in (11, 12, 13)] == [
             ("Partner", "Save the Children"),
             ("Volunteers", 0),
             ("Age", "Under 18"),
         ]
-        assert worksheet["A12"].font.bold
-        assert worksheet["A12"].fill.start_color.rgb == worksheet["A9"].fill.start_color.rgb
+        assert worksheet["A13"].font.bold
+        assert worksheet["A13"].fill.start_color.rgb == worksheet["A10"].fill.start_color.rgb
         # The trailing rows moved down by three, and so did the next free row.
-        assert worksheet["A13"].value == "Output count data source"
-        assert worksheet["B13"].value == "My Output Count Source"
-        assert worksheet["A16"].value == "Analysis URL"
-        assert next_row == 17
+        assert worksheet["A14"].value == "Output count data source"
+        assert worksheet["B14"].value == "My Output Count Source"
+        assert worksheet["A17"].value == "Analysis URL"
+        assert next_row == 18
 
     def test_without_metadata_nothing_changes(self):
         intervention, analysis, instance = _cash_analysis()
@@ -909,8 +933,8 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, parameter_metadata, next_row = _write_table(analysis, instance)
 
-        assert worksheet["A10"].value == "Output count data source"
-        assert next_row == 14
+        assert worksheet["A11"].value == "Output count data source"
+        assert next_row == 15
 
     @pytest.mark.parametrize(
         ("number_type", "raw", "value", "number_format"),
@@ -949,10 +973,10 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert worksheet["A10"].value == "Amount"
-        assert worksheet["B10"].value == value
-        assert worksheet["B10"].data_type == "n"
-        assert worksheet["B10"].number_format == number_format
+        assert worksheet["A11"].value == "Amount"
+        assert worksheet["B11"].value == value
+        assert worksheet["B11"].data_type == "n"
+        assert worksheet["B11"].number_format == number_format
 
     @pytest.mark.parametrize(
         ("number_type", "raw", "text"),
@@ -979,9 +1003,9 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert worksheet["B10"].value == text
-        assert worksheet["B10"].data_type == "s"
-        assert worksheet["B10"].number_format == "@"
+        assert worksheet["B11"].value == text
+        assert worksheet["B11"].data_type == "s"
+        assert worksheet["B11"].number_format == "@"
 
     def test_text_values_and_labels_are_literal_strings(self):
         intervention, analysis, instance = _cash_analysis()
@@ -1006,15 +1030,15 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert (worksheet["A10"].value, worksheet["A10"].data_type) == ("=Partner", "s")
-        assert (worksheet["B10"].value, worksheet["B10"].data_type) == ("=1+1", "s")
-        assert worksheet["B10"].number_format == "@"
-        assert (worksheet["B11"].value, worksheet["B11"].data_type) == ("10000", "s")
+        assert (worksheet["A11"].value, worksheet["A11"].data_type) == ("=Partner", "s")
+        assert (worksheet["B11"].value, worksheet["B11"].data_type) == ("=1+1", "s")
         assert worksheet["B11"].number_format == "@"
+        assert (worksheet["B12"].value, worksheet["B12"].data_type) == ("10000", "s")
+        assert worksheet["B12"].number_format == "@"
         # The real parameter above keeps its numeric currency cell.
-        assert worksheet["B9"].value == 10000
-        assert worksheet["B9"].number_format == '"$"#,##0.00'
-        assert worksheet["B12"].value == "X, Y"
+        assert worksheet["B10"].value == 10000
+        assert worksheet["B10"].number_format == '"$"#,##0.00'
+        assert worksheet["B13"].value == "X, Y"
 
     def test_full_cost_model_spreadsheet_formulas_follow_the_inserted_rows(self, spreadsheet_analysis, rf):
         """
@@ -1033,36 +1057,36 @@ class TestMetadataRowsInTheSpreadsheet:
         instance.save()
         with_metadata = _download(rf, spreadsheet_analysis)
 
-        assert [with_metadata[f"A{row}"].value for row in (9, 10, 11)] == [
+        assert [with_metadata[f"A{row}"].value for row in (10, 11, 12)] == [
             "Number of Teachers",
             "Number of Days of Training",
             "Number of Years of Support",
         ]
-        assert [with_metadata[f"B{row}"].value for row in (9, 10, 11)] == [40, 80, 10]
+        assert [with_metadata[f"B{row}"].value for row in (10, 11, 12)] == [40, 80, 10]
         # Text survives the file round trip as text, never as a formula.
-        assert (with_metadata["A12"].value, with_metadata["A12"].data_type) == ("=Partner", "s")
-        assert (with_metadata["B12"].value, with_metadata["B12"].data_type) == ("=1+1", "s")
+        assert (with_metadata["A13"].value, with_metadata["A13"].data_type) == ("=Partner", "s")
+        assert (with_metadata["B13"].value, with_metadata["B13"].data_type) == ("=1+1", "s")
         symbol = currency_symbol(spreadsheet_analysis)
-        assert (with_metadata["B13"].value, with_metadata["B13"].data_type) == (
+        assert (with_metadata["B14"].value, with_metadata["B14"].data_type) == (
             f"{symbol}1,234,567,890,123,456.78",
             "s",
         )
-        assert with_metadata["B16"].value == "The True Author"
+        assert with_metadata["B17"].value == "The True Author"
         assert (
-            with_metadata["B17"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
+            with_metadata["B18"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
         )
         assert (
-            with_metadata["B23"].value
-            == "=FIXED((IFERROR(C36 / (B9 * B10), 0)) + (IFERROR(SUM(E47) / (B9 * B10), 0)), 2)"
+            with_metadata["B24"].value
+            == "=FIXED((IFERROR(C37 / (B10 * B11), 0)) + (IFERROR(SUM(E48) / (B10 * B11), 0)), 2)"
         )
-        # Rows 1-11 are identical; from row 12 on, the plain layout reappears two rows lower with
+        # Rows 1-12 are identical; from row 13 on, the plain layout reappears two rows lower with
         # every formula reference at or below row 12 shifted by two.
         assert with_metadata.max_row == plain.max_row + 2
         for row in range(1, plain.max_row + 1):
             for column in range(1, plain.max_column + 1):
                 source = plain.cell(row=row, column=column)
-                target = with_metadata.cell(row=row + 2 if row >= 12 else row, column=column)
-                assert target.value == _shifted(source.value, shift=2, from_row=12), (row, column)
+                target = with_metadata.cell(row=row + 2 if row >= 13 else row, column=column)
+                assert target.value == _shifted(source.value, shift=2, from_row=13), (row, column)
                 assert target.number_format == source.number_format, (row, column)
 
 

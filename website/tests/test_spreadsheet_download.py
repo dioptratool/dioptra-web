@@ -101,6 +101,8 @@ class TestFullCostModelSpreadsheetEndpoint:
         assert resp.status_code == 200
         worksheet = load_workbook(filename=io.BytesIO(b"".join(resp.streaming_content))).worksheets[0]
         labels = [cell.value for cell in worksheet["A"]]
+        assert labels[:3] == ["Analysis Title", "Analysis Type", "Analysis Status"]
+        assert worksheet["B3"].value == "In Progress"
         start = labels.index("Partner")
         assert labels[start : start + 4] == ["Partner", "Volunteers", "Age", "Output count data source"]
         assert [worksheet[f"B{start + 1 + offset}"].value for offset in range(3)] == [

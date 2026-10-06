@@ -92,6 +92,7 @@ def _write_metadata_table(
     metadata = [
         ("Analysis Title", an_analysis.title),
         ("Analysis Type", getattr(an_analysis.analysis_type, "title", "")),
+        ("Analysis Status", an_analysis.get_analysis_status_display()),
         ("Analysis Description", an_analysis.description),
         ("Analysis Start Date", an_analysis.start_date),
         ("Analysis End Date", an_analysis.end_date),
