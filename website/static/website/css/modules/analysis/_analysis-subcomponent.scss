@@ -68,9 +68,17 @@
 }
 .analysis-table__table > thead > tr > th.analysis-table__subcomponent-header--total {
   background-color:  $color-table-accent-blue;
+  border-left: 1px solid $color-white;
   color: $color-mineshaft;
   text-align: right;
   min-width: 16rem;
+}
+.analysis-table__table > thead > tr > th:has(+ th.analysis-table__subcomponent-header--total) {
+  border-right: none;
+}
+
+.analysis-table__intervention-subtotal-cell {
+  text-align: right;
 }
 .analysis-table__table > tbody > tr > .analysis-table__intervention-subtotal-cell {
   background-color: $color-moonstone-2;
@@ -79,11 +87,6 @@
   background-color: $color-moonstone-3;
 }
 
-.analysis-table__intervention-subtotal {
-  display: block;
-  min-width: 8rem;
-  text-align: right;
-}
 
 .analysis-table__subcomponent-total {
   min-width: 6rem;
@@ -111,15 +114,11 @@
   }
 }
 .analysis-table__subcomponent-skip__label {
-  padding: 8px 16px;
-  border-radius: 2px;
-  background-color: $color-moonstone;
-  color: $color-mineshaft;
+  @extend .analysis-table__action;
+  cursor: pointer;
   margin-bottom: 0;
-  &:hover {
-    filter: brightness(0.9);
-    cursor: pointer;
-  }
+  line-height: 1;
+
   .analysis-table__subcomponent-skip input:disabled + & {
     color: $color-smoke;
     text-decoration: none;

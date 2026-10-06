@@ -130,11 +130,9 @@
                         The following template contains the expected format for uploaded data:</p>
 
                         <div class="analysis__load-data-details" data-section="budget">
-                            {% if dioptra_settings.budget_upload_template %}
-                                <a class="analysis__load-data-download-link"
-                                href="{{ dioptra_settings.budget_upload_template.url }}"
-                                download>{% translate "Download Template" %}</a>{% help 'load_data__download_template' %}
-                            {% endif %}
+                            <a class="analysis__load-data-download-link"
+                               href="{{ budget_template_url }}"
+                               download>{% translate "Download Template" %}</a>{% help 'load_data__download_template' %}
                         </div>
                         <div class="analysis__load-data-details" data-section="transactions">
                             {% for transaction_template in transaction_templates %}

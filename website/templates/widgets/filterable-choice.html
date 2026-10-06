@@ -1,0 +1,48 @@
+{% load i18n %}
+{% with field_id=widget.attrs.id|default:widget.name %}
+{# Filter out 'form-control' class if present #}
+{% with cleaned_class=widget.attrs.class|default_if_none:""|cut:"form-control" %}
+<div class="filterable-choice{% if cleaned_class %} {{ cleaned_class }}{% endif %}" data-filterable-choice>
+{% endwith %}
+  {# The posted value: always one of the choices, or blank for "no change". #}
+  <input type="hidden" name="{{ widget.name }}" value="{{ widget.selected_value|stringformat:'s' }}" data-filterable-choice-value>
+  <div class="filterable-choice__control">
+    <input type="text"
+           id="{{ field_id }}"
+           class="form-control filterable-choice__input"
+           role="combobox"
+           aria-expanded="false"
+           aria-autocomplete="list"
+           aria-controls="{{ field_id }}-listbox"
+           autocomplete="off"
+           value="{{ widget.selected_label }}"
+           {% if widget.placeholder %}placeholder="{{ widget.placeholder }}"{% endif %}
+           {% if widget.attrs.disabled %}disabled{% endif %}
+           data-filterable-choice-input>
+    {# A tab stop: clearing has no keyboard equivalent, unlike the toggle's ArrowDown. #}
+    <button type="button"
+            class="filterable-choice__clear"
+            aria-label="{% translate 'Clear selection' %}"
+            {% if not widget.selected_value %}hidden{% endif %}
+            data-filterable-choice-clear></button>
+    <button type="button"
+            class="filterable-choice__toggle"
+            tabindex="-1"
+            aria-label="{% translate 'Show options' %}"
+            {% if widget.attrs.disabled %}disabled{% endif %}
+            data-filterable-choice-toggle></button>
+  </div>
+  <ul class="filterable-choice__list" id="{{ field_id }}-listbox" role="listbox" hidden data-filterable-choice-list>
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+      {% for option in group_choices %}{% if option.value != '' %}
+        <li class="filterable-choice__option"
+            id="{{ field_id }}-option-{{ group_index }}-{{ forloop.counter }}"
+            role="option"
+            aria-selected="{% if option.selected %}true{% else %}false{% endif %}"
+            data-value="{{ option.value|stringformat:'s' }}"
+            data-label="{{ option.label|stringformat:'s' }}">{{ option.label }}</li>
+      {% endif %}{% endfor %}
+    {% endfor %}
+  </ul>
+</div>
+{% endwith %}

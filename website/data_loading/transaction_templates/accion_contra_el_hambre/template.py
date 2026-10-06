@@ -130,7 +130,7 @@ class Template(TransactionTemplate):
                 "sector_code": row.get("cat6", ""),
                 "transaction_code": row.get("trans_no", ""),
                 "transaction_description": row.get("text", ""),
-                "currency_code": "EUR",
+                "currency_code": "",
                 "budget_line_description": row.get("description_ii", ""),
                 "amount": row.get("amount_eur", ""),
                 "dummy_field_1": "",

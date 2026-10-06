@@ -4,41 +4,50 @@ Select `Save the Children` in the admin panel under
 `Settings > Analysis > Transaction Import Template`. The stored template ID is
 `save_the_children`.
 
-The upload file is expected to include the headers returned by the transaction
-template download. Unmapped headers are accepted as no-op fields so users can
-upload the Save the Children report shape without reducing it to only Dioptra
-fields first.
+The source file is positional, 12 columns wide. The first row is a header row
+whose values are ignored: it is always dropped, and the rows below it are read
+as `column_1` through `column_12` by position before the normal mapping step.
+The downloadable template carries `column_1` through `column_12` in that row.
 
 Mapped fields:
 
-| Save the Children header   | Dioptra field           |
-|----------------------------|-------------------------|
-| Costc Description          | country_code            |
-| CostC (T), as a fallback   | country_code            |
-| Subaward Code              | grant_code              |
-| Budget Chapter             | budget_line_code        |
-| Budget Chapter Description | budget_line_description |
-| Account                    | account_code            |
-| Period                     | transaction_date        |
-| Amount in USD              | amount                  |
+| Save the Children position | Dioptra field               |
+|----------------------------|-----------------------------|
+| column_1                   | grant_code                  |
+| column_2                   | transaction_description     |
+| column_3                   | budget_line_description     |
+| column_4                   | account_code                |
+| column_5                   | transaction_date            |
+| column_6                   | amount                      |
+| column_7                   | sector_code                 |
+| column_8                   | dummy_field_1 (Transaction Custom Field 1) |
+| column_9                   | dummy_field_2 (Transaction Custom Field 2) |
+| column_10                  | dummy_field_3 (Transaction Custom Field 3) |
+| column_11                  | dummy_field_4 (Transaction Custom Field 4) |
+| column_12                  | dummy_field_5 (Transaction Custom Field 5) |
 
-The template sets `currency_code` to `USD`.
-`Country Office`, `Transaction Date`, `Trans No`, and
-`Transaction Desc (Text)` are accepted as no-op fields and are not mapped.
+Required source columns:
 
-Required source headers:
+- column_1
+- column_3
+- column_4
+- column_5
+- column_6
 
-- Costc Description (or CostC (T))
-- Subaward Code
-- Budget Chapter Description
-- Account
-- Period
-- Amount in USD
+Two canonical fields have no source column in this layout:
 
-When `Costc Description` is absent, `CostC (T)` supplies `country_code`. If
-both headers are present, `Costc Description` takes precedence.
+- `country_code` is taken from the analysis's country.
+- `currency_code` is left blank, so the currency configured for the instance is
+  used; `column_6` is reported in that currency.
 
-`Period` accepts `YYYYMM`, `%d/%m/%Y`, or `%Y-%m-%d` and is normalized to
-Dioptra's canonical `YYYY-MM-DD` date. A `YYYYMM` period uses the first day of
-the month; for example, `202605` becomes `2026-05-01`. Amounts must be numeric
-strings without currency symbols. Standard thousands separators are allowed.
+`budget_line_code`, `site_code` and `transaction_code` are not mapped.
+
+`column_5` accepts `%Y%m` (e.g. `202306`), `%d/%m/%Y` and `%Y-%m-%d`. The
+transaction date is normalized to Dioptra's canonical `YYYY-MM-DD`. Amounts must
+be numeric strings without currency symbols; standard thousands separators are
+allowed.
+
+The five custom columns are surfaced as Transaction Custom Field 1-5 wherever
+transactions are shown, and can be renamed under
+`Settings > Manage Field Label Overrides > Transaction Custom Fields`. Custom
+field values do not take part in grouping transactions into cost items.

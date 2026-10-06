@@ -1,6 +1,6 @@
 {% load help humanize i18n panels_form_extras %}
 <tr class="analysis-table__edit-row confirm-categories">
-      <td colspan="{% if showSectorCode == 'true' %}7{% elif type == 'categorizeCostType' %}8{% else %}6{% endif %}" class="analysis-table__edit-row-cell">
+      <td colspan="99" class="analysis-table__edit-row-cell">
             <form action="{{ request.path }}" method="POST" novalidate data-show-loading-on-submit
                   data-initial-category_id="{{ cost_line_item.config.category_id }}"
                   data-initial-cost_type_id="{{ cost_line_item.config.cost_type_id }}" >

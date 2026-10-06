@@ -5,8 +5,9 @@ from decimal import Decimal
 from django_ckeditor_5.fields import CKEditor5Field
 from django.conf import settings
 from django.db import connection, models
-from django.db.models import F, JSONField, Q, Sum, Value
+from django.db.models import F, JSONField, Max, Q, Sum, Value
 from django.db.models.functions import Coalesce
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from ombucore.admin.fields import ForeignKey
@@ -32,6 +33,10 @@ from .analysis_cost_type_category_grant_intervention import (
 from .analysis_type import AnalysisType
 
 logger = logging.getLogger(__name__)
+
+# Transactions and cost line items each carry five user-defined "custom" columns,
+# stored as dummy_field_1..5. See CANONICAL_TRANSACTION_FIELDS for the transaction side.
+CUSTOM_FIELD_COUNT = 5
 
 
 class Analysis(models.Model):
@@ -171,6 +176,37 @@ class Analysis(models.Model):
     @property
     def cost_line_items(self):
         return self.unfiltered_cost_line_items
+
+    def _populated_custom_fields(self, queryset, label_prefix, default_label):
+        """The custom columns that hold a value somewhere in this analysis.
+
+        A custom column is only shown in the UI when the imported data actually populates it.
+        The columns are NOT NULL and default to "", so Max() is truthy for a column exactly when
+        at least one row has a value -- one aggregate pass over the analysis instead of five
+        EXISTS probes, each of which would scan the whole analysis in the common all-empty case.
+
+        Returns the label key and default rather than a resolved string so templates can keep
+        using the `label_override` filter, as every other column header does.
+        """
+        numbers = range(1, CUSTOM_FIELD_COUNT + 1)
+        values = queryset.aggregate(**{f"f{n}": Max(f"dummy_field_{n}") for n in numbers})
+        return [
+            {
+                "field": f"dummy_field_{n}",
+                "label_key": f"{label_prefix}_dummy_field_{n}",
+                "default_label": f"{default_label} {n}",
+            }
+            for n in numbers
+            if values[f"f{n}"]
+        ]
+
+    @cached_property
+    def cost_item_custom_fields(self):
+        return self._populated_custom_fields(self.cost_line_items, "ci", "Budget Custom Field")
+
+    @cached_property
+    def transaction_custom_fields(self):
+        return self._populated_custom_fields(self.transactions, "tr", "Transaction Custom Field")
 
     def query_grants(self) -> list[str]:
         """
@@ -351,6 +387,9 @@ class Analysis(models.Model):
                                 total_cost=0,
                                 dummy_field_1="",
                                 dummy_field_2="",
+                                dummy_field_3="",
+                                dummy_field_4="",
+                                dummy_field_5="",
                                 note="",
                                 is_special_lump_sum=True,
                             )
@@ -372,6 +411,9 @@ class Analysis(models.Model):
                                 total_cost=0,
                                 dummy_field_1="",
                                 dummy_field_2="",
+                                dummy_field_3="",
+                                dummy_field_4="",
+                                dummy_field_5="",
                                 note="",
                                 is_special_lump_sum=False,
                             )

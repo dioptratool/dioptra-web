@@ -135,7 +135,7 @@ class Template(TransactionTemplate):
                 "sector_code": row.get("activity_code", ""),
                 "transaction_code": row.get("document_no", ""),
                 "transaction_description": row.get("description", ""),
-                "currency_code": "USD",
+                "currency_code": "",
                 "budget_line_description": self._budget_line_description(row),
                 "amount": row.get("usd_amount", ""),
                 "dummy_field_1": "",

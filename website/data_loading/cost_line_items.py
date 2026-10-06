@@ -31,6 +31,9 @@ COST_LINE_ITEM_IMPORT_HEADERS = [
     {"name": "unit_cost", "cast": cast_to_decimal_four_decimal_places},
     {"name": "dummy_field_1", "cast": None},
     {"name": "dummy_field_2", "cast": None},
+    {"name": "dummy_field_3", "cast": None},
+    {"name": "dummy_field_4", "cast": None},
+    {"name": "dummy_field_5", "cast": None},
 ]
 
 

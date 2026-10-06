@@ -366,6 +366,10 @@
       background-image: url('../images/checkbox--checked--green.svg');
     }
 
+    &:indeterminate + span {
+      background-image: url('../images/checkbox--indeterminate.svg');
+    }
+
     &[disabled] + span {
       background-color: transparent;
     }  

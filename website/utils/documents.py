@@ -552,9 +552,9 @@ def _write_full_cost_model_table(
     header_row = [
         "Cost Type",
         "Category",
-        "Cost Item",
+        FieldLabelOverrides.label_for("ci_budget_line_description", "Cost Item"),
         FieldLabelOverrides.label_for("ci_grant_code", "Grant"),
-        "Sector Code",
+        FieldLabelOverrides.label_for("ci_sector_code", "Sector Code"),
         FieldLabelOverrides.label_for("tr_site_code", "Site"),
         FieldLabelOverrides.label_for("ci_total_cost", "Total Cost"),
         "% to Intervention",

@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
 
-from website.models import AnalysisCostType, AnalysisType, CostType
+from website.models import AnalysisCostType, AnalysisType, CostType, FieldLabelOverrides
 from website.tests.factories import (
     AnalysisCostTypeCategoryFactory,
     AnalysisCostTypeCategoryGrantFactory,
@@ -33,6 +33,24 @@ from website.utils.documents import (
     _write_full_cost_model_table,
     _write_metadata_table,
 )
+
+
+@pytest.mark.django_db
+def test_cost_model_headers_follow_budget_field_overrides(spreadsheet_analysis):
+    overrides = FieldLabelOverrides.get()
+    overrides.ci_sector_code = "Programme Code"
+    overrides.ci_sector_code_overridden = True
+    overrides.ci_budget_line_description = "Budget Activity"
+    overrides.ci_budget_line_description_overridden = True
+    overrides.save()
+    worksheet = Workbook().active
+
+    _write_full_cost_model_table(
+        worksheet, spreadsheet_analysis, 1, spreadsheet_analysis.interventioninstance_set.first()
+    )
+
+    assert worksheet["C2"].value == "Budget Activity"
+    assert worksheet["E2"].value == "Programme Code"
 
 
 @pytest.fixture

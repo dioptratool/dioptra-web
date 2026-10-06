@@ -201,10 +201,10 @@ class AllocateMixin:
                     except DecimalException:
                         errors[cost_line_item_id][intervention_id] = _("Not a number")
 
-                if allocation_total < 0 or allocation_total > 100:
-                    errors[cost_line_item_id]["all"] = _(
-                        "Invalid allocation total. Cost line item Allocation must be between 0 and 100"
-                    )
+            if allocation_total < 0 or allocation_total > 100:
+                errors[cost_line_item_id]["all"] = _(
+                    "Invalid allocation total. Cost line item Allocation must be between 0 and 100"
+                )
         return data, errors
 
     def _clear_fields_needing_help(self, errors):

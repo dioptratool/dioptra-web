@@ -36,12 +36,21 @@ $(function() {
             assignCheckedItems();
         });
 
-        $bulkCheckboxes.on('change', function () {
-            if (getCheckedConfigIds().length == 0) {
-                $bulkAssignItems.prop('disabled', true);
-            } else {
-                $bulkAssignItems.prop('disabled', false);
+        $form.on('click', '.program-cost-suggest-item', function (e) {
+            e.preventDefault();
+            var unsavedChanges = $form.hasClass('dirty') || $form.find('[data-changed]').length > 0;
+            if (unsavedChanges && !confirm(this.getAttribute('data-dialog-confirm'))) {
+                return;
             }
+            openAllocationPanel(this.href);
+        });
+
+        $bulkCheckboxes.on('change', function () {
+            updateBulkAssignButtonState();
+        });
+
+        $form.on('change.bulkAssign', 'input.transaction-checkbox', function () {
+            updateBulkAssignButtonState();
         });
 
         // Only enable the bulk checkbox once the page is done fully loading.
@@ -49,32 +58,47 @@ $(function() {
 
         function selectAll() {
             $bulkCheckboxes.prop('checked', true);
-            $bulkAssignItems.prop('disabled', false);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectAllInForm($form, true);
+            }
+            updateBulkAssignButtonState();
         }
 
         function selectNone() {
             $bulkCheckboxes.prop('checked', false);
-            $bulkAssignItems.prop('disabled', true);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectNoneInForm($form);
+            }
+            updateBulkAssignButtonState();
         }
 
         function assignCheckedItems() {
-            var configIds = getCheckedConfigIds();
-            var queryString = '?config_ids=' + configIds.join(',');
+            var queryString = window.AnalysisTableNestedCheckboxes
+                ? window.AnalysisTableNestedCheckboxes.buildBulkQueryString($form)
+                : '?config_ids=' + $bulkCheckboxes.filter(':checked').map(function () {
+                    return parseInt(this.value, 10);
+                }).get().join(',');
             var url = bulkUrl + queryString;
 
-            $(window).off('beforeunload');
-            Panels.open(url).then(function () {
-                window.location = window.location.href;
-            });
+            openAllocationPanel(url);
         }
 
-        function getCheckedConfigIds() {
-            return $bulkCheckboxes
-              .filter(':checked')
-              .toArray()
-              .map(function (checkboxEl) {
-                  return parseInt(checkboxEl.value, 10);
-              })
+        function openAllocationPanel(url) {
+            Panels.open(url).then(function () {
+                $(window).off('beforeunload');
+                window.location = window.location.href;
+            }, function () {});
+        }
+
+        function updateBulkAssignButtonState() {
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.updateBulkAssignButton($form);
+                return;
+            }
+
+            $bulkAssignItems.prop('disabled', $bulkCheckboxes.filter(':checked').length === 0);
         }
 
 

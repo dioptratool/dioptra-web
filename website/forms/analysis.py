@@ -13,8 +13,6 @@ from website.forms.fields import PositiveFixedDecimalField, SubcomponentLabelFie
 from website.forms.widgets import TagEditorWidget
 from website.models import (
     Analysis,
-    Category,
-    CostType,
     InterventionInstance,
     Settings,
     SubcomponentCostAnalysis,
@@ -133,38 +131,39 @@ class DefineForm(forms.ModelForm):
         return True if re.match(r"^\S+$", grant) else False
 
 
-class CategorizeCostTypeBulkForm(forms.Form):
-    cost_type = forms.ModelChoiceField(CostType.objects)
-    category = forms.ModelChoiceField(Category.objects)
-    config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["config_ids"].choices = (
-            (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
-        )
-
-
 class AllocateInterventionBulkForm(forms.Form):
     """
     Bulk "Set Allocation" panel form for the Allocate Intervention Costs step.
     """
 
     config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
+    suggestion_requested = forms.BooleanField(required=False, widget=forms.HiddenInput())
 
-    def __init__(self, *args, analysis, **kwargs):
+    def __init__(
+        self,
+        *args,
+        interventions,
+        include_notes=True,
+        allow_empty_allocations=False,
+        suggested_intervention_ids=(),
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.fields["config_ids"].choices = (
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
-        for intervention_instance in analysis.interventioninstance_set.all():
+        for intervention_instance in interventions:
+            css_class = "bulk-allocation-input"
+            if intervention_instance.id in suggested_intervention_ids:
+                # Highlight fields pre-filled with a suggestion; the JS removes it on edit.
+                css_class += " bulk-allocation-input--suggested"
             self.fields[f"allocation_{intervention_instance.id}"] = PositiveFixedDecimalField(
                 label=intervention_instance.display_name(),
                 max_value=100,
                 min_value=0,
                 initial=0,
                 allow_zero=True,
-                widget=forms.TextInput(attrs={"class": "bulk-allocation-input", "inputmode": "decimal"}),
+                widget=forms.TextInput(attrs={"class": css_class, "inputmode": "decimal"}),
             )
         self.fields["notes"] = forms.CharField(
             label=_l("Notes"),
@@ -174,9 +173,18 @@ class AllocateInterventionBulkForm(forms.Form):
                 attrs={
                     "class": "form-control",
                     "placeholder": _l("Source of this information and any other important notes"),
+                    "rows": 4,
                 }
             ),
         )
+        if not include_notes:
+            del self.fields["notes"]
+        if self.is_bound and allow_empty_allocations:
+            self.data = self.data.copy()
+            for name in self.fields:
+                value = self.data.get(name)
+                if name.startswith("allocation_") and isinstance(value, str) and not value.strip():
+                    self.data[name] = "0"
 
     def clean(self):
         cleaned_data = super().clean()

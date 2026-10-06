@@ -10,6 +10,7 @@ from django.views.generic import DetailView
 from django.views.generic.base import View
 
 from website.app_log import loggers as app_loggers
+from website.data_loading.budget_template import get_budget_template
 from website.data_loading.transaction_templates import (
     get_enabled_transaction_templates,
     get_transaction_template,
@@ -62,6 +63,12 @@ class LoadData(
                 },
             )
         context["transaction_templates"] = transaction_templates
+        # An admin-uploaded file in Settings overrides the generated workbook.
+        context["budget_template_url"] = (
+            self.settings.budget_upload_template.url
+            if self.settings.budget_upload_template
+            else reverse("budget-template-download", kwargs={"pk": analysis.pk})
+        )
 
         if not self.step.is_complete:
             context["transactions_count"] = None
@@ -206,6 +213,22 @@ class LoadData(
         self.object.needs_transaction_resync = False
         self.object.save()
         messages.success(self.request, _("Transactions have been synced successfully."))
+
+
+class BudgetTemplateDownload(AnalysisPermissionRequiredMixin, AnalysisStepMixin, AnalysisObjectMixin, View):
+    step_name = "load-data"
+    title = _l("Load cost data")
+    help_text = _("")
+    permission_required = "website.change_analysis"
+
+    def get(self, request, *args, **kwargs):
+        budget_template = get_budget_template()
+        response = HttpResponse(
+            budget_template.get_download_content(),
+            content_type=budget_template.get_download_content_type(),
+        )
+        response["Content-Disposition"] = f'attachment; filename="{budget_template.get_download_filename()}"'
+        return response
 
 
 class TransactionTemplateDownload(

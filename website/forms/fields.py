@@ -42,6 +42,23 @@ class PositiveFixedDecimalField(DecimalField):
                     )
 
 
+class ThousandsSeparatedDecimalField(DecimalField):
+    """
+    A DecimalField that accepts the thousands separators amounts are displayed
+    with, so "1,000.50" round-trips from the table into an edit panel.
+
+    Amounts are always rendered in the en_US locale (see
+    `website.currency.get_currency_locale`), so a comma here is never a decimal
+    separator. Unlike `PositiveFixedDecimalField`, the sign is preserved:
+    negative amounts are valid corrections.
+    """
+
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = value.replace(",", "").strip()
+        return super().to_python(value)
+
+
 class SubcomponentLabelField(forms.JSONField):
     widget = SortableSelectMultipleSubcomponentLabelsWidget
 

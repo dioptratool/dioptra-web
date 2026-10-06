@@ -485,10 +485,377 @@ $(function() {
     $('.analysis-table__actions').hide();
   });
 
+  $('body').on('click', '.analysis-table__actions-menu__item', function () {
+    var popover = this.closest('[popover]');
+    if (popover && typeof popover.hidePopover === 'function') {
+      popover.hidePopover();
+    }
+  });
+
   $('.analysis-table__set-contribution input[type="checkbox"]').on('change', function(e) {
     $(this).closest('label').toggleClass('checked')
   });
 });
+;(function ($) {
+  function getTbody($el) {
+    return $el.closest('tbody.analysis-table__tbody');
+  }
+
+  function getParentCheckbox($tbody) {
+    return $tbody.find('> tr:first-child input.bulk-checkbox');
+  }
+
+  function getTransactionCheckboxes($tbody) {
+    return $tbody.find('input.transaction-checkbox');
+  }
+
+  function updateParentState($tbody) {
+    var $parent = getParentCheckbox($tbody);
+    var $transactions = getTransactionCheckboxes($tbody);
+
+    if (!$parent.length || !$transactions.length) {
+      return;
+    }
+
+    var checkedCount = $transactions.filter(':checked').length;
+    var total = $transactions.length;
+
+    if (checkedCount === 0) {
+      $parent.prop({ checked: false, indeterminate: false });
+    } else if (checkedCount === total) {
+      $parent.prop({ checked: true, indeterminate: false });
+    } else {
+      $parent.prop({ checked: false, indeterminate: true });
+    }
+  }
+
+  function syncChildrenToParent($tbody) {
+    var $parent = getParentCheckbox($tbody);
+    var $transactions = getTransactionCheckboxes($tbody);
+
+    if (!$parent.length || !$transactions.length) {
+      return;
+    }
+
+    if ($parent.prop('checked')) {
+      $transactions.prop('checked', true);
+      $parent.prop('indeterminate', false);
+    } else if (!$parent.prop('indeterminate')) {
+      $transactions.prop('checked', false);
+    }
+  }
+
+  function getCheckedConfigIds($form) {
+    return $form
+      .find('input.bulk-checkbox:checked')
+      .filter(function () {
+        return !this.indeterminate;
+      })
+      .map(function () {
+        return parseInt(this.value, 10);
+      })
+      .get();
+  }
+
+  function getCheckedCostLineItemIds($form) {
+    return $form
+      .find('input.bulk-checkbox:checked')
+      .filter(function () {
+        return !this.indeterminate;
+      })
+      .map(function () {
+        return parseInt(this.getAttribute('data-cost-line-item-id'), 10);
+      })
+      .get()
+      .filter(function (id) {
+        return !isNaN(id);
+      });
+  }
+
+  function getCheckedTransactionIds($form) {
+    return $form
+      .find('input.transaction-checkbox:checked')
+      .map(function () {
+        return parseInt(this.value, 10);
+      })
+      .get();
+  }
+
+  function hasBulkSelection($form) {
+    return getCheckedConfigIds($form).length > 0 || getCheckedTransactionIds($form).length > 0;
+  }
+
+  function buildBulkQueryString($form) {
+    var params = [];
+    var configIds = getCheckedConfigIds($form);
+    var transactionIds = getCheckedTransactionIds($form);
+
+    if (configIds.length) {
+      params.push('config_ids=' + configIds.join(','));
+    }
+    if (transactionIds.length) {
+      params.push('transaction_ids=' + transactionIds.join(','));
+    }
+
+    return params.length ? '?' + params.join('&') : '?';
+  }
+
+  /**
+   * What a bulk Edit sends to the selection endpoint (Feature 91, spec section 4).
+   *
+   * A fully checked cost-item row is sent as a cost line item id so the server can expand it to
+   * every transaction it contains, including ones that are collapsed or were never rendered;
+   * checked transaction rows (partial parents) are sent individually. On a budget analysis the
+   * selection is the cost items themselves.
+   */
+  function buildSelectionPayload($form, kind) {
+    var costLineItemIds = getCheckedCostLineItemIds($form);
+    var transactionIds = getCheckedTransactionIds($form);
+    if (kind === 'cost_items') {
+      return costLineItemIds.length ? { ids: costLineItemIds, cost_line_item_ids: [] } : null;
+    }
+    if (!costLineItemIds.length && !transactionIds.length) {
+      return null;
+    }
+    return { ids: transactionIds, cost_line_item_ids: costLineItemIds };
+  }
+
+  function updateBulkAssignButton($form) {
+    $form
+      .find('button.bulk-assign-items, button.correction-bulk-edit')
+      .prop('disabled', !hasBulkSelection($form));
+  }
+
+  function initForm($form) {
+    $form.off('.nestedCheckboxes');
+
+    $form.on('change.nestedCheckboxes', 'input.bulk-checkbox', function () {
+      var $tbody = getTbody($(this));
+      syncChildrenToParent($tbody);
+      updateBulkAssignButton($form);
+    });
+
+    $form.on('change.nestedCheckboxes', 'input.transaction-checkbox', function () {
+      updateParentState(getTbody($(this)));
+      updateBulkAssignButton($form);
+    });
+  }
+
+  window.AnalysisTableNestedCheckboxes = {
+    initForm: initForm,
+    initLoadedTransactions: function ($tbody) {
+      syncChildrenToParent($tbody);
+      updateParentState($tbody);
+      updateBulkAssignButton($tbody.closest('form'));
+    },
+    selectAllInForm: function ($form, checked) {
+      $form.find('input.transaction-checkbox').prop('checked', checked);
+      $form.find('input.bulk-checkbox').prop('indeterminate', false);
+    },
+    selectNoneInForm: function ($form) {
+      window.AnalysisTableNestedCheckboxes.selectAllInForm($form, false);
+    },
+    getCheckedConfigIds: getCheckedConfigIds,
+    getCheckedCostLineItemIds: getCheckedCostLineItemIds,
+    getCheckedTransactionIds: getCheckedTransactionIds,
+    buildSelectionPayload: buildSelectionPayload,
+    hasBulkSelection: hasBulkSelection,
+    buildBulkQueryString: buildBulkQueryString,
+    updateBulkAssignButton: updateBulkAssignButton,
+  };
+
+  $(function () {
+    $('form.categorize-cost_type-bulk-form, form.allocate-bulk-form, form#fix-missing-data').each(function () {
+      initForm($(this));
+    });
+  });
+})(jQuery);
+
+/**
+ * In-app corrections (Feature 91): the bulk Edit button and the Allocate unsaved-changes guard.
+ *
+ * Single-row edit links are ordinary `data-panels-trigger` links with `data-panels-reload-on`,
+ * handled by the panels layer. This script adds:
+ *
+ * - `button.correction-bulk-edit`: POSTs the current selection to the selection endpoint and
+ *   opens the panel URL it answers with (a Select All can be thousands of ids, so the ids never
+ *   travel in a query string).
+ * - On Allocate (`.analysis-table[data-unsaved-prompt-url]`), while an allocation form has unsaved
+ *   changes, an edit action first opens the confirmation panel (Save and continue / Discard /
+ *   Cancel). Save and continue posts the dirty forms, reloads, and reopens the edit panel; its URL
+ *   is parked in sessionStorage across the reload.
+ */
+;(function ($) {
+  var PENDING_PANEL_KEY = 'dioptra.corrections.pendingPanel';
+
+  // The same outcome handling as the panels layer's trigger links.
+  function openPanel(url) {
+    Panels.open(url).then(
+      function (event) {
+        if (event && event.redirect_to) {
+          $(window).off('beforeunload');
+          window.location = event.redirect_to;
+        } else if (event && event.operation === 'saved') {
+          $(window).off('beforeunload');
+          window.location.reload();
+        }
+      },
+      function () {}
+    );
+  }
+
+  function dirtyForms() {
+    return $('form.warn-unsaved-changes')
+      .filter(function () {
+        return $(this).hasClass('dirty') || $(this).find('[data-changed]').length > 0;
+      })
+      .get();
+  }
+
+  function guardedOpen(url) {
+    var table = document.querySelector('.analysis-table[data-unsaved-prompt-url]');
+    var forms = dirtyForms();
+    if (!table || !forms.length) {
+      openPanel(url);
+      return;
+    }
+    Panels.open(table.dataset.unsavedPromptUrl).then(
+      function (event) {
+        if (event && event.choice === 'save') {
+          saveThenReopen(forms, url);
+        } else if (event && event.choice === 'discard') {
+          openPanel(url);
+        }
+      },
+      function () {}
+    );
+  }
+
+  // Post each dirty form the way its Save button would. `fetch` is used for this one call
+  // because only `response.redirected` tells a successful save (302 to the page) from a
+  // validation re-render (200); on failure the form is submitted normally so its errors show.
+  function saveThenReopen(forms, url) {
+    var index = 0;
+
+    function next() {
+      if (index >= forms.length) {
+        try {
+          window.sessionStorage.setItem(PENDING_PANEL_KEY, url);
+        } catch (error) {
+          // Storage unavailable: the user reopens the panel by hand after the reload.
+        }
+        $(window).off('beforeunload');
+        window.location.reload();
+        return;
+      }
+      var form = forms[index++];
+      // Not `form.action`: the allocation form contains buttons named "action".
+      var action = new URL(form.getAttribute('action') || window.location.href, window.location.href);
+      fetch(action.toString(), { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
+        .then(function (response) {
+          if (response.ok && response.redirected) {
+            next();
+          } else {
+            $(window).off('beforeunload');
+            form.submit();
+          }
+        })
+        .catch(function () {
+          $(window).off('beforeunload');
+          form.submit();
+        });
+    }
+
+    next();
+  }
+
+  function openBulkPanel(button) {
+    var $form = $(button).closest('form');
+    var helper = window.AnalysisTableNestedCheckboxes;
+    var payload = helper ? helper.buildSelectionPayload($form, button.dataset.selectionKind) : null;
+    if (!payload) {
+      return;
+    }
+    var data = {
+      kind: button.dataset.selectionKind,
+      step: button.dataset.selectionStep,
+      ids: payload.ids,
+      cost_line_item_ids: payload.cost_line_item_ids,
+    };
+    if (button.dataset.costType) {
+      data.cost_type = button.dataset.costType;
+    }
+
+    button.disabled = true;
+    $.ajax({
+      type: 'POST',
+      url: button.dataset.selectionUrl,
+      data: data,
+      traditional: true, // ids=1&ids=2, as request.POST.getlist expects
+      dataType: 'json',
+      headers: { 'X-CSRFToken': $form.find('input[name="csrfmiddlewaretoken"]').val() },
+    })
+      .then(function (response) {
+        button.disabled = false;
+        guardedOpen(response.url);
+      })
+      .fail(function (error) {
+        button.disabled = false;
+        window.alert('The selection could not be opened. Reload the page and try again.');
+        if (window.console) {
+          console.error(error);
+        }
+      });
+  }
+
+  // Runs before the panels layer's own (body-delegated) trigger handler; when the allocation
+  // form is dirty it takes over the click so the prompt can be shown first.
+  document.addEventListener(
+    'click',
+    function (e) {
+      var link = e.target.closest ? e.target.closest('a[data-panels-trigger]') : null;
+      if (!link || e.metaKey || !link.closest('.analysis-table[data-unsaved-prompt-url]')) {
+        return;
+      }
+      if (!dirtyForms().length) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      var popover = link.closest('[popover]');
+      if (popover && typeof popover.hidePopover === 'function') {
+        popover.hidePopover();
+      }
+      guardedOpen(link.href);
+    },
+    true
+  );
+
+  $(function () {
+    $('body').on('click', 'button.correction-bulk-edit', function (e) {
+      e.preventDefault();
+      openBulkPanel(this);
+    });
+  });
+
+  // After a Save and continue reload, reopen the edit panel. `load` runs after every ready
+  // handler, so the panels layer has defined `Panels` by then.
+  $(window).on('load', function () {
+    var pending = null;
+    try {
+      pending = window.sessionStorage.getItem(PENDING_PANEL_KEY);
+      if (pending) {
+        window.sessionStorage.removeItem(PENDING_PANEL_KEY);
+      }
+    } catch (error) {
+      pending = null;
+    }
+    if (pending && window.Panels) {
+      openPanel(pending);
+    }
+  });
+})(jQuery);
+
 $(function() {
 
     var $form = $('form#fix-missing-data');
@@ -522,12 +889,11 @@ $(function() {
         });
 
         $bulkCheckboxes.on('change', function() {
-            if (getCheckedConfigIds().length == 0) {
-                $bulkAssignItems.prop('disabled', true);
-            }
-            else {
-                $bulkAssignItems.prop('disabled', false);
-            }
+            updateBulkAssignButtonState();
+        });
+
+        $form.on('change.bulkAssign', 'input.transaction-checkbox', function () {
+            updateBulkAssignButtonState();
         });
 
         // Only enable the bulk checkbox once the page is done fully loading.
@@ -535,30 +901,43 @@ $(function() {
 
         function selectAll() {
             $bulkCheckboxes.prop('checked', true);
+            $bulkCheckboxes.prop('indeterminate', false);
             $bulkCheckboxes.trigger('change');
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectAllInForm($form, true);
+            }
+            updateBulkAssignButtonState();
         }
 
         function selectNone() {
             $bulkCheckboxes.prop('checked', false);
+            $bulkCheckboxes.prop('indeterminate', false);
             $bulkCheckboxes.trigger('change');
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectNoneInForm($form);
+            }
+            updateBulkAssignButtonState();
         }
 
         function assignCheckedItems() {
-            var configIds = getCheckedConfigIds();
-            var queryString = '?config_ids=' + configIds.join(',');
+            var queryString = window.AnalysisTableNestedCheckboxes
+                ? window.AnalysisTableNestedCheckboxes.buildBulkQueryString($form)
+                : '?config_ids=' + $bulkCheckboxes.filter(':checked').map(function () {
+                    return parseInt(this.value, 10);
+                }).get().join(',');
             var url = bulkUrl + queryString;
             Panels.open(url).then(function() {
                 window.location.reload();
             });
         }
 
-        function getCheckedConfigIds() {
-            return $bulkCheckboxes
-                .filter(':checked')
-                .toArray()
-                .map(function(checkboxEl) {
-                    return parseInt(checkboxEl.value, 10);
-                })
+        function updateBulkAssignButtonState() {
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.updateBulkAssignButton($form);
+                return;
+            }
+
+            $bulkAssignItems.prop('disabled', $bulkCheckboxes.filter(':checked').length === 0);
         }
     }
 
@@ -574,8 +953,6 @@ $(function() {
     function setupBulkForm($form) {
         var $selectAllCheckbox = $form.find('input[type="checkbox"].select-all');
         var $bulkCheckboxes = $form.find('input[type="checkbox"].bulk-checkbox');
-        var $bulkAssignItems = $form.find('button.bulk-assign-items');
-        var bulkUrl = $bulkAssignItems.attr('data-href');
 
         $selectAllCheckbox.on('change', function () {
             if ($selectAllCheckbox.prop('checked')) {
@@ -585,29 +962,12 @@ $(function() {
             }
         });
 
-        $bulkAssignItems.on('click', function (e) {
-            e.preventDefault();
-            const confirmation = e.target.closest('.bulk-assign-items').getAttribute('data-dialog-confirm')
-
-            // check for changed values, show confirm dialog if there are
-            const tableForm = e.target.closest('form')
-            const allocationInputs = tableForm.querySelectorAll('input.analysis-table__subcomponent-allocate-input')
-            const unsavedChanges = Array.from(allocationInputs).filter((input) => input.hasAttribute('data-changed')).length
-            if (confirmation && unsavedChanges) {
-                if (!confirm(confirmation)) {
-                    e.stopPropagation();
-                    return;
-                }    
-            }
-            assignCheckedItems();
+        $bulkCheckboxes.on('change', function () {
+            updateBulkAssignButtonState();
         });
 
-        $bulkCheckboxes.on('change', function () {
-            if (getCheckedConfigIds().length == 0) {
-                $bulkAssignItems.prop('disabled', true);
-            } else {
-                $bulkAssignItems.prop('disabled', false);
-            }
+        $form.on('change.bulkAssign', 'input.transaction-checkbox', function () {
+            updateBulkAssignButtonState();
         });
 
         // Only enable the bulk checkbox once the page is done fully loading.
@@ -615,35 +975,30 @@ $(function() {
 
         function selectAll() {
             $bulkCheckboxes.prop('checked', true);
-            $bulkAssignItems.prop('disabled', false);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectAllInForm($form, true);
+            }
+            updateBulkAssignButtonState();
         }
 
         function selectNone() {
             $bulkCheckboxes.prop('checked', false);
-            $bulkAssignItems.prop('disabled', true);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectNoneInForm($form);
+            }
+            updateBulkAssignButtonState();
         }
 
-        function assignCheckedItems() {
-            var configIds = getCheckedConfigIds();
-            var queryString = '?config_ids=' + configIds.join(',');
-            var url = bulkUrl + queryString;
+        function updateBulkAssignButtonState() {
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.updateBulkAssignButton($form);
+                return;
+            }
 
-            $(window).off('beforeunload');
-                        Panels.open(url).then(function () {
-                window.location = window.location.href;
-            });
+            $form.find('button.correction-bulk-edit').prop('disabled', $bulkCheckboxes.filter(':checked').length === 0);
         }
-
-        function getCheckedConfigIds() {
-            return $bulkCheckboxes
-              .filter(':checked')
-              .toArray()
-              .map(function (checkboxEl) {
-                  return parseInt(checkboxEl.value, 10);
-              })
-        }
-
-
     }
 })
 
@@ -685,12 +1040,21 @@ $(function() {
             assignCheckedItems();
         });
 
-        $bulkCheckboxes.on('change', function () {
-            if (getCheckedConfigIds().length == 0) {
-                $bulkAssignItems.prop('disabled', true);
-            } else {
-                $bulkAssignItems.prop('disabled', false);
+        $form.on('click', '.program-cost-suggest-item', function (e) {
+            e.preventDefault();
+            var unsavedChanges = $form.hasClass('dirty') || $form.find('[data-changed]').length > 0;
+            if (unsavedChanges && !confirm(this.getAttribute('data-dialog-confirm'))) {
+                return;
             }
+            openAllocationPanel(this.href);
+        });
+
+        $bulkCheckboxes.on('change', function () {
+            updateBulkAssignButtonState();
+        });
+
+        $form.on('change.bulkAssign', 'input.transaction-checkbox', function () {
+            updateBulkAssignButtonState();
         });
 
         // Only enable the bulk checkbox once the page is done fully loading.
@@ -698,32 +1062,47 @@ $(function() {
 
         function selectAll() {
             $bulkCheckboxes.prop('checked', true);
-            $bulkAssignItems.prop('disabled', false);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectAllInForm($form, true);
+            }
+            updateBulkAssignButtonState();
         }
 
         function selectNone() {
             $bulkCheckboxes.prop('checked', false);
-            $bulkAssignItems.prop('disabled', true);
+            $bulkCheckboxes.prop('indeterminate', false);
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.selectNoneInForm($form);
+            }
+            updateBulkAssignButtonState();
         }
 
         function assignCheckedItems() {
-            var configIds = getCheckedConfigIds();
-            var queryString = '?config_ids=' + configIds.join(',');
+            var queryString = window.AnalysisTableNestedCheckboxes
+                ? window.AnalysisTableNestedCheckboxes.buildBulkQueryString($form)
+                : '?config_ids=' + $bulkCheckboxes.filter(':checked').map(function () {
+                    return parseInt(this.value, 10);
+                }).get().join(',');
             var url = bulkUrl + queryString;
 
-            $(window).off('beforeunload');
-            Panels.open(url).then(function () {
-                window.location = window.location.href;
-            });
+            openAllocationPanel(url);
         }
 
-        function getCheckedConfigIds() {
-            return $bulkCheckboxes
-              .filter(':checked')
-              .toArray()
-              .map(function (checkboxEl) {
-                  return parseInt(checkboxEl.value, 10);
-              })
+        function openAllocationPanel(url) {
+            Panels.open(url).then(function () {
+                $(window).off('beforeunload');
+                window.location = window.location.href;
+            }, function () {});
+        }
+
+        function updateBulkAssignButtonState() {
+            if (window.AnalysisTableNestedCheckboxes) {
+                window.AnalysisTableNestedCheckboxes.updateBulkAssignButton($form);
+                return;
+            }
+
+            $bulkAssignItems.prop('disabled', $bulkCheckboxes.filter(':checked').length === 0);
         }
 
 
@@ -736,9 +1115,14 @@ $(function() {
         if (!$button.hasClass('transactions-loaded')) {
             $button.addClass('transactions-loaded');
             var href = $button.data('transactions-href');
+            var $tbody = $button.closest('tbody.analysis-table__tbody');
             $.get(href).then(function(transactionRows) {
                 var targetSelector = $button.data('transactions-target');
-                $(targetSelector).html(transactionRows);
+                var $target = $(targetSelector);
+                $target.html(transactionRows);
+                if (window.AnalysisTableNestedCheckboxes && $tbody.length) {
+                    window.AnalysisTableNestedCheckboxes.initLoadedTransactions($tbody);
+                }
             });
         }
     });

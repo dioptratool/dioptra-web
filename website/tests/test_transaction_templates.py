@@ -5,6 +5,7 @@ from io import BytesIO
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
+from django.test import override_settings
 from openpyxl import Workbook, load_workbook
 
 from website.data_loading.transaction_templates import TransactionTemplate, TransactionTemplateError
@@ -44,6 +45,24 @@ def _set_active_template(monkeypatch, template_id):
 
 def _analysis_with_country(country_code="SL"):
     return types.SimpleNamespace(country=types.SimpleNamespace(code=country_code))
+
+
+# Save the Children exports open with a header row. Its text is ignored: columns are mapped by
+# position, so these labels are deliberately not the column_N keys the template uses.
+SAVE_THE_CHILDREN_HEADER_ROW = [
+    "Grant",
+    "Description",
+    "Budget Line",
+    "Account",
+    "Period",
+    "Amount",
+    "Sector",
+    "Custom 1",
+    "Custom 2",
+    "Custom 3",
+    "Custom 4",
+    "Custom 5",
+]
 
 
 def test_enabled_transaction_template_ids_uses_active_template(monkeypatch):
@@ -128,7 +147,7 @@ def test_transaction_templates_define_all_validation_field_sources(monkeypatch, 
     "template_id,date_header,decimal_header,text_header",
     [
         ("dioptra_default", "transaction_date", "amount", "grant_code"),
-        ("save_the_children", "Period", "Amount in USD", "Subaward Code"),
+        ("save_the_children", "column_5", "column_6", "column_1"),
         ("catholic_relief_services", "Date", "Amount", "Grant_code"),
         ("accion_contra_el_hambre", "trans_date", "amount_eur", "contract"),
         (
@@ -257,16 +276,15 @@ def test_excel_file_to_array_streams_only_active_xlsx_worksheet(monkeypatch):
         ),
         (
             "save_the_children",
-            "period",
+            "column_5",
             "%Y%m",
             "202605",
             "2026-05-01",
             {
-                "Costc Description": "JO",
-                "Subaward Code": "SC-123",
-                "Budget Chapter Description": "Medical supplies",
-                "Account": "5501",
-                "Amount in USD": "1234.56",
+                "column_1": "SC-123",
+                "column_3": "Medical supplies",
+                "column_4": "5501",
+                "column_6": "1234.56",
             },
         ),
         (
@@ -375,27 +393,13 @@ def test_transaction_templates_parse_configured_source_date_formats(
 def test_save_the_children_transaction_template_keeps_day_month_year_period_support(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
-    source_row = dict.fromkeys(template.get_download_headers(), "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "29/05/2026",
-            "Amount in USD": "1234.56",
-        }
-    )
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [
-            template.get_download_headers(),
-            [source_row[header] for header in template.get_download_headers()],
-        ],
-        analysis=object(),
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "29/05/2026", "1234.56"]],
+        analysis=_analysis_with_country(),
     )
 
-    assert "%d/%m/%Y" in template.source_date_formats["period"]
+    assert "%d/%m/%Y" in template.source_date_formats["column_5"]
     assert succeeded
     assert normalized[0]["transaction_date"] == "2026-05-29"
 
@@ -439,29 +443,15 @@ def test_transaction_templates_parse_iso_source_date_fallback(monkeypatch):
 
 def test_transaction_template_reports_source_date_format_errors(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    source_row = dict.fromkeys(template.get_download_headers(), "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "05-29-2026",
-            "Amount in USD": "1234.56",
-        }
-    )
 
     succeeded, errors = normalize_uploaded_transaction_file(
-        [
-            template.get_download_headers(),
-            [source_row[header] for header in template.get_download_headers()],
-        ],
-        analysis=object(),
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "05-29-2026", "1234.56"]],
+        analysis=_analysis_with_country(),
     )
 
     assert not succeeded
-    assert errors == ["Row 2: Period must use date format %Y%m or %d/%m/%Y or %Y-%m-%d (got 05-29-2026)"]
+    # Row 1 is the ignored header row, so the first data row is physically row 2.
+    assert errors == ["Row 2: column_5 must use date format %Y%m or %d/%m/%Y or %Y-%m-%d (got 05-29-2026)"]
 
 
 def test_mercy_corps_transaction_template_keeps_period_and_quarter_as_text(monkeypatch):
@@ -541,6 +531,171 @@ def test_transaction_template_normalizes_amount_thousands_separators(monkeypatch
 
     assert succeeded
     assert normalized[0]["amount"] == "1000.00"
+
+
+# Layouts whose source files carry no currency column at all.
+CURRENCY_LESS_LAYOUTS = [
+    (
+        "save_the_children",
+        {
+            "column_1": "SC-123",
+            "column_3": "Medical supplies",
+            "column_4": "5501",
+            "column_5": "202605",
+            "column_6": "1234.56",
+        },
+    ),
+    (
+        "accion_contra_el_hambre",
+        {
+            "contract": "MLB2AS",
+            "trans_date": "10/07/2024",
+            "account": "600100",
+            "amount_eur": "2458.70",
+            "dim_1": "ML",
+        },
+    ),
+    (
+        "mercy_corps",
+        {
+            "posting_date": "2023-04-01",
+            "fund_no": "999dummy",
+            "g_l_account_no": "6910",
+            "g_l_account_name": "Office Costs",
+            "lin_name": "Office Costs",
+            "usd_amount": "9.85",
+        },
+    ),
+]
+
+
+def _normalize_source_row(template, row_values):
+    source_row = dict.fromkeys(template.get_download_headers(), "")
+    source_row.update(row_values)
+    return normalize_uploaded_transaction_file(
+        [
+            template.get_download_headers(),
+            [source_row[header] for header in template.get_download_headers()],
+        ],
+        analysis=_analysis_with_country(),
+    )
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+@pytest.mark.parametrize("template_id,row_values", CURRENCY_LESS_LAYOUTS)
+def test_layout_without_a_currency_column_takes_the_instance_currency(monkeypatch, template_id, row_values):
+    _set_active_template(monkeypatch, template_id)
+    template = get_transaction_template()
+
+    assert template.canonical_field_sources["currency_code"] is None
+
+    succeeded, normalized = _normalize_source_row(template, row_values)
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == "GBP"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+@pytest.mark.parametrize("template_id,row_values", CURRENCY_LESS_LAYOUTS)
+def test_layout_without_a_currency_column_stays_blank_without_an_instance_currency(
+    monkeypatch, template_id, row_values
+):
+    """Nothing can supply a currency here, so the rows simply carry none."""
+    _set_active_template(monkeypatch, template_id)
+    template = get_transaction_template()
+
+    succeeded, normalized = _normalize_source_row(template, row_values)
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == ""
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+def test_transaction_upload_falls_back_to_the_instance_currency(monkeypatch):
+    """A row that carries no currency is imported in the instance currency."""
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == "GBP"
+
+
+@override_settings(ISO_CURRENCY_CODE="GBP")
+def test_transaction_upload_keeps_the_currency_the_file_supplies(monkeypatch):
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "BDT", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == "BDT"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+def test_transaction_upload_leaves_currency_blank_without_an_instance_currency(monkeypatch):
+    _set_active_template(monkeypatch, "dioptra_default")
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [
+            CANONICAL_TRANSACTION_FIELDS,
+            ["2015-01-01", "JO", "100", "200", "300", "", "", "", "", "", "Budget line", "123.45"],
+        ],
+        analysis=object(),
+    )
+
+    assert succeeded
+    assert normalized[0]["currency_code"] == ""
+
+
+@override_settings(ISO_CURRENCY_CODE="EUR")
+def test_currency_column_is_optional_when_the_instance_has_a_currency(monkeypatch):
+    """CARE files identify columns by header, so the currency column can be left out."""
+    _set_active_template(monkeypatch, "cooperative_for_assistance_and_relief_everywhere")
+    template = get_transaction_template()
+    headers = [header for header in template.get_download_headers() if header != "currency_cd"]
+    source_row = dict.fromkeys(headers, "")
+    source_row.update(
+        {
+            "journal_date": "03/31/2024",
+            "country_code": "KEN01",
+            "grant_code": "EF789",
+            "account": "501100",
+            "budget_line_description": "5 - LER program manager",
+            "bu_amount": "103.14",
+        }
+    )
+
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [headers, [source_row[header] for header in headers]],
+        analysis=object(),
+    )
+
+    assert succeeded, normalized
+    assert normalized[0]["currency_code"] == "EUR"
+
+
+@override_settings(ISO_CURRENCY_CODE="none")
+def test_currency_column_is_required_without_an_instance_currency(monkeypatch):
+    _set_active_template(monkeypatch, "cooperative_for_assistance_and_relief_everywhere")
+    template = get_transaction_template()
+    headers = [header for header in template.get_download_headers() if header != "currency_cd"]
+
+    succeeded, errors = normalize_uploaded_transaction_file(
+        [headers, ["" for _ in headers]],
+        analysis=object(),
+    )
+
+    assert not succeeded
+    assert "currency_cd" in errors[0]
 
 
 def test_transaction_template_must_be_active(monkeypatch):
@@ -632,141 +787,142 @@ def test_save_the_children_transaction_template_loads(monkeypatch):
 
     assert template.id == "save_the_children"
     assert template.label == "Save the Children"
-    assert "Country Office" in template.get_download_headers()
-    assert "Amount in USD" in template.get_download_headers()
+    assert template.get_download_headers() == [f"column_{n}" for n in range(1, 13)]
 
 
-def test_save_the_children_transaction_template_normalizes_rows(monkeypatch):
+@override_settings(ISO_CURRENCY_CODE="USD")
+def test_save_the_children_transaction_template_normalizes_positional_rows(monkeypatch):
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    headers = template.get_download_headers()
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "Country Office": "JO",
-            "Costc Description": "JO",
-            "Budget Chapter": "BUD-100",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Subaward Code": "SC-123",
-            "Subaward Description": "Subaward that is not a budget line",
-            "Period": "2026-05-29",
-            "Trans No": "TR-456",
-            "Transaction Desc (Text)": "Invoice payment",
-            "Amount in USD": "1234.56",
-        }
-    )
-    field_labels = template.get_validation_field_labels([headers])
 
     succeeded, normalized = normalize_uploaded_transaction_file(
         [
-            headers,
-            [source_row[header] for header in headers],
+            SAVE_THE_CHILDREN_HEADER_ROW,
+            [
+                "57801594",  # column_1  grant_code
+                "Other nutrition supplies",  # column_2  transaction_description
+                "DM - ON14A-Other nutrition",  # column_3  budget_line_description
+                "52010",  # column_4  account_code
+                "202306",  # column_5  transaction_date
+                "39.88",  # column_6  amount
+                "NUT",  # column_7  sector_code
+                "Finance coordinator",  # column_8  custom field 1
+                "6-CAM Support costs -2022",  # column_9  custom field 2
+                "",  # column_10 custom field 3
+                "6-CAM Support costs -2022",  # column_11 custom field 4
+                "",  # column_12 custom field 5
+            ],
         ],
-        analysis=object(),
+        analysis=_analysis_with_country("SL"),
     )
 
     assert succeeded
-    assert field_labels["budget_line_code"] == "Budget Chapter (Column M) (Budget Line Code)"
-    assert (
-        field_labels["budget_line_description"]
-        == "Budget Chapter Description (Column N) (Budget Line Description)"
-    )
     assert normalized == [
         {
-            "transaction_date": "2026-05-29",
-            "country_code": "JO",
-            "grant_code": "SC-123",
-            "budget_line_code": "BUD-100",
-            "account_code": "5501",
+            "transaction_date": "2023-06-01",
+            "country_code": "SL",
+            "grant_code": "57801594",
+            "budget_line_code": "",
+            "account_code": "52010",
             "site_code": "",
-            "sector_code": "",
+            "sector_code": "NUT",
             "transaction_code": "",
-            "transaction_description": "",
+            "transaction_description": "Other nutrition supplies",
             "currency_code": "USD",
-            "budget_line_description": "Medical supplies",
-            "amount": "1234.56",
-            "dummy_field_1": "",
-            "dummy_field_2": "",
+            "budget_line_description": "DM - ON14A-Other nutrition",
+            "amount": "39.88",
+            "dummy_field_1": "Finance coordinator",
+            "dummy_field_2": "6-CAM Support costs -2022",
             "dummy_field_3": "",
-            "dummy_field_4": "",
+            "dummy_field_4": "6-CAM Support costs -2022",
             "dummy_field_5": "",
         }
     ]
 
 
-def test_save_the_children_transaction_template_uses_costc_t_when_description_header_is_absent(
-    monkeypatch,
-):
+def test_save_the_children_transaction_template_ignores_header_row_values(monkeypatch):
+    """Row 1 is always the header row and its text is ignored, even column_N keys in another order."""
     _set_active_template(monkeypatch, "save_the_children")
     template = get_transaction_template()
-    headers = [header for header in template.get_download_headers() if header != "Costc Description"]
-    headers.append("CostC (T)")
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "CostC (T)": "SL",
-            "Subaward Code": "SC-123",
-            "Budget Chapter": "BUD-100",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "202605",
-            "Amount in USD": "1234.56",
-        }
-    )
-    rows = [headers, [source_row[header] for header in headers]]
+    rows = [
+        list(reversed(template.get_download_headers())),
+        ["SC-123", "Medical supplies - May", "Medical supplies", "5501", "202605", "1234.56", "", "CC-1"],
+    ]
 
-    succeeded, normalized = normalize_uploaded_transaction_file(
-        rows,
-        analysis=object(),
-    )
+    succeeded, normalized = normalize_uploaded_transaction_file(rows, analysis=_analysis_with_country("JO"))
 
     assert succeeded
-    assert normalized[0]["country_code"] == "SL"
+    assert normalized[0]["grant_code"] == "SC-123"
+    assert normalized[0]["transaction_description"] == "Medical supplies - May"
     assert normalized[0]["transaction_date"] == "2026-05-01"
-    assert (
-        template.get_validation_field_labels(rows)["country_code"] == "CostC (T) (Column AU) (Country Code)"
-    )
+    assert normalized[0]["dummy_field_1"] == "CC-1"
+    # Columns absent from a short row simply stay empty.
+    assert normalized[0]["dummy_field_5"] == ""
+    # Validation labels follow position too, not the header text.
+    assert template.get_first_data_row_number(rows) == 2
+    assert template.get_source_header_columns(rows)["column_1"] == "A"
+    assert template.get_source_header_columns(rows)["column_12"] == "L"
 
 
-def test_save_the_children_transaction_template_prefers_costc_description_over_costc_t(monkeypatch):
+def test_save_the_children_transaction_template_drops_a_data_looking_first_row(monkeypatch):
+    """The first row is the header even when it looks like data, so a one-row file has no transactions."""
     _set_active_template(monkeypatch, "save_the_children")
-    template = get_transaction_template()
-    headers = [*template.get_download_headers(), "CostC (T)"]
-    source_row = dict.fromkeys(headers, "")
-    source_row.update(
-        {
-            "Costc Description": "JO",
-            "CostC (T)": "SL",
-            "Subaward Code": "SC-123",
-            "Budget Chapter Description": "Medical supplies",
-            "Account": "5501",
-            "Period": "202605",
-            "Amount in USD": "1234.56",
-        }
-    )
 
     succeeded, normalized = normalize_uploaded_transaction_file(
-        [headers, [source_row[header] for header in headers]],
-        analysis=object(),
+        [["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
+        analysis=_analysis_with_country(),
     )
 
     assert succeeded
-    assert normalized[0]["country_code"] == "JO"
+    assert normalized == []
 
 
-def test_save_the_children_transaction_template_reports_missing_required_headers(monkeypatch):
+def test_save_the_children_transaction_template_takes_country_from_the_analysis(monkeypatch):
+    """The layout has no country column, so the analysis supplies it."""
     _set_active_template(monkeypatch, "save_the_children")
-    succeeded, errors = normalize_uploaded_transaction_file(
-        [["Country Office", "Amount in USD"]],
-        analysis=object(),
+
+    assert get_transaction_template().canonical_field_sources["country_code"] is None
+
+    succeeded, normalized = normalize_uploaded_transaction_file(
+        [SAVE_THE_CHILDREN_HEADER_ROW, ["SC-123", "", "Medical supplies", "5501", "202605", "1234.56"]],
+        analysis=_analysis_with_country("ET"),
     )
 
-    assert not succeeded
-    assert "Costc Description" in errors[0]
-    assert "Subaward Code" in errors[0]
-    assert "Budget Chapter Description" in errors[0]
-    assert "Period" in errors[0]
+    assert succeeded
+    assert normalized[0]["country_code"] == "ET"
+
+
+def test_save_the_children_transaction_template_reports_required_cells_of_narrow_rows(monkeypatch):
+    """Headers are always synthesised, so a narrow file fails on its blank required cells, by position."""
+    _set_active_template(monkeypatch, "save_the_children")
+    template = get_transaction_template()
+    rows = [
+        ["Grant", "Description"],
+        ["SC-123", "Medical supplies - May"],
+    ]
+
+    succeeded, normalized = normalize_uploaded_transaction_file(rows, analysis=_analysis_with_country())
+    errors = validate_uploaded_transaction_file(
+        normalized,
+        analysis=None,
+        field_labels=template.get_validation_field_labels(rows),
+        first_data_row=template.get_first_data_row_number(rows),
+        currency_required=False,
+    )
+
+    assert succeeded
+    assert errors == [
+        "Row 2: column_5 (Column E) (Transaction Date) cannot be empty, "
+        "column_4 (Column D) (Account Code) cannot be empty, "
+        "column_3 (Column C) (Budget Line Description) cannot be empty, "
+        "column_6 (Column F) (Amount) cannot be empty"
+    ]
+    assert set(template.required_source_fields) == {
+        "column_1",
+        "column_3",
+        "column_4",
+        "column_5",
+        "column_6",
+    }
 
 
 def test_catholic_relief_services_transaction_template_loads(monkeypatch):
@@ -852,6 +1008,7 @@ def test_accion_contra_el_hambre_transaction_template_loads(monkeypatch):
     assert "amount_eur" in template.get_download_headers()
 
 
+@override_settings(ISO_CURRENCY_CODE="EUR")
 def test_accion_contra_el_hambre_transaction_template_normalizes_rows(monkeypatch):
     _set_active_template(monkeypatch, "accion_contra_el_hambre")
     template = get_transaction_template()
@@ -1131,6 +1288,7 @@ def test_mercy_corps_transaction_template_loads(monkeypatch):
     assert "usd_amount" in template.get_download_headers()
 
 
+@override_settings(ISO_CURRENCY_CODE="USD")
 def test_mercy_corps_transaction_template_normalizes_rows(monkeypatch):
     _set_active_template(monkeypatch, "mercy_corps")
     template = get_transaction_template()

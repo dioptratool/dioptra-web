@@ -1,25 +1,19 @@
 from urllib.parse import quote
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _, gettext_lazy as _l
-from django.views.generic.detail import SingleObjectMixin
 from django_filters.views import FilterView
 
-from ombucore.admin import panel_commands
-from ombucore.admin.buttons import CancelButton, SubmitButton
 from ombucore.admin.views import FilterMixin
-from ombucore.admin.views.base import FormView as PanelsFormView
 from website.filterset import CategorizeCostTypeFilterSet
-from website.forms.analysis import CategorizeCostTypeBulkForm
 from website.models import (
-    Analysis,
     Category,
     CostLineItem,
     CostLineItemConfig,
     CostType,
 )
 from website.utils import group_by
+from website.views.analysis.corrections import correction_urls
 from website.views.mixins import (
     AnalysisPermissionRequiredMixin,
     AnalysisStepFiltersetMixin,
@@ -101,6 +95,8 @@ class CategorizeCostType(
                 "category_choices": self.category_choices,
             }
         )
+        # Feature 91 edit entry points; ``cost_type`` lets a panel redirect when this table empties.
+        context.update(correction_urls(self.analysis, "categorize", cost_type=self.step.cost_type))
 
         return context
 
@@ -180,64 +176,3 @@ class CategorizeCostType(
             cost_type_category.confirmed = True
             cost_type_category.save()
         self.workflow.calculate_if_possible()
-
-
-class CategorizeCostTypeBulk(
-    AnalysisPermissionRequiredMixin,
-    LoginRequiredMixin,
-    PanelsFormView,
-    SingleObjectMixin,
-):
-    model = Analysis
-    form_class = CategorizeCostTypeBulkForm
-    supertitle = _l("Selected Cost Items")
-    title = _l("Change Cost Type/Category")
-    permission_required = "website.change_analysis"
-    buttons = [
-        SubmitButton(text=_("Assign Selected Items")),
-        CancelButton(),
-    ]
-    help_text = _("")
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.object = self.get_object()
-        self.analysis = self.object
-        self.config_ids = self._get_config_ids(request)
-
-    def _get_config_ids(self, request):
-        if request.method == "POST":
-            return request.POST.getlist("config_ids")
-        else:
-            # config_ids are a comma-separated string (e.g. `12,44,2,34`).
-            return request.GET.get("config_ids", "").split(",")
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["initial"]["config_ids"] = self.config_ids
-        return kwargs
-
-    def form_valid(self, form):
-        cost_type = form.cleaned_data["cost_type"]
-        category = form.cleaned_data["category"]
-        config_ids = form.cleaned_data["config_ids"]
-        self._assign_configs(cost_type, category, config_ids)
-        return super().form_valid(form)
-
-    def _assign_configs(self, cost_type, category, config_ids):
-        update_kwargs = {}
-        if cost_type:
-            update_kwargs["cost_type"] = cost_type
-        if category:
-            update_kwargs["category"] = category
-        CostLineItemConfig.objects.filter(cost_line_item__analysis_id=self.analysis.id).filter(
-            id__in=config_ids
-        ).update(**update_kwargs)
-        self.analysis.ensure_cost_type_category_objects()
-        self.analysis.cost_type_categories.filter(**update_kwargs).update(confirmed=False)
-
-    def get_success_message(self, cleaned_data):
-        return _("{count} cost items updated").format(count=len(self.config_ids))
-
-    def get_success_commands(self):
-        return [panel_commands.Resolve()]

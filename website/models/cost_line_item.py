@@ -190,6 +190,27 @@ class CostLineItem(models.Model):
         blank=True,
         default="",
     )
+    dummy_field_3 = models.CharField(
+        verbose_name=_("Dummy field 3"),
+        max_length=255,
+        null=False,
+        blank=True,
+        default="",
+    )
+    dummy_field_4 = models.CharField(
+        verbose_name=_("Dummy field 4"),
+        max_length=255,
+        null=False,
+        blank=True,
+        default="",
+    )
+    dummy_field_5 = models.CharField(
+        verbose_name=_("Dummy field 5"),
+        max_length=255,
+        null=False,
+        blank=True,
+        default="",
+    )
     note = models.CharField(
         verbose_name=_("Note"),
         max_length=2048,

@@ -165,15 +165,8 @@ class Command(BuildCommand):
     @staticmethod
     def add_settings():
         site_settings = Settings.objects.create()
-
-        path = THIS_DIR / "build_content" / "Budget Upload Template.xls"
-        with open(path, "rb") as f:
-            site_settings.budget_upload_template.save(
-                "Budget Upload Template.xls",
-                File(f, name="Budget Upload Template.xls"),
-                save=True,
-            )
-
+        # budget_upload_template is deliberately left blank: the Load Data step generates
+        # the workbook from COST_LINE_ITEM_IMPORT_HEADERS unless an admin uploads an override.
         site_settings.save()
 
     def add_countries_and_regions(self):

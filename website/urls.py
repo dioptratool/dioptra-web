@@ -20,6 +20,12 @@ from website.users.views import AdminLoginView, CustomPasswordResetFromKeyView
 from website.views import intervention
 from website.views import logout
 from website.views import styleguide
+from website.views.analysis.corrections import (
+    AllocationChangesPromptPanel,
+    CorrectionSelectionCreate,
+    CostItemCorrectionPanel,
+    TransactionCorrectionPanel,
+)
 from website.views.analysis.analysis import (
     AnalysisDetailView,
     AnalysisLessonsEditorView,
@@ -37,6 +43,7 @@ from website.views.analysis.steps.allocate import (
     AllocateCostTypeGrant,
     AllocateInterventionBulk,
     AllocateSupportingCosts,
+    SuggestInterventionAllocation,
 )
 from website.views.analysis.steps.allocate_subcomponents import (
     AllocateSubcomponents,
@@ -44,16 +51,17 @@ from website.views.analysis.steps.allocate_subcomponents import (
     AllocateSubcomponentsInterventionGrant,
 )
 from website.views.analysis.steps.categorize import Categorize
-from website.views.analysis.steps.categorize_cost_type import (
-    CategorizeCostType,
-    CategorizeCostTypeBulk,
-)
+from website.views.analysis.steps.categorize_cost_type import CategorizeCostType
 from website.views.analysis.steps.define import (
     DefineCreate,
     DefineUpdate,
 )
 from website.views.analysis.steps.insights import Insights, InsightsPrint
-from website.views.analysis.steps.load_data import LoadData, TransactionTemplateDownload
+from website.views.analysis.steps.load_data import (
+    BudgetTemplateDownload,
+    LoadData,
+    TransactionTemplateDownload,
+)
 from website.views.dashboard import DashboardView
 from website.views.documents import full_cost_model_spreadsheet
 from website.views.duplicator import DuplicateView
@@ -137,6 +145,11 @@ urlpatterns = [
         name="analysis-load-data",
     ),
     path(
+        "analysis/<int:pk>/load-data/budget-template/",
+        BudgetTemplateDownload.as_view(),
+        name="budget-template-download",
+    ),
+    path(
         "analysis/<int:pk>/load-data/transaction-template/<str:template_id>/",
         TransactionTemplateDownload.as_view(),
         name="transaction-template-download",
@@ -151,10 +164,26 @@ urlpatterns = [
         CategorizeCostType.as_view(),
         name="analysis-categorize-cost_type",
     ),
+    # In-app corrections (Feature 91): selection token, then the edit panels.
     path(
-        "analysis/<int:pk>/categorize/<int:cost_type_pk>/bulk/",
-        CategorizeCostTypeBulk.as_view(),
-        name="analysis-categorize-cost_type-bulk",
+        "analysis/<int:pk>/corrections/selection/",
+        CorrectionSelectionCreate.as_view(),
+        name="analysis-correction-selection",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/unsaved-allocations/",
+        AllocationChangesPromptPanel.as_view(),
+        name="analysis-correction-unsaved-prompt",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/<str:step>/transactions/",
+        TransactionCorrectionPanel.as_view(),
+        name="analysis-correct-transactions",
+    ),
+    path(
+        "analysis/<int:pk>/corrections/<str:step>/cost-items/",
+        CostItemCorrectionPanel.as_view(),
+        name="analysis-correct-cost-items",
     ),
     path(
         "analysis/<int:pk>/allocate/",
@@ -167,6 +196,11 @@ urlpatterns = [
         name="analysis-allocate-cost_type-grant--save-suggested",
     ),
     # NOTE: bulk routes must precede the `<path:grant>` catch-alls below.
+    path(
+        "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/suggest/",
+        SuggestInterventionAllocation.as_view(),
+        name="analysis-allocate-cost_type-grant-suggest",
+    ),
     path(
         "analysis/<int:pk>/allocate/<int:cost_type_pk>/<path:grant>/bulk/",
         AllocateInterventionBulk.as_view(),

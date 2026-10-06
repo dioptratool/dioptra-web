@@ -1,4 +1,5 @@
 {% load analysis help humanize i18n panels_form_extras website_tags %}
+{# transaction_edit_url / cost_item_edit_url come from the view (see correction_urls); lump-sum rows get neither. #}
 <div class="analysis-table__wrapper{% if allocateEdit == 'true' %} analysis-table__wrapper--allocate{% endif %}">
     {% if step.cost_type.type_obj|get_class_name != "Support" %}
         {% if cost_type_category_grant.show_allocation_calculator %}
@@ -20,9 +21,14 @@
             {% if lumpSumTable != 'true' %}
                 <th>{{ 'Site'|label_override:'ci_site_code' }}</th>{% endif %}
             {% if showSectorCode == 'true' and lumpSumTable != 'true' %}
-                <th>{% translate 'Sector Code' %}</th>{% endif %}
+                <th>{{ 'Sector Code'|label_override:'ci_sector_code' }}</th>{% endif %}
             {% if lumpSumTable != 'true' %}
                 <th>{% translate 'Account Code Description' %}</th>{% endif %}
+            {% if lumpSumTable != 'true' %}
+                {% for column in analysis.cost_item_custom_fields %}
+                    <th class="analysis-table__custom-field-cell">{{ column.default_label|label_override:column.label_key }}</th>
+                {% endfor %}
+            {% endif %}
 
             <th class="analysis-table__amount-cell">
                 {% if not cost_line_items|contains_sensitive_data %}
@@ -45,7 +51,10 @@
                     </th>
                 {% endif %}
             {% endfor %}
-            <th class="analysis-table__total-cell">Total Allocations<br/><small><em>Cannot exceed 100%</em></small></th>
+            <th class="analysis-table__edit-cell analysis-table__total-cell">Total Allocations<br/><small><em>Cannot exceed 100%</em></small></th>
+            {% if allocateEdit == 'true' %}
+            <th class="analysis-table__actions-cell">{% translate 'Actions' %}</th>
+            {% endif %}
         </tr>
         </thead>
         {% for cost_line_item in cost_line_items %}
@@ -59,7 +68,8 @@
                                     <label>
                                         <input type="checkbox" class="bulk-checkbox"
                                            {# No name attribute so it isn't submitted with the form, only used via JS #}
-                                               value="{{ cost_line_item.config.id }}" aria-label="{% translate 'Select' %}">
+                                               value="{{ cost_line_item.config.id }}"
+                                               data-cost-line-item-id="{{ cost_line_item.pk }}" aria-label="{% translate 'Select' %}">
                                         <span></span>
                                     </label>
                                 </div>
@@ -71,7 +81,7 @@
                                     {% if transactions_count > 0 %}
                                         <button class="analysis-table__transactions-toggle"
                                                 aria-label="{% translate 'Toggle transactions' %}"
-                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}"
+                                                data-transactions-href="{% url 'cost-line-item-transactions' cost_line_item.pk %}?{% if bulkSelect == 'true' %}bulk_select=1{% if transaction_edit_url and lumpSumTable != 'true' %}&amp;{% endif %}{% endif %}{% if transaction_edit_url and lumpSumTable != 'true' %}transaction_edit_url={{ transaction_edit_url|urlencode }}{% endif %}"
                                                 data-transactions-target="[data-cost-line-item-transactions='{{ cost_line_item.id }}']">
                                         <div class="analysis-table__transactions-toggle-inner">
                                           <span class="analysis-table__transactions-toggle-icon analysis-table__transactions-toggle-icon--expand">
@@ -108,6 +118,11 @@
                                 {% if account_code_descriptions|dict_get:cost_line_item.account_code %}
                                     {{ account_code_descriptions|dict_get:cost_line_item.account_code|attr:'account_description' }}{% else %}
                                     {{ cost_line_item.account_code }}{% endif %}</td>{% endif %}
+                        {% if lumpSumTable != 'true' %}
+                            {% for column in analysis.cost_item_custom_fields %}
+                                <td class="analysis-table__custom-field-cell">{{ cost_line_item|object_getattr:column.field }}</td>
+                            {% endfor %}
+                        {% endif %}
                         <td class="analysis-table__amount-cell">{% if not sensitive_data %}
                             {{ cost_line_item.total_cost|format_currency:analysis.currency_code }}{% endif %}</td>
                         {% for intervention_instance in analysis.interventioninstance_set.all %}
@@ -159,9 +174,11 @@
                                                 <br>
                                                 <div class="form__errors form__errors--left form__errors--allocated">
                                                     <ul class="form__errors-list">
-                                                        <li class="form__errors-list-item">
-                                                            <em><strong>{{ errors|dict_get:cost_line_item.id }}</strong></em>
-                                                        </li>
+                                                        {% for message in errors|allocation_error_messages:cost_line_item.id %}
+                                                            <li class="form__errors-list-item">
+                                                                <em><strong>{{ message }}</strong></em>
+                                                            </li>
+                                                        {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% elif errors|dict_get:cost_line_item.id %}
@@ -178,64 +195,24 @@
                                 {% endwith %}
                             {% endif %}
                         {% endfor %}
-                        <td class="analysis-table__total-cell">
+                        <td class="analysis-table__edit-cell analysis-table__total-cell">
                             <div class="analysis-table__allocated-total-wrapper">
                                 <span data-cost-line-item-id="{{ cost_line_item.id }}"
-                                      class="analysis-table__allocated-total">100%</span>
-                                {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
-                                    <button class="analysis-table__category-edit analysis-table__category-edit--note{% if cost_line_item.note %} analysis-table__category-edit--note-active {% endif %}">
-                                        {% if cost_line_item.note %}{% translate 'View note' %} {% else %}
-                                            {% translate 'Add note' %}{% endif %}
-                                    </button>
-                                    <span class="analysis-table__category-edit-active-label analysis-table__category-edit-active-label--note">{% translate 'Editing' %}</span>
-                                {% endif %}
+                                    class="analysis-table__allocated-total">100%</span>
                             </div>
                         </td>
+                        {% if allocateEdit == 'true' %}
+                        <td class="analysis-table__actions-cell">
+                            {% include 'analysis/analysis-table/_analysis-table-actions-menu.html' with editable=lumpSumTable|default:''|yesno:'false,true' %}
+                        </td>
+                        {% endif %}
                     </tr>
 
-                    {% if dioptra_settings.show_transactions %}
-                        {% if transactions_count > 0 %}
-                            <tr class="analysis-table__transaction-row">
-                                <td colspan="{% if type == 'fixData' %}8{% elif type == 'categorizeCostType' %}8{% elif showSectorCode %}{% if bulkSelect == 'true' %}10{% else %}9{% endif %}{% else %}7{% endif %}"
-                                    class="analysis-table__transaction-cell">
-                                    <div class="analysis-table__transactions-detail">
-                                        <table
-                                                class="analysis-table__transaction-table{% if showSectorCode == 'true' %} analysis-table__transaction-table--with-sector-code{% endif %}">
-                                            <thead>
-                                            <tr>
-                                                <th class="analysis-table__transaction-table-summary">
-                                                    {% blocktranslate %}{{ transactions_count }}
-                                                        Transactions{% endblocktranslate %}</th>
-                                                <th>{{ 'Site'|label_override:'tr_site_code' }}</th>
-                                                <th>{{ 'Date'|label_override:'tr_date' }}</th>
-                                                <th class="analysis-table__amount-cell">{{ 'Amount'|label_override:'tr_amount' }}</th>
-                                                <th {% if type == 'fixData' %}colspan="3"
-                                                    {% elif type == 'categorizeCostType' %}colspan="3"{% endif %}></th>
-                                            </tr>
-                                            </thead>
-                                            <tbody data-cost-line-item-transactions="{{ cost_line_item.id }}">
-                                            <tr>
-                                                <td
-                                                        class="analysis-table__cost-item-cell analysis-table__transaction-table-summary">{% translate "Loading..." %}</td>
-                                                <td class="analysis-table__site-cell"></td>
-                                                <td class="analysis-table__description-cell"></td>
-                                                <td class="analysis-table__amount-cell"></td>
-                                                <td {% if type == 'fixData' %}colspan="3"
-                                                    {% elif type == 'categorizeCostType' %}colspan="3"{% endif %}
-                                                    class="analysis-table__edit-cell"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endif %}
+                    {% include 'analysis/analysis-table/_analysis-table-transaction-rows.html' with bulkSelect=bulkSelect %}
 
                     {% if costItemEdit == 'true' %}
                         {% include 'analysis/analysis-table/_analysis-table-edit-row.html' %}
                     {% elif allocateEdit == 'true' %}
-                        {% if cost_line_item.config.cost_type.type_obj|get_class_name != "Indirect" %}
                             <tr class="analysis-table__edit-row allocate-costs">
                                 <td
                                         colspan="99"
@@ -275,8 +252,6 @@
                                     </div>
                                 </td>
                             </tr>
-
-                        {% endif %}
                     {% endif %}
                 {% endwith %}
             {% endwith %}

@@ -25,8 +25,9 @@ Mapped fields:
 | g_l_account_name   | budget_line_description fallback |
 | usd_amount         | amount                  |
 
-The template sets `country_code` to the analysis country code and `currency_code`
-to `USD`.
+The template sets `country_code` to the analysis country code. The layout has no
+currency column, so `currency_code` is left blank and the currency configured for
+the instance is used; `usd_amount` is reported in that currency.
 
 Required source headers:
 

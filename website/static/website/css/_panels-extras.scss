@@ -277,3 +277,30 @@ input[type="file"].clearable-file__upload {
     }
   }
 }
+
+/* Tagify overrides */
+.panel-body {
+  .tagify__tag__removeBtn {
+    color: currentColor;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+    margin-inline: auto;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+  .tagify--select .tagify__tag {
+    margin-inline-end: 1.6em;
+  }
+  .tagify--select::after {
+    font-size: 12px;
+    opacity: 1;
+    transform: translate(-150%,-50%) scaleX(2) rotate(90deg);
+    
+  }
+  .tagify--select[aria-expanded=true]::after {
+    transform: translate(-150%,-50%) scaleX(2) rotate(270deg)
+  }
+}

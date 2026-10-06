@@ -13,6 +13,7 @@ from psycopg import sql
 from psycopg.rows import dict_row
 
 from website import betterdb, stopwatch
+from website.currency import instance_currency_code
 from website.models import Analysis
 from website.models.transaction import Transaction, TransactionLike
 from .transaction_templates.base import canonical_transaction_row
@@ -136,6 +137,7 @@ def validate_uploaded_transaction_file(
     analysis: Analysis | None,
     field_labels: dict[str, str],
     first_data_row: int,
+    currency_required: bool = True,
 ) -> list[str]:
     errors = []
     if len(file_data) > 200_000:
@@ -144,7 +146,13 @@ def validate_uploaded_transaction_file(
         return errors
 
     for i, row in enumerate(file_data, first_data_row):
-        results = validate_transaction_row(i, row, analysis, field_labels=field_labels)
+        results = validate_transaction_row(
+            i,
+            row,
+            analysis,
+            field_labels=field_labels,
+            currency_required=currency_required,
+        )
         if results.full_message():
             errors.append(results.full_message())
     return errors
@@ -164,9 +172,15 @@ def normalize_uploaded_transaction_file(
     except TransactionTemplateError as e:
         return False, e.errors
 
+    # An instance configured for a single currency supplies it to rows that do not
+    # carry one, so uploads do not have to include a currency column at all.
+    default_currency_code = instance_currency_code() or ""
+
     fixed_data = []
     for row in normalized_data:
         fixed_row = canonical_transaction_row(row)
+        if not fixed_row["currency_code"]:
+            fixed_row["currency_code"] = default_currency_code
         # Excel stores all numbers as floats. This causes grants with values
         # like "9116" to be saved as "9116.0". Validation checks grant codes
         # before transaction_filter gets a chance to do the broader casting.
@@ -219,12 +233,17 @@ def load_transactions(
             return False, {"errors": normalized_result}
         file_data = normalized_result
 
-        # Validate the file data
+        # Validate the file data. Currency is only required of instances that have no
+        # currency of their own, and then only from layouts that have a currency column.
         errors = validate_uploaded_transaction_file(
             file_data,
             analysis,
             field_labels=field_labels,
             first_data_row=first_data_row,
+            currency_required=(
+                instance_currency_code() is None
+                and transaction_template.canonical_field_sources.get("currency_code") is not None
+            ),
         )
         if errors:
             return False, {"errors": errors}
@@ -234,6 +253,7 @@ def load_transactions(
     # It should be refactored into something more reusable as we need to build more bulk inserts.
 
     country_codes = analysis.get_all_countries_values("code") if filter_by_country else None
+    default_currency_code = instance_currency_code() or ""
     total_costs_by_grant = defaultdict(Decimal)
     xactions = []
     try:
@@ -259,6 +279,8 @@ def load_transactions(
                                         row[field] = value.strip()
                                 except AttributeError:
                                     pass
+                            if not row.get("currency_code"):
+                                row["currency_code"] = default_currency_code
                             amount = row.pop("amount", 0)
                             total_costs_by_grant[row["grant_code"]] += amount
                             # If we are filtering by country, and the Transaction's

@@ -1,0 +1,12 @@
+{% load i18n %}
+<div class="form__checkbox form__checkbox--simple form__checkbox--no-label analysis-table__transaction-checkbox">
+    <label>
+        <input type="checkbox"
+               class="transaction-checkbox"
+               name="transaction_ids"
+               value="{{ transaction.pk }}"
+               data-config-id="{{ config_id }}"
+               aria-label="{% translate 'Select transaction' %}">
+        <span></span>
+    </label>
+</div>
