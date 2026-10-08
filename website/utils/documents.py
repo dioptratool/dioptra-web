@@ -83,7 +83,8 @@ def _write_metadata_table(
 
     `metadata_rows` are the intervention instance's resolved metadata values (see
     `website.intervention_metadata.resolve_metadata`); they are written right after the calculation
-    parameters, so the parameter cell references above stay where they are.
+    parameters, so the parameter cell references above stay where they are, with one empty row on
+    each side to set them apart from the analysis rows. Without values the layout is unchanged.
 
     Returns the last row with data on it to position other things on the page.
     """
@@ -137,8 +138,8 @@ def _write_metadata_table(
     ]
 
     for index, (key, val) in enumerate(metadata):
-        if index == leading_count:
-            row = _write_intervention_metadata_rows(ws, row, metadata_rows, an_analysis)
+        if index == leading_count and metadata_rows:
+            row = _write_intervention_metadata_rows(ws, row + 1, metadata_rows, an_analysis) + 1
         _style_key_value_row(ws, row)
         ws[f"A{row}"] = key
         if key in [
@@ -165,13 +166,16 @@ def _write_metadata_table(
     return row
 
 
-def _style_key_value_row(ws: worksheet, row: int) -> None:
+def _style_key_value_row(ws: worksheet, row: int, value_columns: int = 1) -> None:
+    """A bold gray key cell in A and `value_columns` gray value cells from B onward."""
     ws[f"A{row}"].fill = _gray_fill
     ws[f"A{row}"].font = Font(bold=True)
     ws[f"A{row}"].border = _black_border
-    ws[f"B{row}"].fill = _gray_fill
-    ws[f"B{row}"].border = _black_border
-    ws[f"B{row}"].alignment = Alignment(horizontal="left")
+    for column in range(2, 2 + max(value_columns, 1)):
+        cell = ws.cell(row=row, column=column)
+        cell.fill = _gray_fill
+        cell.border = _black_border
+        cell.alignment = Alignment(horizontal="left")
 
 
 def _write_text_cell(cell, text: str) -> None:
@@ -186,10 +190,18 @@ def _write_intervention_metadata_rows(ws: worksheet, row: int, metadata_rows, an
     One row per resolved metadata value, formatted by field type rather than by label, so a
     free-text field named like a special parameter is still written as text. Numbers become
     numeric cells only when the spreadsheet can hold them exactly, formatted with the entered
-    decimal places so the sheet shows what Insights shows; otherwise the exact text.
+    decimal places so the sheet shows what Insights shows; otherwise the exact text. A multiple
+    choice selection takes one cell per selected option, from B onward in option order.
     """
     symbol = currency_symbol(an_analysis)
     for metadata_row in metadata_rows:
+        if metadata_row.field_type == MetadataFieldType.MULTIPLE_CHOICE:
+            _style_key_value_row(ws, row, value_columns=len(metadata_row.items))
+            _write_text_cell(ws[f"A{row}"], metadata_row.name)
+            for offset, label in enumerate(metadata_row.items):
+                _write_text_cell(ws.cell(row=row, column=2 + offset), label)
+            row += 1
+            continue
         _style_key_value_row(ws, row)
         _write_text_cell(ws[f"A{row}"], metadata_row.name)
         cell = ws[f"B{row}"]

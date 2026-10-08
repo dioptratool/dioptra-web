@@ -6,7 +6,11 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from ombucore.admin.templatetags.panels_extras import jsonattr
-from website.models.intervention_metadata import MAX_FIELDS_PER_INTERVENTION, MetadataFieldType
+from website.models.intervention_metadata import (
+    MAX_FIELDS_PER_INTERVENTION,
+    MetadataFieldType,
+    MetadataNumberType,
+)
 
 
 class CurrencyWidget(forms.Widget):
@@ -170,17 +174,28 @@ class MetadataEditorWidget(forms.Widget):
         )
         return context
 
-    @staticmethod
-    def _row(field):
-        try:
-            type_label = MetadataFieldType(field.get("field_type")).label
-        except ValueError:
-            type_label = ""
+    @classmethod
+    def _row(cls, field):
         return {
             "draft_id": field.get("draft_id", ""),
             "name": field.get("name", ""),
-            "type_label": type_label,
+            "type_label": cls._type_label(field),
         }
+
+    @staticmethod
+    def _type_label(field) -> str:
+        """
+        The row's type cell. A Number field shows its sub-type ("Integer", "Currency"), which is what
+        distinguishes number fields in the list; without a valid sub-type (a draft re-rendered after a
+        validation error) it falls back to "Number". The editor script mirrors this in typeLabel().
+        """
+        try:
+            field_type = MetadataFieldType(field.get("field_type"))
+        except ValueError:
+            return ""
+        if field_type == MetadataFieldType.NUMBER and field.get("number_type") in MetadataNumberType.values:
+            return MetadataNumberType(field["number_type"]).label
+        return field_type.label
 
 
 class TemplateDownloadWidget(forms.Widget):

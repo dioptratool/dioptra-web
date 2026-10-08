@@ -13,4 +13,5 @@
         {% endfor %}
     </ul>
     <button type="button" class="btn btn-primary metadata-editor__add">{% translate 'Add Field' %}</button>
+    <p class="help_text">{% blocktranslate with max=widget.max_fields %}Maximum of {{ max }}{% endblocktranslate %}</p>
 </div>

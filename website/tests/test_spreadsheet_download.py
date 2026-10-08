@@ -104,7 +104,9 @@ class TestFullCostModelSpreadsheetEndpoint:
         assert labels[:3] == ["Analysis Title", "Analysis Type", "Analysis Status"]
         assert worksheet["B3"].value == "In Progress"
         start = labels.index("Partner")
-        assert labels[start : start + 4] == ["Partner", "Volunteers", "Age", "Output count data source"]
+        # One empty row on each side of the intervention metadata block.
+        assert labels[start - 1] is None
+        assert labels[start : start + 5] == ["Partner", "Volunteers", "Age", None, "Output count data source"]
         assert [worksheet[f"B{start + 1 + offset}"].value for offset in range(3)] == [
             "Save the Children",
             0,

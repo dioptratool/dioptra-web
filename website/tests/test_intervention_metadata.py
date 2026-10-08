@@ -21,6 +21,7 @@ from website.intervention_metadata import (
     validate_number,
 )
 from website.models import (
+    AnalysisStatus,
     Intervention,
     InterventionInstance,
     InterventionMetadataField,
@@ -209,6 +210,16 @@ class TestNumberRules:
         assert validate_number("-150.25", number_type) == "-150.25"
         with pytest.raises(ValidationError):
             validate_number("12%", number_type)
+
+    @pytest.mark.parametrize("number_type", MetadataNumberType.values)
+    def test_a_typed_comma_is_named_in_the_error(self, number_type):
+        with pytest.raises(ValidationError) as rejected:
+            validate_number("1,000", number_type)
+        assert rejected.value.messages[0].endswith(" Commas are not allowed.")
+        # Other mistakes keep the plain message.
+        with pytest.raises(ValidationError) as rejected:
+            validate_number("abc", number_type)
+        assert "Commas" not in rejected.value.messages[0]
 
     def test_display_formatting_keeps_precision_and_adds_units(self):
         assert format_number("1234567", MetadataNumberType.INTEGER) == "1,234,567"
@@ -671,6 +682,103 @@ class TestDraftPersistence:
         names = list(d["intervention"].metadata_fields.values_list("name", flat=True))
         assert names == ["Partner", "Age", "Approach", "Volunteers"]
         assert [o.label for o in d["multi"].options.all()] == ["X", "Y"]
+
+
+def updated_of(*analyses):
+    return [Analysis.objects.get(pk=analysis.pk).updated for analysis in analyses]
+
+
+def analysis_instance(definitions, metadata):
+    return InterventionInstanceFactory(
+        intervention=definitions["intervention"], analysis=AnalysisFactory(), metadata=metadata
+    )
+
+
+@pytest.mark.django_db
+class TestDefinitionChangesTouchTheAnalysesShowingLess:
+    """
+    A save that retires a value an analysis was showing sets that analysis's ``updated``; the stored
+    instance JSON is left alone (the next instance save or the cleanup command prunes it).
+    """
+
+    def test_deleting_a_field_bumps_only_the_analyses_that_held_a_value(self, definitions):
+        d = definitions
+        holding = analysis_instance(d, {d["text"].storage_key: "Amoud"})
+        other_field_only = analysis_instance(d, {d["number"].storage_key: "3"})
+        before = updated_of(holding.analysis, other_field_only.analysis)
+        draft = [f for f in build_draft(d["intervention"])["fields"] if f["name"] != "Partner"]
+
+        apply(d["intervention"], rows_for(draft))
+
+        after = updated_of(holding.analysis, other_field_only.analysis)
+        assert after[0] > before[0]
+        assert after[1] == before[1]
+        assert stored(holding).metadata == {d["text"].storage_key: "Amoud"}
+
+    def test_a_type_change_bumps_because_the_rotated_key_retires_the_value(self, definitions):
+        d = definitions
+        holding = analysis_instance(d, {d["text"].storage_key: "Amoud"})
+        (before,) = updated_of(holding.analysis)
+        draft = build_draft(d["intervention"])["fields"]
+        next(f for f in draft if f["name"] == "Partner").update(
+            {"field_type": MetadataFieldType.NUMBER, "number_type": MetadataNumberType.DECIMAL}
+        )
+
+        apply(d["intervention"], rows_for(draft))
+
+        assert updated_of(holding.analysis) > [before]
+
+    def test_deleting_an_option_bumps_only_the_analyses_that_selected_it(self, definitions):
+        d = definitions
+        selected_x = analysis_instance(d, {d["multi"].storage_key: [d["X"].storage_key, d["Y"].storage_key]})
+        selected_y = analysis_instance(d, {d["multi"].storage_key: [d["Y"].storage_key]})
+        chose_a = analysis_instance(d, {d["single"].storage_key: d["A"].storage_key})
+        chose_b = analysis_instance(d, {d["single"].storage_key: d["B"].storage_key})
+        before = updated_of(selected_x.analysis, selected_y.analysis, chose_a.analysis, chose_b.analysis)
+        draft = build_draft(d["intervention"])["fields"]
+        by_name = {f["name"]: f for f in draft}
+        by_name["Approach"]["options"] = [o for o in by_name["Approach"]["options"] if o["label"] != "X"]
+        by_name["Age"]["options"] = [o for o in by_name["Age"]["options"] if o["label"] != "A"]
+
+        apply(d["intervention"], rows_for(draft))
+
+        after = updated_of(selected_x.analysis, selected_y.analysis, chose_a.analysis, chose_b.analysis)
+        assert [a > b for a, b in zip(after, before)] == [True, False, True, False]
+
+    def test_renaming_relabelling_and_reordering_bump_nothing(self, definitions):
+        d = definitions
+        holding = analysis_instance(
+            d,
+            {
+                d["text"].storage_key: "Amoud",
+                d["single"].storage_key: d["A"].storage_key,
+                d["multi"].storage_key: [d["Z"].storage_key],
+            },
+        )
+        (before,) = updated_of(holding.analysis)
+        draft = build_draft(d["intervention"])["fields"]
+        by_name = {f["name"]: f for f in draft}
+        by_name["Partner"]["name"] = "Implementation Partner"
+        by_name["Age"]["options"][0]["label"] = "0-5 months"
+        reordered = [by_name["Volunteers"], by_name["Age"], by_name["Partner"], by_name["Approach"]]
+
+        apply(d["intervention"], rows_for(reordered))
+
+        assert updated_of(holding.analysis) == [before]
+
+    def test_only_the_timestamp_is_written_on_a_validated_analysis(self, definitions):
+        d = definitions
+        holding = analysis_instance(d, {d["text"].storage_key: "Amoud"})
+        Analysis.objects.filter(pk=holding.analysis.pk).update(analysis_status=AnalysisStatus.VALIDATED)
+        before = Analysis.objects.get(pk=holding.analysis.pk)
+
+        apply(d["intervention"], rows_for([]))
+
+        after = Analysis.objects.get(pk=holding.analysis.pk)
+        assert after.updated > before.updated
+        assert after.analysis_status == AnalysisStatus.VALIDATED
+        assert after.status_changed_at == before.status_changed_at
+        assert after.output_costs == before.output_costs
 
 
 class TestExcelNumbers:

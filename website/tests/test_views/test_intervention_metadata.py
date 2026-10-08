@@ -9,7 +9,9 @@ from django.test import Client
 from django.urls import reverse
 
 from website.forms.intervention_metadata import metadata_field_name as name_of
+from website.forms.widgets import MetadataEditorWidget
 from website.intervention_metadata import build_draft
+from website.models.intervention_metadata import MAX_FIELDS_PER_INTERVENTION
 from website.workflows.utils import WORKFLOW_PREFETCHES, recalculate_analysis
 from website.models import (
     Analysis,
@@ -242,6 +244,42 @@ class TestParentSave:
         assert "data-metadata-editor" in content
         assert "Partner" in content
         assert f"intervention={intervention.pk}" in content
+
+    def test_the_metadata_tab_states_the_field_limit_under_the_list(self, client_with_admin):
+        intervention = InterventionFactory(output_metrics=[OUTPUT_METRIC_CHOICES[0][0]])
+        content = client_with_admin.get(change_url(intervention)).content.decode()
+        # The same closing note the options list shows; the Add button hides at the limit, this stays.
+        assert f"Maximum of {MAX_FIELDS_PER_INTERVENTION}" in content
+        assert content.index("metadata-editor__add") < content.index(
+            f"Maximum of {MAX_FIELDS_PER_INTERVENTION}"
+        )
+
+    def test_the_field_list_shows_the_number_sub_type(self, client_with_admin):
+        intervention = InterventionFactory(output_metrics=[OUTPUT_METRIC_CHOICES[0][0]])
+        InterventionMetadataFieldFactory(intervention=intervention, name="Partner", order=0)
+        InterventionMetadataFieldFactory(
+            intervention=intervention,
+            name="Budget",
+            field_type=MetadataFieldType.NUMBER,
+            number_type=MetadataNumberType.CURRENCY,
+            order=1,
+        )
+        content = client_with_admin.get(change_url(intervention)).content.decode()
+        types = re.findall(r'<span class="metadata-editor__type">([^<]*)</span>', content)
+        assert types == ["Free Text", "Currency"]
+
+    def test_a_number_row_without_a_valid_sub_type_falls_back_to_number(self):
+        draft = {
+            "fields": [
+                number_row("Volunteers"),
+                number_row("Budget", number_type=""),
+                number_row("Rate", number_type="bogus"),
+                text_row("Partner"),
+                {"name": "Broken", "field_type": "bogus"},
+            ]
+        }
+        rows = MetadataEditorWidget().get_context("metadata_draft", json.dumps(draft), {})["widget"]["fields"]
+        assert [row["type_label"] for row in rows] == ["Integer", "Number", "Number", "Free Text", ""]
 
     def test_draft_edits_commit_together_on_change(self, client_with_admin):
         intervention = InterventionFactory(output_metrics=[OUTPUT_METRIC_CHOICES[0][0]])

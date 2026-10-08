@@ -5,7 +5,8 @@ Values are stored on ``InterventionInstance.metadata`` keyed by field key (``str
 text or exact numeric string, or as a list of option keys. Consumers only ever see values through
 ``resolve_metadata``, which walks the *current* definitions, so a deleted field or option, or a
 field whose key was rotated by a type change, disappears everywhere at once while the stored
-orphan waits for a save of that instance or the cleanup command.
+orphan waits for a save of that instance or the cleanup command. An analysis that was showing such
+a value has its ``updated`` timestamp set when the definitions change (see ``save_draft``).
 """
 
 from __future__ import annotations
@@ -18,10 +19,16 @@ from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import prefetch_related_objects
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from website.currency import currency_symbol
-from website.models import InterventionInstance, InterventionMetadataField, InterventionMetadataOption
+from website.models import (
+    Analysis,
+    InterventionInstance,
+    InterventionMetadataField,
+    InterventionMetadataOption,
+)
 from website.models.intervention_metadata import (
     MAX_FIELDS_PER_INTERVENTION,
     MAX_OPTIONS_PER_FIELD,
@@ -69,14 +76,23 @@ def validate_number(value: str, number_type: str) -> str:
     text = (value or "").strip()
     if number_type == MetadataNumberType.INTEGER:
         if not INTEGER_PATTERN.match(text):
-            raise ValidationError(_("Enter a whole number."), code="invalid")
+            raise ValidationError(_number_error(_("Enter a whole number."), text), code="invalid")
     elif not DECIMAL_PATTERN.match(text):
-        raise ValidationError(_("Enter a number, using a period as the decimal separator."), code="invalid")
+        raise ValidationError(
+            _number_error(_("Enter a number, using a period as the decimal separator."), text), code="invalid"
+        )
     if sum(character.isdigit() for character in text) > NUMBER_MAX_DIGITS:
         raise ValidationError(
             _("Enter at most %(max)s digits.") % {"max": NUMBER_MAX_DIGITS}, code="max_digits"
         )
     return text
+
+
+def _number_error(message: str, text: str) -> str:
+    """The invalid-number message, naming the comma when one was typed: "1,000" is the usual slip."""
+    if "," in text:
+        return f"{message} {_('Commas are not allowed.')}"
+    return message
 
 
 def format_number(value: str, number_type: str, analysis=None) -> str:
@@ -438,9 +454,14 @@ def save_draft(intervention, rows: list[dict]) -> None:
     placeholders so two fields can swap names under the unique constraint. A conflict with what
     another editor saved meanwhile, including a submitted record they deleted, surfaces as
     MetadataDraftError after a full rollback.
+
+    Every analysis that was showing a value this save retires (through a deleted field, a rotated
+    key or a deleted option) gets its ``updated`` timestamp set, so its dashboard date reflects
+    the change. The stored instance JSON is not touched here; see the module docstring.
     """
     try:
         with transaction.atomic():
+            visible_before = _visible_values(intervention)
             existing = {definition.pk: definition for definition in intervention.metadata_fields.all()}
             submitted_ids = {row["id"] for row in rows if row["id"] is not None}
             for pk, definition in existing.items():
@@ -473,8 +494,39 @@ def save_draft(intervention, rows: list[dict]) -> None:
                         order=order,
                     )
                 _save_options(definition, row)
+            _touch_analyses_showing_less(visible_before, _visible_values(intervention))
     except IntegrityError as error:
         raise _conflict_error() from error
+
+
+def _visible_values(intervention) -> dict[int, tuple[int | None, dict]]:
+    """Per instance of the intervention: its analysis id and the values its current definitions show."""
+    definitions = list(
+        InterventionMetadataField.objects.filter(intervention=intervention).prefetch_related("options")
+    )
+    return {
+        pk: (analysis_id, prune_metadata(definitions, metadata))
+        for pk, analysis_id, metadata in InterventionInstance.objects.filter(
+            intervention=intervention
+        ).values_list("pk", "analysis_id", "metadata")
+    }
+
+
+def _touch_analyses_showing_less(before: dict, after: dict) -> None:
+    """
+    Set ``updated`` on every analysis whose visible metadata shrank between the two snapshots.
+
+    Pruning only ever removes, so any difference means the analysis now shows less. The timestamp is
+    set explicitly because ``auto_now`` does not fire on a queryset update; nothing else on the
+    analysis, its lifecycle fields included, is written.
+    """
+    analysis_ids = set()
+    for pk, (analysis_id, visible) in before.items():
+        remaining = after.get(pk)
+        if analysis_id is not None and remaining is not None and remaining[1] != visible:
+            analysis_ids.add(analysis_id)
+    if analysis_ids:
+        Analysis.objects.filter(pk__in=analysis_ids).update(updated=timezone.now())
 
 
 def _save_options(definition, row):

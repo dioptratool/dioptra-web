@@ -913,19 +913,23 @@ class TestMetadataRowsInTheSpreadsheet:
         assert worksheet["A10"].value == "Value of Cash Distributed"
         assert worksheet["B10"].value == 10000
         assert parameter_metadata == {"value_of_cash_distributed": 10}
-        # Then the metadata, in configured order, blanks omitted and zero kept.
-        assert [(worksheet[f"A{row}"].value, worksheet[f"B{row}"].value) for row in (11, 12, 13)] == [
+        # Then an empty separator row, the metadata in configured order (blanks omitted, zero kept),
+        # and another empty row before the trailing analysis rows.
+        for separator in (11, 15):
+            assert (worksheet[f"A{separator}"].value, worksheet[f"B{separator}"].value) == (None, None)
+            assert worksheet[f"A{separator}"].fill.fill_type is None
+        assert [(worksheet[f"A{row}"].value, worksheet[f"B{row}"].value) for row in (12, 13, 14)] == [
             ("Partner", "Save the Children"),
             ("Volunteers", 0),
             ("Age", "Under 18"),
         ]
-        assert worksheet["A13"].font.bold
-        assert worksheet["A13"].fill.start_color.rgb == worksheet["A10"].fill.start_color.rgb
-        # The trailing rows moved down by three, and so did the next free row.
-        assert worksheet["A14"].value == "Output count data source"
-        assert worksheet["B14"].value == "My Output Count Source"
-        assert worksheet["A17"].value == "Analysis URL"
-        assert next_row == 18
+        assert worksheet["A14"].font.bold
+        assert worksheet["A14"].fill.start_color.rgb == worksheet["A10"].fill.start_color.rgb
+        # The trailing rows moved down by five, and so did the next free row.
+        assert worksheet["A16"].value == "Output count data source"
+        assert worksheet["B16"].value == "My Output Count Source"
+        assert worksheet["A19"].value == "Analysis URL"
+        assert next_row == 20
 
     def test_without_metadata_nothing_changes(self):
         intervention, analysis, instance = _cash_analysis()
@@ -973,10 +977,10 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert worksheet["A11"].value == "Amount"
-        assert worksheet["B11"].value == value
-        assert worksheet["B11"].data_type == "n"
-        assert worksheet["B11"].number_format == number_format
+        assert worksheet["A12"].value == "Amount"
+        assert worksheet["B12"].value == value
+        assert worksheet["B12"].data_type == "n"
+        assert worksheet["B12"].number_format == number_format
 
     @pytest.mark.parametrize(
         ("number_type", "raw", "text"),
@@ -1003,9 +1007,9 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert worksheet["B11"].value == text
-        assert worksheet["B11"].data_type == "s"
-        assert worksheet["B11"].number_format == "@"
+        assert worksheet["B12"].value == text
+        assert worksheet["B12"].data_type == "s"
+        assert worksheet["B12"].number_format == "@"
 
     def test_text_values_and_labels_are_literal_strings(self):
         intervention, analysis, instance = _cash_analysis()
@@ -1030,20 +1034,55 @@ class TestMetadataRowsInTheSpreadsheet:
 
         worksheet, _, _ = _write_table(analysis, instance)
 
-        assert (worksheet["A11"].value, worksheet["A11"].data_type) == ("=Partner", "s")
-        assert (worksheet["B11"].value, worksheet["B11"].data_type) == ("=1+1", "s")
-        assert worksheet["B11"].number_format == "@"
-        assert (worksheet["B12"].value, worksheet["B12"].data_type) == ("10000", "s")
+        assert (worksheet["A12"].value, worksheet["A12"].data_type) == ("=Partner", "s")
+        assert (worksheet["B12"].value, worksheet["B12"].data_type) == ("=1+1", "s")
         assert worksheet["B12"].number_format == "@"
+        assert (worksheet["B13"].value, worksheet["B13"].data_type) == ("10000", "s")
+        assert worksheet["B13"].number_format == "@"
         # The real parameter above keeps its numeric currency cell.
         assert worksheet["B10"].value == 10000
         assert worksheet["B10"].number_format == '"$"#,##0.00'
-        assert worksheet["B13"].value == "X, Y"
+        # Selected options are written in option order, one per cell.
+        assert (worksheet["B14"].value, worksheet["C14"].value) == ("X", "Y")
+
+    def test_each_selected_option_has_its_own_cell(self):
+        intervention, analysis, instance = _cash_analysis()
+        multi = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Approach", field_type=MetadataFieldType.MULTIPLE_CHOICE, order=1
+        )
+        options = [
+            InterventionMetadataOptionFactory(field=multi, label=label, order=i)
+            for i, label in enumerate(["Community-based", "Outpatient", "Inpatient"])
+        ]
+        single = InterventionMetadataFieldFactory(
+            intervention=intervention, name="Age", field_type=MetadataFieldType.SINGLE_CHOICE, order=2
+        )
+        under_18 = InterventionMetadataOptionFactory(field=single, label="Under 18")
+        instance.metadata = {
+            multi.storage_key: [options[2].storage_key, options[0].storage_key],
+            single.storage_key: under_18.storage_key,
+        }
+        instance.save()
+
+        worksheet, _, next_row = _write_table(analysis, instance)
+
+        assert worksheet["A12"].value == "Approach"
+        assert [worksheet[f"{column}12"].value for column in "BCD"] == ["Community-based", "Inpatient", None]
+        assert [worksheet[f"{column}12"].data_type for column in "BC"] == ["s", "s"]
+        # Every value cell carries the key/value styling; the empty cell after them does not.
+        assert worksheet["C12"].fill.start_color.rgb == worksheet["A12"].fill.start_color.rgb
+        assert worksheet["C12"].border.left.style == "thin"
+        assert worksheet["D12"].fill.fill_type is None
+        # A single choice stays in B alone, and the table continues below as before.
+        assert (worksheet["B13"].value, worksheet["C13"].value) == ("Under 18", None)
+        assert worksheet["A15"].value == "Output count data source"
+        assert next_row == 19
 
     def test_full_cost_model_spreadsheet_formulas_follow_the_inserted_rows(self, spreadsheet_analysis, rf):
         """
-        Two metadata rows push everything below them down two rows, and every formula moves with
-        the cells it points at; the parameter rows above stay where the formulas expect them.
+        Two metadata rows and their two separator rows push everything below them down four rows,
+        and every formula moves with the cells it points at; the parameter rows above stay where the
+        formulas expect them.
         """
         instance = spreadsheet_analysis.interventioninstance_set.first()
         text = InterventionMetadataFieldFactory(intervention=instance.intervention, name="=Partner", order=1)
@@ -1063,30 +1102,33 @@ class TestMetadataRowsInTheSpreadsheet:
             "Number of Years of Support",
         ]
         assert [with_metadata[f"B{row}"].value for row in (10, 11, 12)] == [40, 80, 10]
-        # Text survives the file round trip as text, never as a formula.
-        assert (with_metadata["A13"].value, with_metadata["A13"].data_type) == ("=Partner", "s")
-        assert (with_metadata["B13"].value, with_metadata["B13"].data_type) == ("=1+1", "s")
+        # An empty separator row, then text that survives the file round trip as text, never as a
+        # formula, then another empty row.
+        assert with_metadata["A13"].value is None
+        assert (with_metadata["A14"].value, with_metadata["A14"].data_type) == ("=Partner", "s")
+        assert (with_metadata["B14"].value, with_metadata["B14"].data_type) == ("=1+1", "s")
         symbol = currency_symbol(spreadsheet_analysis)
-        assert (with_metadata["B14"].value, with_metadata["B14"].data_type) == (
+        assert (with_metadata["B15"].value, with_metadata["B15"].data_type) == (
             f"{symbol}1,234,567,890,123,456.78",
             "s",
         )
-        assert with_metadata["B17"].value == "The True Author"
+        assert with_metadata["A16"].value is None
+        assert with_metadata["B19"].value == "The True Author"
         assert (
-            with_metadata["B18"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
+            with_metadata["B20"].value == f"{settings.BASE_URL}/analysis/{spreadsheet_analysis.pk}/insights/"
         )
         assert (
-            with_metadata["B24"].value
-            == "=FIXED((IFERROR(C37 / (B10 * B11), 0)) + (IFERROR(SUM(E48) / (B10 * B11), 0)), 2)"
+            with_metadata["B26"].value
+            == "=FIXED((IFERROR(C39 / (B10 * B11), 0)) + (IFERROR(SUM(E50) / (B10 * B11), 0)), 2)"
         )
-        # Rows 1-12 are identical; from row 13 on, the plain layout reappears two rows lower with
-        # every formula reference at or below row 12 shifted by two.
-        assert with_metadata.max_row == plain.max_row + 2
+        # Rows 1-12 are identical; from row 13 on, the plain layout reappears four rows lower (two
+        # metadata rows and two separators) with every formula reference at or below row 12 shifted.
+        assert with_metadata.max_row == plain.max_row + 4
         for row in range(1, plain.max_row + 1):
             for column in range(1, plain.max_column + 1):
                 source = plain.cell(row=row, column=column)
-                target = with_metadata.cell(row=row + 2 if row >= 13 else row, column=column)
-                assert target.value == _shifted(source.value, shift=2, from_row=13), (row, column)
+                target = with_metadata.cell(row=row + 4 if row >= 13 else row, column=column)
+                assert target.value == _shifted(source.value, shift=4, from_row=13), (row, column)
                 assert target.number_format == source.number_format, (row, column)
 
 

@@ -22,9 +22,16 @@
     single_choice: 'Single Choice',
     number: 'Number'
   };
+  var NUMBER_TYPE_LABELS = {
+    integer: 'Integer',
+    decimal: 'Decimal',
+    percentage: 'Percentage',
+    currency: 'Currency'
+  };
   var DELETE_FIELD_WARNING = 'Are you sure you want to delete this metadata field? All associated data within the analyses using this field will be deleted. This action cannot be undone.';
   var DELETE_OPTION_WARNING = 'Are you sure you want to delete this option? All analysis metadata fields with this option selected will have it removed. This action cannot be undone.';
   var TYPE_CHANGE_WARNING = 'Saving this intervention will discard existing values for this field.';
+  var UNADDED_OPTION_WARNING = 'The option label you typed has not been added and will be lost. Continue without adding it?';
 
   function uid() {
     return Math.random().toString(16).slice(2) + Date.now().toString(16);
@@ -32,6 +39,14 @@
 
   function escapeHtml(text) {
     return $('<span>').text(text == null ? '' : String(text)).html();
+  }
+
+  // The list's type cell: a Number field shows its sub-type, as MetadataEditorWidget renders it.
+  function typeLabel(field) {
+    if (field.field_type === 'number' && NUMBER_TYPE_LABELS[field.number_type]) {
+      return NUMBER_TYPE_LABELS[field.number_type];
+    }
+    return TYPE_LABELS[field.field_type] || '';
   }
 
   function fragmentDraft() {
@@ -76,7 +91,7 @@
         var $row = $(
           '<li class="metadata-editor__row">' +
             '<span class="metadata-editor__handle" aria-hidden="true">☰</span>' +
-            '<span class="metadata-editor__type">' + escapeHtml(TYPE_LABELS[field.field_type] || '') + '</span>' +
+            '<span class="metadata-editor__type">' + escapeHtml(typeLabel(field)) + '</span>' +
             '<span class="metadata-editor__name">' + escapeHtml(field.name) + '</span>' +
             '<span class="metadata-editor__actions">' +
               '<a href="#" class="metadata-editor__edit">Edit</a>' +
@@ -245,6 +260,13 @@
       $save.prop('disabled', !valid);
     }
 
+    // The option input is deliberately untracked (the form allows abandonment because the controls
+    // are filled from the fragment), so the panels framework never sees a label that was typed but
+    // not added. Warn before Save or a reject (Cancel, close, veil, Escape) silently drops it.
+    function confirmDiscardingPendingOption() {
+      return !$optionInput.val().trim() || window.confirm(UNADDED_OPTION_WARNING);
+    }
+
     $type.on('change', function () { updateSections(); validate(); });
     $numberType.on('change', validate);
     $name.on('input', validate);
@@ -254,8 +276,14 @@
     });
     $optionAdd.on('click', function (event) { event.preventDefault(); addOption(); });
     $form.on('submit', function (event) {
+      if (!confirmDiscardingPendingOption()) { event.preventDefault(); return; }
       if (inUse && typeSignature() !== originalType && !window.confirm(TYPE_CHANGE_WARNING)) event.preventDefault();
     });
+    if (window.Panels && Panels.current) {
+      Panels.current.on('beforeReject', function (event) {
+        if (!confirmDiscardingPendingOption()) event.preventDefault();
+      });
+    }
 
     if (window.Sortable) {
       Sortable.create($list[0], {
