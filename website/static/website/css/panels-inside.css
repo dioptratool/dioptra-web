@@ -5250,8 +5250,8 @@ html.is-in-panel .panel-page-management--action-list a {
 .filter-list form.filter-list-form > .form-inline .icon-label, .filter-list form.filter-list-form > .form-inline .clear-search-phrase {
   position: absolute;
   top: 0;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
 }
 .filter-list form.filter-list-form > .form-inline .icon-label svg, .filter-list form.filter-list-form > .form-inline .clear-search-phrase svg {
   position: absolute;
@@ -5295,7 +5295,7 @@ html.is-in-panel .panel-page-management--action-list a {
 }
 .filter-list form.filter-list-form > .form-inline .form-group-search .form-control {
   width: 100%;
-  padding-left: 34px;
+  padding-left: 44px;
 }
 .filter-list form.filter-list-form > .form-inline .dropdown-menu, .filter-list form.filter-list-form > .form-inline html.is-in-panel .form-group .as-results .as-list, html.is-in-panel .form-group .as-results .filter-list form.filter-list-form > .form-inline .as-list {
   left: auto;

@@ -81,9 +81,16 @@
   max-width: 50%;
 }
 
+.insights__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+
 .insights__title {
   font-size: 28px;
-  margin-bottom: 0.7rem;
+  margin-bottom: 0;
   margin-top: 0;
 }
 
@@ -98,7 +105,8 @@
   margin-top: 1rem;
   max-width: 100%;
   width: 75.5rem;
-  font-size: 1.5rem;
+  color: $color-mineshaft;
+  @include font-size(18, 1.5);
 }
 
 .insights__data-list {

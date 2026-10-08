@@ -40,7 +40,7 @@
                                 Edit Analysis
                             </a>
                         {% elif edit_blocked_by_validation %}
-                            <span class="insights__edit-restriction">{% translate 'A validated analysis cannot be edited' %}</span>
+                            <span class="help-block"><em>{% translate 'A validated analysis cannot be edited' %}</em></span>
                         {% endif %}
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                      aria-labelledby="intervention-tab-{{ intervention_instance.id }}"
                      id="intervention-panel-{{ intervention_instance.id }}" {% if forloop.counter > 1 %}hidden{% endif %}>
                     <h2 class="insights__intervention-title">{{ intervention_instance.display_name }}</h2>
-                    <p class="insights__intervention-subtitle">{{ intervention_instance.intervention.name }}</p>
+                    <p class="insights__intervention-subtitle"><b>Intervention:</b> {{ intervention_instance.intervention.name }}</p>
                     {% with parameters=parameters_lookup|dict_get:intervention_instance.id %}
                         {% for label, value in parameters.items %}
                             <p class="insights__intervention-metric"><b>{{ label }}:</b> {{ value }}</p>
