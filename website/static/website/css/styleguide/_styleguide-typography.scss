@@ -1,3 +1,5 @@
+@use 'styleguide-constants' as *;
+
 .styleguide__typography {
   @media (min-width: $styleguide-breakpoint-notebook) {
     display: flex;

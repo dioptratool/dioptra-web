@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .cost-breakdown {
   display: flex;
   margin-bottom: 5.0rem;
@@ -124,12 +126,4 @@
 
 .cost-breakdown__percentage {
   min-width: 11rem;
-}
-
-.cost-breakdown__total-amount-label {
-  margin-top: 1.5rem;
-}
-
-.cost-breakdown__more-details-label {
-  margin-top: 50rem;
 }

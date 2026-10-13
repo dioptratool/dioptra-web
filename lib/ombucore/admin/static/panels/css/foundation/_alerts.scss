@@ -1,0 +1,50 @@
+// Alert boxes. Panels messages build `alert alert-{level}` in JS.
+@use 'sass:color';
+@use 'variables' as *;
+
+.alert {
+  padding: 15px;
+  margin-bottom: $line-height-computed;
+  border: 1px solid transparent;
+  border-radius: $border-radius-base;
+
+  h4 {
+    margin-top: 0;
+    color: inherit;
+  }
+
+  > p,
+  > ul {
+    margin-bottom: 0;
+  }
+
+  > p + p {
+    margin-top: 5px;
+  }
+}
+
+@mixin alert-variant($background, $border, $text-color) {
+  color: $text-color;
+  background-color: $background;
+  border-color: $border;
+
+  hr {
+    border-top-color: color.adjust($border, $lightness: -5%);
+  }
+}
+
+.alert-success {
+  @include alert-variant($state-success-bg, $state-success-border, $state-success-text);
+}
+
+.alert-info {
+  @include alert-variant($state-info-bg, $state-info-border, $state-info-text);
+}
+
+.alert-warning {
+  @include alert-variant($state-warning-bg, $state-warning-border, $state-warning-text);
+}
+
+.alert-danger {
+  @include alert-variant($state-danger-bg, $state-danger-border, $state-danger-text);
+}

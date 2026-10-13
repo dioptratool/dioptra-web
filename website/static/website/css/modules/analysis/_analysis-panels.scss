@@ -1,4 +1,6 @@
 /* General form class for overriding ombucore to look more like app theme */
+@use 'init' as *;
+
 .panel-form.panel-form--analysis {
   .form-group {
     margin-bottom: 24px;
@@ -34,7 +36,7 @@
 
   .analysis-intervention {
     color: #555;
-    background-color: #F1F7FD;
+    background-color: $color-moonstone;
     border-radius: 3px;
     padding: 15px;
     font-size: 13px;
@@ -48,7 +50,7 @@
       gap: 15px;
     }
     h4, p {
-      color: #333;
+      color: $color-mineshaft;
       font-size: 13px;
       margin: 0;
       line-height: 1.15;

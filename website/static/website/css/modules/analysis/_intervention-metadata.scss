@@ -1,5 +1,6 @@
 // Intervention metadata: the definition editor on the intervention panel and its field panel.
 // Panels have a 40px root font size, so sizes are in px/em like the other panel styles.
+@use 'init' as *;
 
 .metadata-editor__list,
 .metadata-options__list {

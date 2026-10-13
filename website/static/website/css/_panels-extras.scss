@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .filter-list table.list {
   border-spacing: 1px;
   border-collapse: separate;
@@ -21,7 +24,7 @@ html.is-in-panel .panel-head-auxiliary {
     line-height: 1.125;    
 
     &:hover {
-      background-color: darken($color-topaz, 10%);
+      background-color: color.adjust($color-topaz, $lightness: -10%);
       color: $color-white;
     }
   }
@@ -83,10 +86,6 @@ input[type="file"].clearable-file__upload {
   }
 }
 
-.filter-list-column-nowrap {
-  white-space: nowrap;
-}
-
 .panel-wrapper .panel-head .panel-head-title {
   min-width: 0;
 }
@@ -140,7 +139,7 @@ input[type="file"].clearable-file__upload {
   }
   .panel-body .panels-relation-widget--result {
     color: #555;
-    background-color: #F1F7FD;
+    background-color: $color-moonstone;
     border-radius: 3px;
     padding: 8px;
     font-size: 13px;
@@ -152,7 +151,7 @@ input[type="file"].clearable-file__upload {
     overflow: visible;
 
     h4, p, .title, .subtitle {
-      color: #333;
+      color: $color-mineshaft;
       font-size: 13px;
       margin: 0;
       line-height: 1.15;
@@ -224,7 +223,7 @@ input[type="file"].clearable-file__upload {
     transition: all $transition-duration-default;
     font-size: 16px;
     &:hover {
-      background-color: darken($color-green, 10%);
+      background-color: color.adjust($color-green, $lightness: -10%);
     }
   }
 
@@ -239,7 +238,7 @@ input[type="file"].clearable-file__upload {
     font-size: 16px;
   }
   .btn.btn-alt-cancel {
-    background-color: #F1F4F8;
+    background-color: $color-moonstone-2;
     border: none;
     border-radius: 2px;
     color: $color-black;
@@ -249,7 +248,7 @@ input[type="file"].clearable-file__upload {
     transition: all $transition-duration-default;
     font-size: 16px;
     &:hover {
-      background-color: darken(#F1F4F8, 10%);
+      background-color: color.adjust($color-moonstone-2, $lightness: -10%);
     }
   }
 
@@ -288,7 +287,7 @@ input[type="file"].clearable-file__upload {
     margin-inline: auto;
 
     &:hover {
-      color: #fff;
+      color: $color-white;
     }
   }
   .tagify--select .tagify__tag {
@@ -317,7 +316,7 @@ input[type="file"].clearable-file__upload {
 .checkbox label,
 .checkbox-inline {
   align-items: center;
-  color: #111;
+  color: $color-dark-black;
   display: inline-flex;
   font-size: 15px;
   font-weight: 400;

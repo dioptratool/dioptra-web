@@ -1,0 +1,30 @@
+{
+  "name": "dioptra-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Front-end asset build for Dioptra (website theme; ombucore panels and CKEditor via the lib/ombucore/frontend workspace).",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "lib/ombucore/frontend"
+  ],
+  "scripts": {
+    "build": "npm run build:ombucore && npm run build:website",
+    "build:ombucore": "npm run build -w @ombucore/frontend --",
+    "build:website": "node tools/build-website.mjs",
+    "watch": "npm run watch -w @ombucore/frontend & node tools/build-website.mjs --watch",
+    "lint": "eslint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@ombucore/frontend": "*",
+    "chart.js": "4.5.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "sass": "^1.105.1"
+  }
+}

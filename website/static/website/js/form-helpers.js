@@ -1,3 +1,5 @@
+import { warnOnUnsavedChanges } from './unsaved-changes.js';
+
 $(function() {
   // Open flatpickr on click of calendar icon
   $('.form__date-icon').on('click', function(e){
@@ -52,7 +54,7 @@ $(function() {
   $('.form__file input[type="file"]').each(function( index ) {
     var fileName = '';
     if (this.files[0]) {
-      var fileName = this.files[0].name;
+      fileName = this.files[0].name;
     }
     checkFile($(this), fileName);
   });
@@ -69,8 +71,9 @@ $(function() {
     }
   });
 
-  $('form.warn-unsaved-changes').areYouSure(
-    {'message': 'There are unsaved changes on this step. Are you sure you want to leave? Click Leave to move away without saving. Click Cancel to stay on the step and save your work.'}
+  warnOnUnsavedChanges(
+    'form.warn-unsaved-changes',
+    'There are unsaved changes on this step. Are you sure you want to leave? Click Leave to move away without saving. Click Cancel to stay on the step and save your work.'
   );
 
 

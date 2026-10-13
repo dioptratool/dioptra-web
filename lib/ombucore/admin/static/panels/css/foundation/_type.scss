@@ -1,0 +1,167 @@
+// Headings, body copy, lists and quotes.
+@use 'sass:color';
+@use 'sass:math';
+@use 'variables' as *;
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: inherit;
+  font-weight: $headings-font-weight;
+  line-height: $headings-line-height;
+  color: inherit;
+
+  small,
+  .small {
+    font-weight: 400;
+    line-height: 1;
+    color: $headings-small-color;
+  }
+}
+
+h1, .h1,
+h2, .h2,
+h3, .h3 {
+  margin-top: $line-height-computed;
+  margin-bottom: $line-height-computed * 0.5;
+
+  small,
+  .small {
+    font-size: 65%;
+  }
+}
+
+h4, .h4,
+h5, .h5,
+h6, .h6 {
+  margin-top: $line-height-computed * 0.5;
+  margin-bottom: $line-height-computed * 0.5;
+
+  small,
+  .small {
+    font-size: 75%;
+  }
+}
+
+h1, .h1 { font-size: $font-size-h1; }
+h2, .h2 { font-size: $font-size-h2; }
+h3, .h3 { font-size: $font-size-h3; }
+h4, .h4 { font-size: $font-size-h4; }
+h5, .h5 { font-size: $font-size-h5; }
+h6, .h6 { font-size: $font-size-h6; }
+
+p {
+  margin: 0 0 ($line-height-computed * 0.5);
+}
+
+.lead {
+  margin-bottom: $line-height-computed;
+  font-size: math.floor($font-size-base * 1.15);
+  font-weight: 300;
+  line-height: 1.4;
+
+  @media (min-width: $screen-sm-min) {
+    font-size: $font-size-base * 1.5;
+  }
+}
+
+small,
+.small {
+  font-size: math.floor(math.div(100% * $font-size-small, $font-size-base));
+}
+
+mark,
+.mark {
+  padding: 0.2em;
+  background-color: $state-warning-bg;
+}
+
+.text-danger {
+  color: $state-danger-text;
+}
+
+a.text-danger:hover,
+a.text-danger:focus {
+  color: color.adjust($state-danger-text, $lightness: -10%);
+}
+
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: $line-height-computed * 0.5;
+
+  ul,
+  ol {
+    margin-bottom: 0;
+  }
+}
+
+dl {
+  margin-top: 0;
+  margin-bottom: $line-height-computed;
+}
+
+dt,
+dd {
+  line-height: $line-height-base;
+}
+
+dt {
+  font-weight: 700;
+}
+
+dd {
+  margin-left: 0;
+}
+
+abbr[title] {
+  cursor: help;
+}
+
+blockquote {
+  padding: ($line-height-computed * 0.5) $line-height-computed;
+  margin: 0 0 $line-height-computed;
+  font-size: $blockquote-font-size;
+  border-left: 5px solid $blockquote-border-color;
+
+  p,
+  ul,
+  ol {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  footer,
+  small,
+  .small {
+    display: block;
+    font-size: 80%;
+    line-height: $line-height-base;
+    color: $text-muted;
+
+    &::before {
+      content: "\2014 \00A0";
+    }
+  }
+
+  &.pull-right {
+    padding-right: 15px;
+    padding-left: 0;
+    text-align: right;
+    border-right: 5px solid $blockquote-border-color;
+    border-left: 0;
+
+    footer,
+    small,
+    .small {
+      &::before { content: ""; }
+      &::after { content: "\00A0 \2014"; }
+    }
+  }
+}
+
+address {
+  margin-bottom: $line-height-computed;
+  font-style: normal;
+  line-height: $line-height-base;
+}

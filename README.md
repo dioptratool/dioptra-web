@@ -67,7 +67,8 @@ The app runs in Docker containers, so a local Python environment is not
 strictly required to run it, but it's need it by the development tools. The
 target Python version of the app documented in `.tool-versions`.
 
-1. Install the application dependencies
+1. Install the application dependencies (Python packages, npm packages, and
+   the compiled front-end assets; requires Node, see `.tool-versions`)
 
     ```console
     make install
@@ -214,6 +215,62 @@ When running the `initialize_auth` command:
 
 If an `AUTH_PROVIDERS` is set and requires additional config that is missing,
 an error indicating the missing config is raised at load time.
+
+## Front-end assets
+
+Stylesheets and scripts are compiled with Dart Sass and esbuild (Node version
+in `.tool-versions`). Compiled files are **generated, not committed**:
+`make install` installs the npm dependencies and builds them, and the Docker
+images build them in a Node stage before `collectstatic`. Run `make fe-build`
+(or `npm run watch`) after pulling or changing front-end sources.
+
+There are two builds, run together by `npm run build`:
+
+- **ombucore** (`lib/ombucore/frontend`, an npm workspace with its own
+  `package.json` and `build.mjs`): admin panels CSS/JS, the page-wide jQuery
+  and the CKEditor bundle. Runs on its own with `npm run build:ombucore`.
+- **website** (`tools/build-website.mjs`): site stylesheets (including the
+  in-panel styles built on the ombucore panels SCSS), the site script bundle
+  and vendored libraries. Runs on its own with `npm run build:website`.
+
+```
+make fe-install                    # npm ci (root + ombucore workspace)
+make fe-build                      # npm run build
+npm run build:website -- css       # one group: website css | js | vendor
+npm run build:ombucore -- ckeditor # one group: ombucore css | js | vendor | ckeditor
+make fe-watch                      # rebuild both on change
+make fe-lint                       # eslint
+```
+
+| Source | Output | Build |
+| --- | --- | --- |
+| `website/static/website/css/*.scss` | `website/static/website/css/{style,panels-inside,styleguide}.css` | website |
+| `website/static/website/js/main.js` (bundle) | `website/static/website/scripts.js` | website |
+| `chart.js` (npm) | `website/static/website/js/chart.umd.min.js` | website |
+| `lib/ombucore/admin/static/panels/css/*.scss` | `lib/ombucore/admin/static/panels/css/{panels,panels-relation-widget}.css` | ombucore |
+| `lib/ombucore/admin/static/panels/js/_*.js` (concatenated) | `lib/ombucore/admin/static/panels/js/panels{,-inside}.js` | ombucore |
+| `jquery` (npm) via `lib/ombucore/frontend/src/jquery-global.js` | `lib/ombucore/admin/static/panels/js/jquery.js` | ombucore |
+| `lib/ombucore/frontend/src/ckeditor.js` | `lib/ombucore/admin/static/django_ckeditor_5/dist/` | ombucore |
+
+jQuery is loaded once per page, from `panels/js/jquery.js`, by every base
+template (`theme_base.html`, `html-panel.html`, the styleguide and the
+insights print view) before any other script. It is the version pinned in
+`lib/ombucore/frontend/package.json`; site, panels and widget scripts use that
+global rather than bundling their own copy. It also sets `django.jQuery`, and
+`website/static/admin/js/jquery.init.js` overrides Django's copy (included by
+widgets such as taggit-autosuggest) so it no longer calls `noConflict()`.
+
+Stylesheets use the Sass module system (`@use`, no `@import`):
+
+- Website partials load the design tokens and mixins with `@use 'init' as *;`
+  (`website/static/website/css/init/`).
+- Panels lib partials use `@use 'settings' as *;`
+  (`lib/ombucore/admin/static/panels/css/_settings.scss`). The site re-themes
+  panels in `website/static/website/css/_panels-settings.scss`.
+- Base element styles and the shared component classes (grid, forms,
+  buttons, dropdowns, alerts, utilities) live in
+  `lib/ombucore/admin/static/panels/css/foundation/`. They replace Bootstrap 3
+  and keep its class and variable names.
 
 ## Running tests
 

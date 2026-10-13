@@ -1,0 +1,26 @@
+// Utility classes used by templates and scripts.
+@use 'variables' as *;
+
+.center-block {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.pull-right {
+  float: right !important;
+}
+
+.pull-left {
+  float: left !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: $screen-xs-max) {
+  .hidden-xs {
+    display: none !important;
+  }
+}

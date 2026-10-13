@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .filter-list-form {
   margin-top: 1.5rem;
 }
@@ -58,7 +61,7 @@ input[type="text"].filters__search-input {
 
   &:hover,
   &:focus {
-    background-color: darken($color-lapis, 10%);
+    background-color: color.adjust($color-lapis, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   }
@@ -191,7 +194,7 @@ input[type="text"].filters__search-input {
 
     &:hover,
     &:focus {
-      background-color: darken($color-lapis, 10%);
+      background-color: color.adjust($color-lapis, $lightness: -10%);
       color: $color-white;
       text-decoration: none;
     }

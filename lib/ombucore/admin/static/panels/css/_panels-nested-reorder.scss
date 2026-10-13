@@ -1,14 +1,4 @@
-
-.nested-reorder--header {
-  align-items: center;
-  display: flex;
-}
-
-// Custom locale styling
-.locale-dropdown--nested-reorder {
-  flex: 0 0 auto;
-  margin-bottom: 9px;
-}
+@use 'settings' as *;
 
 .nested-reorder {
   $height-result-default: 28px;
@@ -86,7 +76,7 @@
   }
 
   li.ui-sortable-helper {
-    @include opacity(0.9);
+    opacity: 0.9;
   }
 
   li.ui-sortable-placeholder {

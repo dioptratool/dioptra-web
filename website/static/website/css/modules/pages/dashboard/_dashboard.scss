@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .dashboard {
   margin-bottom: $large-margin;
 }
@@ -158,15 +160,12 @@
     }
   }
   .actions-menu__trigger--active {
-    background-color: #1b77d4;
+    background-color: $color-topaz;
   }
 }
 
 .dashboard__date-cell {
   min-width: 13.5rem;
-}
-
-.dashboard__cost-cell {
 }
 
 .dashboard__edit-link {

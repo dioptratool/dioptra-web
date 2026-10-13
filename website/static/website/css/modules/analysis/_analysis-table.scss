@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .analysis-table {
   margin-bottom: $default-margin;
 }
@@ -57,7 +60,7 @@
     }
 
     &>th:first-child {
-      background-color: rgb(16, 69, 122) !important;
+      background-color: $color-lapis !important;
     }
 
     &>td:first-child {
@@ -218,10 +221,6 @@
   }
 }
 
-.analysis-table__category-header-left {
-  min-width: 39.1rem;
-}
-
 .analysis-table__header,
 .analysis-table__category-header {
 
@@ -239,18 +238,6 @@
     .analysis-table__cost-items {
       margin-right: 0;
     }
-  }
-}
-
-.analysis-table__header .analysis-table__category-header-left {
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  column-gap: 2rem;
-  min-width: 40.5rem;
-
-  .analysis-table__summary {
-    margin: 0;
   }
 }
 
@@ -311,8 +298,8 @@
   }
 
   &.analysis-table__cost-items--confirmed {
-    background-color: rgb(218, 239, 222);
-    color: rgb(40, 88, 49);
+    background-color: $color-alert-success-background;
+    color: $color-alert-success-color;
     min-width: 23rem;
   }
 }
@@ -496,21 +483,11 @@ $analysis-table-amount-cell-width: 9rem;
 
 $analysis-table-intervention-cell-width: 8rem;
 
-.analysis-table__intervention-cell {
-  min-width: $analysis-table-intervention-cell-width;
-  text-align: right;
-}
-
 .analysis-table__intervention-header {
   text-align: right;
 }
 
 $analysis-table-total-cell-width: 8.3rem;
-
-.analysis-table__item-total-cell {
-  min-width: $analysis-table-total-cell-width;
-  text-align: right;
-}
 
 $analysis-table-edit-cell-width: 25.4rem;
 $analysis-table-edit-cell-width-narrow: 13rem;
@@ -546,7 +523,7 @@ $analysis-table-dropdown-cell-width: 19rem;
   }
 }
 .analysis-table__table > tbody > tr > td.analysis-table__edit-cell {
-  background-color: #F1F4F8;
+  background-color: $color-moonstone-2;
   padding-block: 0.6rem;
 }
 
@@ -564,10 +541,6 @@ $analysis-table-dropdown-cell-width: 19rem;
 
 .analysis-table__grant-cell {
   white-space: nowrap;
-}
-
-.analysis-table__dropdown-cell {
-  min-width: $analysis-table-dropdown-cell-width;
 }
 
 .analysis-table__cost-item-summary {
@@ -654,10 +627,6 @@ $analysis-table-dropdown-cell-width: 19rem;
   }
 }
 
-.analysis-table__category--transactions-active {
-  background-color: $color-table-blue;
-}
-
 .analysis-table__transactions-detail {
   border-bottom: 1px solid $color-table-accent-blue;
   max-height: 21rem;
@@ -741,7 +710,7 @@ $analysis-table-dropdown-cell-width: 19rem;
     color: $color-white;
 
     &:hover {
-      background-color: darken($color-blue, 10%);
+      background-color: color.adjust($color-blue, $lightness: -10%);
     }
 
     @media (max-width: $breakpoint-desktop - 1px) {
@@ -754,7 +723,7 @@ $analysis-table-dropdown-cell-width: 19rem;
     margin-left: 1.4rem;
 
     &:hover {
-      background-color: darken($color-table-accent-blue, 10%);
+      background-color: color.adjust($color-table-accent-blue, $lightness: -10%);
     }
   }
 }
@@ -850,7 +819,7 @@ $analysis-table-dropdown-cell-width: 19rem;
   @include font-size(16, 1.125);
 
   &:hover {
-    background-color: darken($color-blue, 10%);
+    background-color: color.adjust($color-blue, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   }
@@ -880,7 +849,7 @@ $analysis-table-dropdown-cell-width: 19rem;
   @include font-size(16, 1.125);
 
   &:hover {
-    background-color: darken($color-green, 10%);
+    background-color: color.adjust($color-green, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   }
@@ -907,56 +876,9 @@ $analysis-table-dropdown-cell-width: 19rem;
   @include font-size(14, 1.125);
 
   &:hover {
-    background-color: darken($color-light-gray, 10%);
+    background-color: color.adjust($color-light-gray, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
-  }
-}
-
-// Set contribtions
-.analysis-table--contributions {
-  .analysis-table__header {
-    margin-bottom: 0;
-    align-items: center;
-  }
-
-  .analysis-table__category-header {
-    padding-block: 0;
-  }
-
-  .analysis-table__summary {
-    flex-grow: 1;
-  }
-
-  .analysis-table__category--active {
-    .analysis-table__set-contribution {
-      background-color: rgb(16, 69, 122);
-    }
-
-    .analysis-table__category-header-right {
-      margin-right: -1px;
-
-      >*:first-child {
-        border-left: 1px solid #fff;
-      }
-    }
-  }
-}
-
-.analysis-table__set-contributions {
-  display: flex;
-
-  label {
-    position: relative;
-    z-index: 4;
-  }
-
-  @media (max-width: $breakpoint-notebook - 1px) {
-    .form__radio--inline {
-      display: block;
-      margin-left: 0;
-      margin-bottom: 0.5rem;
-    }
   }
 }
 
@@ -967,7 +889,7 @@ $analysis-table-dropdown-cell-width: 19rem;
   padding: 1rem;
   text-align: left;
   align-self: stretch;
-  border-right: 1px solid #fff;
+  border-right: 1px solid $color-white;
 
   &:last-child {
     border-right: none;
@@ -979,7 +901,7 @@ $analysis-table-dropdown-cell-width: 19rem;
   font-size: 1.4rem;
   font-weight: 700;
   background-color: #3570AB;
-  color: #fff;
+  color: $color-white;
 }
 
 .analysis-table__set-contribution {
@@ -990,12 +912,12 @@ $analysis-table-dropdown-cell-width: 19rem;
     align-items: center;
     cursor: pointer;
     justify-content: flex-start;
-    background-color: #F1F7FD;
+    background-color: $color-moonstone;
     padding: 1rem;
     min-width: 10rem;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
-    color: #000;
+    color: $color-black;
 
     &.checked {
       background-color: #C4DEF7;
@@ -1013,10 +935,9 @@ $analysis-table-dropdown-cell-width: 19rem;
     margin: 0;
     border: 1px solid #909AA2;
     border-radius: 3px;
-    line-cap: round;
 
     &:checked {
-      accent-color: #46A458;
+      accent-color: $color-total-green;
     }
   }
 }
@@ -1027,13 +948,6 @@ $analysis-table-dropdown-cell-width: 19rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.analysis-table__allocated-input-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5em;
 }
 
 input[type="text"].analysis-table__allocated-input {
@@ -1070,7 +984,6 @@ input[type="text"].analysis-table__allocated-input {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  font-weight: $font-weight-bold;
   background-color: $color-blue;
   border: none;
   border-radius: 0.2rem;
@@ -1082,7 +995,7 @@ input[type="text"].analysis-table__allocated-input {
   @include font-size(13, 1.125);
 
   &:hover, &:focus {
-    background-color: darken($color-blue, 10%);
+    background-color: color.adjust($color-blue, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   }
@@ -1146,7 +1059,7 @@ input[type="text"].analysis-table__allocated-input {
 
 
 .analysis-table__shared-cost-estimate {
-  background-color: rgb(241, 244, 248);
+  background-color: $color-moonstone-2;
   border-radius: 6px;
   display: flex;
   font-weight: $font-weight-bold;
@@ -1164,7 +1077,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__shared-cost-estimate-sub {
-  background-color: rgb(241, 244, 248);
+  background-color: $color-moonstone-2;
   border-radius: 6px;
   display: flex;
   font-weight: $font-weight-bold;
@@ -1201,7 +1114,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__special-cost-estimate-country-specific-calc {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   width: 30%;
   flex: 1 1 auto;
   margin-right: 0.5rem;
@@ -1209,7 +1122,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__special-cost-estimate-country-overall-calc {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   width: 35%;
   flex: 0 0 auto;
   padding: 2.5rem 2.3rem 1.2rem;
@@ -1242,7 +1155,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__shared-cost-estimate-direct-cost-category-calc {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   width: 15%;
   flex: 1 1 auto;
   margin-right: 0.5rem;
@@ -1250,7 +1163,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__shared-cost-estimate-direct-cost-total-calc {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   width: 15%;
   flex: 0 0 auto;
   padding: 2.5rem 2.3rem 1.2rem;
@@ -1271,7 +1184,7 @@ input[type="text"].analysis-table__allocated-input {
   @include font-size(13, 1.125);
 
   &:hover {
-    background-color: darken($color-blue, 10%);
+    background-color: color.adjust($color-blue, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   }
@@ -1286,7 +1199,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__shared-cost-estimate-direct-cost-category {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   margin-right: 0.5rem;
   padding: 1.1rem 2.3rem 1.2rem;
 }
@@ -1301,7 +1214,7 @@ input[type="text"].analysis-table__allocated-input {
 }
 
 .analysis-table__shared-cost-estimate-direct-cost-total {
-  background-color: rgb(223, 235, 247);
+  background-color: $color-table-blue;
   padding: 1.1rem 2.3rem 1.2rem;
   position: relative;
 }
@@ -1354,39 +1267,6 @@ input[type="text"].analysis-table__allocated-input {
   }
 }
 
-// Pagination
-.analysis-table__pagination {
-  align-items: center;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.analysis-table__pagination-status {
-  font-style: italic;
-  margin-right: 3.7rem;
-  @include font-size(13, 1.1538);
-}
-
-.analysis-table__prev-next {
-  color: $color-white;
-  margin-right: 3.2rem;
-  text-decoration: underline;
-  @include font-size(16, 1.125);
-
-  &:hover,
-  &:focus {
-    color: $color-moonstone;
-  }
-}
-
-.analysis-table__prev-next--disabled {
-
-  &,
-  &:hover {
-    color: rgba(255, 255, 255, 0.25);
-  }
-}
-
 // Actions
 .analysis-table__actions {
   margin-top: 2rem;
@@ -1399,22 +1279,6 @@ input[type="text"].analysis-table__allocated-input {
 
 .analysis-table__actions-form {
   display: inline;
-}
-
-.analysis-table__save {
-  background-color: $color-green;
-  border: none;
-  color: $color-white;
-  font-weight: $font-weight-bold;
-  min-width: 13rem;
-  padding: 1.6rem;
-  text-align: center;
-  transition: all $transition-duration-default ease;
-  @include font-size(16, 1.125);
-
-  &:hover {
-    background-color: darken($color-green, 10%);
-  }
 }
 
 .analysis-table__more-help-link {

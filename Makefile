@@ -39,8 +39,10 @@ up-github:
 stop:
 	docker compose -p dioptra-web -f docker/docker-compose-local.yml stop
 
-install:
+## install : : Install Python and front-end dependencies and build the front-end assets
+install: cmd-exists-npm
 	pip install -r requirements/development.txt
+	$(MAKE) fe-install fe-build
 
 manage: env-CMD ## Set CMD env var to what you want to pass to manage.py
 	$(LOCALVARS) ./manage.py $(CMD)
@@ -147,14 +149,21 @@ showmigrations:
 migrate-back:
 	$(LOCALVARS) ./manage.py migrate website `$(LOCALVARS) ./manage.py showmigrations website | tail -n $(ROLL_BACK) | head -1 | cut -d " " -f 3`
 
+## fe-install : : Install front-end dependencies (root package and the ombucore workspace)
 fe-install:
-	cd ./website/static/website && npm install && cd ../../..
+	npm i
 
+## fe-build : : Build website and ombucore assets (generated, not committed)
 fe-build:
-	cd ./website/static/website && npm run sass && npm run js
+	npm run build
 
+## fe-watch : : Rebuild front-end assets on change
 fe-watch:
-	cd ./website/static/website && npm start
+	npm run watch
+
+## fe-lint : : Lint front-end scripts
+fe-lint:
+	npm run lint
 
 env-%:
 	@if [ -z '${${*}}' ]; then echo 'ERROR: variable $* not set' && exit 1; fi

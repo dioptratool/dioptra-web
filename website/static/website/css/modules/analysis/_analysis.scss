@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .analysis {
   padding-left: $analysis-sidebar-width;
 }
@@ -91,7 +94,7 @@
   @include font-size(16, 1.125);
 
   &:hover {
-    background-color: darken($color-green, 10%);
+    background-color: color.adjust($color-green, $lightness: -10%);
   }
 }
 
@@ -106,7 +109,7 @@
   text-decoration: underline;
 
   &:hover {
-    color: darken($color-lichen, 10%);
+    color: color.adjust($color-lichen, $lightness: -10%);
   }
 }
 
@@ -147,26 +150,6 @@
   margin-top: 3.2rem;
 }
 
-.analysis__hr {
-  margin-top: 2.4rem;
-  margin-bottom: 2.4rem;
-  border-top: 1px solid rgba(144, 154, 162, 1);
-}
-
-// Messages
-.analysis__message {
-  border-radius: 6px;
-  max-width: 100%;
-  padding: 1.2rem 1.6rem;
-  width: 55rem;
-  @include font-size(14, 1.1429);
-}
-  
-.analysis__message--success {
-  background-color: $color-alert-success-background;
-  color: $color-alert-success-color;
-}
-
 .analysis__message_no_items {
   border-radius: 6px;
   max-width: 100%;
@@ -195,7 +178,7 @@
   color: $color-lichen;
 
   &:hover {
-    color: darken($color-lichen, 10%);
+    color: color.adjust($color-lichen, $lightness: -10%);
   }
 }
 
@@ -259,9 +242,6 @@
     display: none;
   }
 }
-
-.analysis__load-data-download-group {
-}
 .analysis__load-data-help-text {
   color: $color-mineshaft;
   @include font-size(14, 1.71);
@@ -318,7 +298,7 @@
 
   .analysis-intervention {
     color: #555;
-    background-color: #F1F7FD;
+    background-color: $color-moonstone;
     border-radius: 3px;
     padding: 1.5rem;
     font-size: 1.3rem;
@@ -337,7 +317,7 @@
       }
     }
     h4, p {
-      color: #333;
+      color: $color-mineshaft;
       font-size: 1.3rem;
       margin: 0;
       overflow-wrap: break-word;
@@ -413,7 +393,7 @@
   @include font-size(16, 1.125);
 
   &:hover {
-    background-color: darken($color-green, 10%);
+    background-color: color.adjust($color-green, $lightness: -10%);
   }
 }
 

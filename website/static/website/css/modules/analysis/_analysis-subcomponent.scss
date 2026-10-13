@@ -1,63 +1,11 @@
-.analysis__subcomponent__labels {
-  display: inline-grid;
-  grid-auto-rows: 1fr;
-  padding: 0;
-  margin: 2.2rem 0 1rem;
-  gap: 0.1rem;
-  min-width: 19.4rem;
-
-  .analysis__subcomponent__label {
-    display: inline-block;
-    margin: 0;
-    padding: 1.2rem 2.4rem 1.2rem 1rem;
-    align-items: center;
-    align-self: stretch;
-    background: $color-moonstone-2;
-    color: $color-mineshaft;
-    font-size: 1.4rem;
-    font-style: normal;
-    font-weight: 700;
-
-    &.analysis__subcomponent__label--confirmed {
-      background-color: rgba(53, 112, 171, 1);;
-      color: $color-white;
-    }
-  }
-}
-  
-.analysis__subcomponent__title {
-  @extend .analysis__title;
-  margin-top: 3.2rem;
-  margin-bottom: 1.2rem;
-}
+@use 'sass:color';
+@use 'init' as *;
+@use 'analysis';
 
 .analysis__subcomponent__help_text {
   @include font-size(16, 1.75);
   margin-bottom: 3.2rem;
 
-}
-.analysis__subcomponent__subtitle {
-  @include font-size(24, 1.2);
-  margin-top: 3.2rem;
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-}
-
-.analysis__button {
-  background-color: $color-moonstone-2;
-  border: none;
-  border-radius: 2px;
-  color: $color-mineshaft;
-  font-weight: $font-weight-bold;
-  padding: 1.6rem;
-  min-width: 13rem;
-  transition: all $transition-duration-default;
-  @include font-size(16, 1.125);
-
-  &:hover {
-    background-color: darken($color-moonstone-2, 10%);
-  }
 }
 
 // Subcomponent allocate
@@ -195,32 +143,6 @@
   }
 }
 
-.analysis-table__allocation_suggestions {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  width: 100%;
-  min-height: 7.7rem;
-  border-radius: 6px;
-  margin-bottom: 3rem;
-  color: $color-mineshaft;
-  font-weight: $font-weight-bold;
-  font-size: 1.6rem;
-  font-style: normal;
-  line-height: 2rem; /* 125% */
-  gap: 1px;
-  
-  .suggestion-title {
-    font-size: 1.4rem;
-    margin-top: 0;
-    margin-bottom: 0.4rem;
-  }
-  .suggestion-description {
-    font-size: 1.1rem;
-    line-height: 1.6rem;
-    margin-top: 0.6rem;
-  }
-}
 .analysis-table__allocation_suggestion,
 .analysis-table__allocation_suggestions-heading {
   padding: 1.8rem;
@@ -229,17 +151,6 @@
   align-items: flex-start;
   span {
     display: block;
-  }
-}
-.analysis-table__allocation_suggestion {
-  background: $color-table-blue;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-
-  .suggestion-percentage {
-    margin-top: auto;
   }
 }
 .analysis-table__allocation_suggestions-heading {
@@ -270,57 +181,4 @@
   margin-left: 0;
   margin-bottom: 0;
   grid-column: span 2;
-}
-
-.analysis-table__actions__label-form,
-.analysis-table__confirmed-labels {
-  .help_text {
-    margin-top: 2rem;
-    font-size: 1.4rem;
-    font-style: italic;
-    font-weight: 400;
-    color: $color-boulder;
-  }
-}
-
-.analysis-table__actions__label-form {
-  text-align: left;
-
-  button {
-    margin-right: 1rem;
-  }
-}
-
-.confirmed-labels__badge {
-  display: inline-block;
-  border-radius: 6px;
-  flex: 0 0 auto;
-  margin-left: 1.8rem;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 1rem 1.6rem;
-  background-color: rgb(218, 239, 222);
-  color: rgb(40, 88, 49);
-  min-width: 23rem;
-  font-size: 1.4rem;
-  font-weight: normal;
-}
-
-.analysis-table__confirmed-labels {
-  text-align: left;
-  .confirmed-labels__edit-button {
-    display: inline;
-    background: none;
-    border: none;
-    color: $color-lichen;
-    font-weight: 700;
-    text-decoration: underline;
-    font-style: normal;
-
-    &:hover,
-    &:active {
-      color: darken($color-lichen, 10%);
-      text-decoration: none;
-    }
-  }
 }

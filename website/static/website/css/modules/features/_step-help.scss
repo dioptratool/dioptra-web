@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .step-help__button {
   display: none;
 
@@ -91,10 +93,6 @@
   &:focus {
     @include default-focus();
   }
-}
-
-.step-help__title {
-  @include element-invisible();
 }
 
 .step-help__modal-link,

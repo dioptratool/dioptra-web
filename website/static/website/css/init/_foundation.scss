@@ -1,0 +1,15 @@
+// Foundation: element defaults and the shared component classes (grid,
+// forms, dropdowns, alerts, utilities) from the panels lib, configured with
+// the site's base type settings.
+@use 'constants';
+@use 'panels/css/foundation/variables' with (
+  $font-size-base: constants.$font-size-base,
+  $line-height-base: constants.$line-height-base
+);
+@use 'panels/css/foundation/normalize';
+@use 'panels/css/foundation/scaffolding';
+@use 'panels/css/foundation/grid';
+@use 'panels/css/foundation/forms';
+@use 'panels/css/foundation/dropdowns';
+@use 'panels/css/foundation/alerts';
+@use 'panels/css/foundation/utilities';

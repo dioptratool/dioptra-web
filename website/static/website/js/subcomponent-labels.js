@@ -1,7 +1,7 @@
 $(() => {
     const maxlabels = 8;
 
-    value_to_html_element_id = (str) => {
+    const value_to_html_element_id = (str) => {
         // Takes a string and returns a modified string that follows HTML element
         // ID naming conventions.
         //
@@ -10,7 +10,7 @@ $(() => {
         return str.toLowerCase().replace(/([^a-zA-Z\d]+)/g, '-')
     }
 
-    trigger_change = (el, revert = false) => {
+    const trigger_change = (el, revert = false) => {
         // find the containing .form-group and put a bird on it
         const $formgroup = $(el).closest('.form-group')
 
@@ -23,7 +23,7 @@ $(() => {
             $formgroup.removeClass('changed').trigger('panel:inputchanged')
     }
 
-    arraysEqual = (a, b) => {
+    const arraysEqual = (a, b) => {
         if (a === b) return true
         if (a == null || b == null) return false
         if (a.length !== b.length) return false
@@ -40,9 +40,9 @@ $(() => {
         var klass = 'panels-relation-widget--result'
         let prevent_add_remove = preventAddRemove
 
-        if (objInfo.hasOwnProperty('image_url')) klass += ' has-image'
-        if (objInfo.hasOwnProperty('level')) klass += ' mptt-level-'.concat(objInfo.level)
-        if (objInfo.hasOwnProperty('parent_id')) klass += ' mptt-parent-'.concat(objInfo.parent_id)
+        if (Object.hasOwn(objInfo, 'image_url')) klass += ' has-image'
+        if (Object.hasOwn(objInfo, 'level')) klass += ' mptt-level-'.concat(objInfo.level)
+        if (Object.hasOwn(objInfo, 'parent_id')) klass += ' mptt-parent-'.concat(objInfo.parent_id)
 
         html.push(`
             <li class="${klass}" data-id="${objInfo.label}" data-ctype-id="${objInfo.ctype_id}" 
@@ -50,7 +50,7 @@ $(() => {
             <span class="handle">☰</span>
         `)
 
-        if (objInfo.hasOwnProperty('image_url')) {
+        if (Object.hasOwn(objInfo, 'image_url')) {
             html.push(`<span class="image" style="background-image: url(${objInfo.image_url})"></span>`)
         }
 
@@ -60,7 +60,7 @@ $(() => {
             <span class="operations">
         `)
 
-        if (objInfo.hasOwnProperty('change_url')) {
+        if (Object.hasOwn(objInfo, 'change_url')) {
             html.push(`<a href="${objInfo.change_url}" class="operation-edit">Edit</a>`)
         }
         if (!preventAddRemove) {
@@ -90,7 +90,7 @@ $(() => {
         return $li
     }
 
-    update_label = (el, result) => {
+    const update_label = (el, result) => {
         if (!result.new_label) return
 
         const li = el.parent("span").parent("li")
@@ -112,7 +112,7 @@ $(() => {
         trigger_change($('#subcomponent-label-type-fields'), arraysEqual(subcomponent_labels_json, subcomponent_labels_old))
     }
 
-    on_label_edit = (event) => {
+    const on_label_edit = (event) => {
         // this opens a child Panel, and waits for the child Panel to call Panel.resolve()
         // which calls update_label() with the updated values
         const el = $(event.target)
@@ -121,7 +121,7 @@ $(() => {
         Panels.open(el.attr("href")).then((v) => update_label(el, v))
     }
 
-    on_label_remove = (event) => {
+    const on_label_remove = (event) => {
         const el = $(event.target)
         const $parent = $(el).closest('li')
         const value = $parent.attr('data-id')
@@ -143,7 +143,7 @@ $(() => {
         trigger_change($('#subcomponent-label-type-fields'), arraysEqual(subcomponent_labels_json, subcomponent_labels_old))
     }
 
-    on_label_reorder = (el) => {
+    const on_label_reorder = (el) => {
         const $results = $(el).find('.panels--reorder--results')
         const old_value = JSON.parse($('#subcomponent_labels_old').val())
         const new_value = JSON.parse($('#subcomponent_labels').val())
@@ -165,7 +165,7 @@ $(() => {
         trigger_change($(el), revert)
     }
 
-    on_add_label_link = (el) => {
+    const on_add_label_link = (el) => {
         const $input = $('#add-label-input')
         const $link = $('#add-label-link')
         const $widget = $('#add-label-widget')
@@ -176,7 +176,7 @@ $(() => {
         $input.focus()
     }
 
-    on_add_label_btn = (el) => {
+    const on_add_label_btn = (el) => {
         const $subcomponent_labels = $('#subcomponent_labels')
         const $subcomponent_labels_widget = $('#add-label-widget')
         const $subcomponent_labels_select = $('#subcomponent-labels-added')
@@ -210,7 +210,7 @@ $(() => {
         trigger_change($(el), arraysEqual(subcomponent_labels_old, subcomponent_labels_json))
     }
 
-    on_cancel_add_label_btn = (el) => {
+    const on_cancel_add_label_btn = (el) => {
         const $widget = $('#add-label-widget')
         const $link = $('#add-label-link')
 
@@ -218,14 +218,14 @@ $(() => {
         $link.show()
     }
 
-    on_add_label_input_change = (el) => {
+    const on_add_label_input_change = (el) => {
         const value = $('#add-label-input')
         const $button = $('#add-label-btn')
 
         $button.prop('disabled', value.length == 0)
     }
 
-    setupPanelsReorder = ($el) => {
+    const setupPanelsReorder = ($el) => {
         const $results = $el.find('.panels--reorder--results')
         const $store = $el.parent().find('.panels--store')
         const sort = $el.hasClass("sortable")

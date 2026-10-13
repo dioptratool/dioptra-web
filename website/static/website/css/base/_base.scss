@@ -3,6 +3,8 @@
  *
  * Base styles include HTML element types only, no classes or IDs
  */
+@use 'sass:color';
+@use 'init' as *;
 
 html {
   font-size: 10px;
@@ -54,7 +56,7 @@ p {
 }
 
 a {
-  color: darken($color-topaz, 4%);
+  color: color.adjust($color-topaz, $lightness: -4%);
   text-decoration: underline;
   
   &.focus {

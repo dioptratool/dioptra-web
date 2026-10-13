@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .form__group {
   margin-bottom: 1.6rem;
 }
@@ -14,7 +17,7 @@
 .form-group fieldset {
   legend {
     color: $color-mineshaft;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     @include font-size(14, 1.92);
     font-style: normal;
     font-weight: 700;
@@ -36,7 +39,7 @@
       margin-right: 0.75rem;
 
       &:checked {
-        color: #111;
+        color: $color-dark-black;
       }
     }
 
@@ -53,7 +56,7 @@
   @include font-size(16, 1.375);
 
   &:hover {
-    color: darken($color-boulder, 10%);
+    color: color.adjust($color-boulder, $lightness: -10%);
   }
 }
 
@@ -185,7 +188,7 @@
 }
 
 .form__file-button {
-  background-color: rgb(197, 222, 246);
+  background-color: $color-table-accent-blue;
   border: none;
   border-radius: 2px;
   color: $color-mineshaft;
@@ -197,7 +200,7 @@
   @include font-size(16, 1.125);
 
   &:hover {
-    background-color: darken(rgb(197, 222, 246), 10%);
+    background-color: color.adjust($color-table-accent-blue, $lightness: -10%);
   }
 
   .disabled &,
@@ -242,7 +245,7 @@
     &:hover {
 
       & + .form__file-button {
-        background-color: darken(rgb(197, 222, 246), 10%);
+        background-color: color.adjust($color-table-accent-blue, $lightness: -10%);
       }
 
       &:disabled {
@@ -353,7 +356,7 @@
   span {
     background-color: transparent;
     background-position: 1rem center;
-    color: #111;
+    color: $color-dark-black;
     font-weight: $font-weight-regular;
     min-width: 0;
     padding-left: 3.7rem;
@@ -391,15 +394,6 @@
   width: 2rem;
 }
 
-.form__checkbox--simple-cash-transfer {
-  min-width: 12rem;
-  
-  span {
-    font-size: 1.3rem;
-    font-weight: $font-weight-regular;
-  }
-}
-
 // errors
 
 .form__errors {
@@ -416,11 +410,6 @@
     top: -2px;
     width: 20px;
   }
-}
-
-.form__errors--right {
-  clear: right;
-  float: right;
 }
 
 .form__errors--allocated {

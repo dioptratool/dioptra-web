@@ -1,5 +1,6 @@
 // Analysis lifecycle: status badges and the Archived tag.
 // Menu chrome lives in modules/features/_actions-menu.scss.
+@use 'init' as *;
 
 .lifecycle-badge {
   align-items: center;

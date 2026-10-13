@@ -1,3 +1,7 @@
+@use 'sass:color';
+@use 'constants' as *;
+@use 'foundation/variables' as *;
+
 @mixin desktop {
   @media screen and (min-width: $screen-sm-min) {
     @content;
@@ -8,9 +12,7 @@
   content: '';
   position: absolute;
   height: $panel-shadow-height;
-  background-repeat: no-repeat;
-  background: radial-gradient(50% 0, farthest-side, $panel-shadow-color, rgba(0,0,0,0));
-  background: radial-gradient(farthest-side at 50% 0, $panel-shadow-color, rgba(0,0,0,0));
+  background: radial-gradient(farthest-side at 50% 0, $panel-shadow-color, rgba(0,0,0,0)) no-repeat;
   z-index: 10;
   transition: all 0.1s linear;
   opacity: 1;
@@ -21,9 +23,7 @@
   content: '';
   position: absolute;
   height: $panel-shadow-height;
-  background-repeat: no-repeat;
-  background: radial-gradient(50% 100%, farthest-side, $panel-shadow-color, rgba(0,0,0,0));
-  background: radial-gradient(farthest-side at 50% 100%, $panel-shadow-color, rgba(0,0,0,0));
+  background: radial-gradient(farthest-side at 50% 100%, $panel-shadow-color, rgba(0,0,0,0)) no-repeat;
   z-index: 10;
   transition: all 0.1s linear;
   opacity: 1;
@@ -117,7 +117,7 @@
   height: $size;
   margin-left: calc($size/-2);
   margin-top: calc($size/-2);
-  border: calc($size / 10) solid lighten($color, 20%);
+  border: calc($size / 10) solid color.adjust($color, $lightness: 20%);
   border-bottom-color: $color;
   border-radius: 50%;
   @include animate(spin, 1.1s, infinite, ease-in-out);
@@ -184,4 +184,25 @@
 @mixin default-focus() {
   border-color: #66afe9;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+@mixin clearfix() {
+  &::before,
+  &::after {
+    display: table;
+    content: " ";
+  }
+
+  &::after {
+    clear: both;
+  }
+}
+
+@mixin border-top-radius($radius) {
+  border-top-right-radius: $radius;
+  border-top-left-radius: $radius;
+}
+
+@mixin border-bottom-radius($radius) {
+  border-bottom-right-radius: $radius;
+  border-bottom-left-radius: $radius;
 }

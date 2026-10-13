@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'settings' as *;
+
 .filter-list {
   padding-top: $panel-padding;
   padding-bottom: $panel-padding;
@@ -302,8 +305,8 @@
 
         span.time {
           display: inline-block;
-          color: lighten($panel-charcoal, 30);
-          border-left: 1px solid darken($panel-gray, 15);
+          color: color.adjust($panel-charcoal, $lightness: 30%);
+          border-left: 1px solid color.adjust($panel-gray, $lightness: -15%);
           margin-left: 0.5em;
           padding-left: 0.5em;
           min-width: 5.0em;
@@ -321,12 +324,12 @@
       max-width: 50px;
 
       &.placeholder {
-        background: darken($panel-gray, 10);
+        background: color.adjust($panel-gray, $lightness: -10%);
       }
     }
 
     span.none {
-      color: lighten($panel-charcoal, 50);
+      color: color.adjust($panel-charcoal, $lightness: 50%);
     }
 
     .mark-trigger {
@@ -514,7 +517,7 @@
             width: 100%;
             height: 100%;
             border: 1px solid $panel-gray-dark;
-            background: darken($panel-gray, 10%);
+            background: color.adjust($panel-gray, $lightness: -10%);
             border-radius: $border-radius-small;
             padding: $cell-padding *2;
 
@@ -551,7 +554,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: fade-out($panel-blue-dark, .2);
+            background-color: color.adjust($panel-blue-dark, $alpha: -.2);
             padding: $cell-padding 0;
             @include border-bottom-radius($border-radius-small);
 
@@ -617,8 +620,6 @@
       > .form-inline {
         .form-group {
           margin-bottom: calc($panel-padding/2);
-          & + .form-group {
-          }
         }
 
         .form-control {
@@ -692,188 +693,5 @@
 
   &:hover, &:focus {
     opacity: 0.9;
-  }
-}
-
-// Localization list
-$localization-list-padding: 25px;
-
-.localization-menu--list {
-  margin: 0;
-  padding: 0;
-}
-
-.localization-menu--list-item {
-  border-bottom: 1px solid $panel-gray-medium;
-  display: flex;
-  min-height: $localization-list-padding * 4;
-  position: relative;
-
-  svg {
-    height: 1.25 * $panel-version-icon-width;
-    left: 0;
-    position: absolute;
-    top: $localization-list-padding;
-    width: $panel-version-icon-width;
-  }   
-}
-
-.localization-menu--link {
-  align-items: center;
-  display: flex;
-  flex: 1 1 auto;
-  padding-left: $localization-list-padding * 2.8;
-  padding-right: 0;
-  padding-top: $localization-list-padding;
-  padding-bottom: $localization-list-padding;  
-}
-
-.localization--name {
-  color: $panel-charcoal;
-  flex: 1 1 auto;
-  font-size: 20px;
-  line-height: 24px;
-
-  .localization-menu--link:hover &,
-  .localization-menu--link:focus & {
-    color: $panel-charcoal;
-  }
-}
-
-.localization-menu--operations {
-  display: flex;
-  flex: 0 0 auto;
-}
-
-.localization-menu--operations-link {
-  align-items: center;
-  display: flex;
-  padding-left: 1em;
-
-  html.is-in-panel &:hover,
-  html.is-in-panel &:focus,
-  .localization-menu--link:hover &,
-  .localization-menu--link:focus &,
-  .localization-menu--link:hover + .localization-menu--operations &:first-child,
-  .localization-menu--link:focus + .localization-menu--operations &:first-child {
-    color: $panel-blue-light;
-    text-decoration: underline;
-  }
-}
-
-.localization-menu--operations-link.localization-menu--operations-link--delete {
-  html.is-in-panel &,
-  html.is-in-panel &:hover,
-  html.is-in-panel &:focus {
-    color: $color-ombu-red;
-  }
-}
-
-// Localization dropdown
-.locale-dropdown {
-  min-width: 130px;
-  margin-right: calc($panel-padding/2);
-  position: relative;
-  top: -1px;
-}
-
-a.locale-dropdown--toggle {
-  background-color: $color-ombu-orange;
-  border-radius: 3px;
-  color: $color-white;
-  display: block;
-  padding: 8px 32px 8px 34px;
-  position: relative;
-
-  html.is-in-panel &,
-  html.is-in-panel &:hover {
-    color: $color-white;    
-  }
-
-  svg {
-    opacity: 0.7;    
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-}
-
-.locale-dropdown--localization-icon {
-  svg {
-    height: 23px;
-    left: 9px;
-    width: 16px;
-  }  
-}
-
-.locale-dropdown--arrow-icon {
-  svg {
-    height: 4px;
-    right: 12px;
-    width: 8px;
-  }   
-}
-
-.locale-dropdown--options {
-  background-color: $color-white;
-  border-radius: 3px;
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.3);
-  position: absolute;
-  opacity: 0;
-  top: calc(100% + 8px);
-  visibility: hidden;
-  width: 100%;
-  z-index: 3;
-
-  &:after {
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 8px solid $color-white;
-    bottom: 100%;
-    height: 0; 
-    content: "";
-    position: absolute;
-    right: 6px;
-    width: 0; 
-  }
-
-  &.open {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  input {
-    display: none;
-  }
-
-  label {
-    color: $panel-blue-light;
-    display: block;
-    cursor: pointer;
-    margin-bottom: 0;
-    padding: 9px 15px;
-
-    &:first-of-type {
-      padding-top: 15px;
-    }
-
-    &:last-of-type {
-      padding-bottom: 15px;
-    }
-
-    &:hover,
-    &:focus {
-      color: $panel-blue-dark;
-    }
-
-    &.disabled {
-      color: $panel-gray-dark;
-      cursor: text;
-
-      &:hover,
-      &:focus {
-        color: $panel-gray-dark;
-      }
-    }
   }
 }

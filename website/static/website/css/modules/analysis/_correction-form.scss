@@ -1,6 +1,8 @@
 /* Correction panels (Feature 91): closed filterable choice lists, multiple-values placeholder, confirmation step */
 
 // Tagify (select mode) inside a panel form: size it like the other controls.
+@use 'init' as *;
+
 .panel-form .tagify {
   min-height: 34px;
   width: 100%;

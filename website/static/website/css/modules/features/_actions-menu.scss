@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .actions-menu {
   display: inline-flex;
   position: relative;
@@ -76,7 +78,7 @@
 
 .actions-menu__trigger {
   align-items: center;
-  background-color: #f1f4f8;
+  background-color: $color-moonstone-2;
   border: none;
   border-radius: 0.2rem;
   color: $color-mineshaft;
@@ -103,8 +105,8 @@
 }
 
 .actions-menu__trigger--active {
-  background-color: #1b77d4;
-  color: #ffffff;
+  background-color: $color-topaz;
+  color: $color-white;
 
   svg {
     filter: invert(1) brightness(2);

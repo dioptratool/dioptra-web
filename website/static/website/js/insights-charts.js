@@ -315,7 +315,7 @@ if (!Array.prototype.fill) {
 
 function pick(key) {
   return function(obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.hasOwn(obj, key)) {
       return obj[key];
     }
     return undefined;

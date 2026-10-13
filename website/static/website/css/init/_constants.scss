@@ -2,7 +2,7 @@
  * Constants
  */
 
- @import 'constants-base';
+@forward 'constants-base';
 
 // Typography
 $font-size-root: 62.5%;

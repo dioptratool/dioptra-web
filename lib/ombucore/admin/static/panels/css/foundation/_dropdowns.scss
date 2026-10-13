@@ -1,0 +1,120 @@
+// Dropdown menus, toggled by js/_dropdown.js adding `.open` to the parent.
+@use 'variables' as *;
+
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+.dropup,
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle:focus {
+  outline: 0;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: $zindex-dropdown;
+  display: none;
+  float: left;
+  min-width: 160px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: $font-size-base;
+  text-align: left;
+  list-style: none;
+  background-color: $dropdown-bg;
+  background-clip: padding-box;
+  border: 1px solid $dropdown-border;
+  border-radius: $border-radius-base;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+
+  &.pull-right {
+    right: 0;
+    left: auto;
+  }
+
+  > li > a {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: $line-height-base;
+    color: $dropdown-link-color;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+      color: $dropdown-link-hover-color;
+      text-decoration: none;
+      background-color: $dropdown-link-hover-bg;
+    }
+  }
+
+  > .active > a {
+    &,
+    &:hover,
+    &:focus {
+      color: $dropdown-link-active-color;
+      text-decoration: none;
+      background-color: $dropdown-link-active-bg;
+      outline: 0;
+    }
+  }
+
+  > .disabled > a {
+    &,
+    &:hover,
+    &:focus {
+      color: $dropdown-link-disabled-color;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+      cursor: $cursor-disabled;
+      background-color: transparent;
+      background-image: none;
+    }
+  }
+}
+
+.open {
+  > .dropdown-menu {
+    display: block;
+  }
+
+  > a {
+    outline: 0;
+  }
+}
+
+.pull-right > .dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+.dropup {
+  .caret {
+    content: "";
+    border-top: 0;
+    border-bottom: 4px dashed;
+  }
+
+  .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 2px;
+  }
+}

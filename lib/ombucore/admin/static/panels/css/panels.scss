@@ -4,18 +4,12 @@
  * Only includes css that is necessary to display a panel, none of the styles
  * for panel contents.
  */
+@use 'settings';
+@use 'foundation/fade';
+
+@use 'panels-project';
+@use 'panels-structure';
+@use 'panels-alerts';
+@use 'panels-alerts-themed';
+
 * { box-sizing: border-box; }
-
-
-@import 'mixins';
-@import 'constants';
-@import 'overrides';
-@import 'bootstrap/mixins';
-@import 'bootstrap/variables';
-@import 'bootstrap/component-animations';
-
-@import 'panels-project';
-@import 'panels-structure';
-@import 'panels-alerts';
-@import 'messages';
-@import 'panels-alerts-themed';

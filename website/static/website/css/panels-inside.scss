@@ -4,13 +4,11 @@
  * Should be included in panel content pages.
  */
 
-@import 'init/constants';
-@import 'init/mixins';
-@import 'panels-overrides';
-@import 'panels/css/panels-inside-base';
-@import 'panels-extras';
+@use 'panels-settings';
+@use 'panels/css/panels-inside-base';
+@use 'panels-extras';
 
-@import 'modules/analysis/analysis-form-fields';
-@import 'modules/analysis/_analysis-panels.scss';
-@import 'modules/analysis/correction-form';
-@import 'modules/analysis/intervention-metadata';
+@use 'modules/analysis/analysis-form-fields';
+@use 'modules/analysis/analysis-panels';
+@use 'modules/analysis/correction-form';
+@use 'modules/analysis/intervention-metadata';

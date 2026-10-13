@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 @media print {
   .efficiency-item__icon {
     //display: none;
@@ -23,10 +25,6 @@
   @media (max-width: $breakpoint-notebook - 1px) {
     flex-wrap: wrap;
   }
-}
-
-.efficiency-item__label {
-  margin-bottom: 1rem;
 }
 
 .efficiency-item__group {

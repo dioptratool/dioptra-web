@@ -79,7 +79,7 @@ $height-result-asset: 100px;
         }
 
         .title, .operations {
-            padding-top: ($height-result-asset / 2) - ($height-result-default / 2);
+            padding-top: ($height-result-asset * 0.5) - ($height-result-default * 0.5);
         }
     }
 
@@ -169,13 +169,5 @@ $height-result-asset: 100px;
 .panels-relation-widget--polymorphic {
     .panels-relation-widget--result {
         .verbose-name { display: block; }
-    }
-}
-
-.small-results:not(.orderable) .panels-relation-widget--result .title {
-    padding-left: 1em;
-
-    .determinant-count {
-        margin-left: -1em;
     }
 }

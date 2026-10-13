@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 $socialaccount-login-width: 31.6rem;
 .socialaccount_providers {
   list-style: none;
@@ -20,7 +23,7 @@ $socialaccount-login-width: 31.6rem;
 
     &:hover,
     &:focus {
-      background-color: darken($color-okta-blue, 10%);
+      background-color: color.adjust($color-okta-blue, $lightness: -10%);
     }
   }
 
@@ -29,7 +32,7 @@ $socialaccount-login-width: 31.6rem;
 
     &:hover,
     &:focus {
-      background-color: darken($color-onelogin-teal, 10%);
+      background-color: color.adjust($color-onelogin-teal, $lightness: -10%);
     }
   }
 }
@@ -39,9 +42,6 @@ $socialaccount-login-width: 31.6rem;
   text-align: center;
   width: $socialaccount-login-width;
   @include font-size(14, 1.1428);
-
-  img {
-  }
 }
 
 .socialaccount__img {

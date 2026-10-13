@@ -21,10 +21,10 @@ function setupFilterListForm($filterList) {
   // Prevent clicks in dropdown content from closing the dropdown.
   $form
     .find('.dropdown-menu')
-    .on('click.bs.dropdown.data-api', function (e) { e.stopPropagation() });
+    .on('click', function (e) { e.stopPropagation() });
 
   // Reset the dropdown to the filter list when the dropdown closes.
-  $addFilterDropdown.on('hidden.bs.dropdown', resetFilterDropdown);
+  $addFilterDropdown.on('hidden.dropdown', resetFilterDropdown);
 
   // When the search input’s clear affordance is clicked, empty its value and
   // submit the filter form.
@@ -172,11 +172,11 @@ function setupFilterListForm($filterList) {
     else if (inputType == 'radio') {
 
       var $radioChecked = $el.find(':checked');
-      var val = $radioChecked.val();
+      let val = $radioChecked.val();
 
       if (val) {
-        var displayVal = $radioChecked.next().text();
-        var label = $radioChecked[0].name;
+        let displayVal = $radioChecked.next().text();
+        let label = $radioChecked[0].name;
         addResult(label, val, displayVal, $input.attr('name'));
         hideDropdownMenuItem($el.attr('data-filter'));
       }
@@ -185,11 +185,11 @@ function setupFilterListForm($filterList) {
 
     }
     else if ($input.attr('data-flatpickr') != undefined) {
-      var val = $input.first().val();
+      let val = $input.first().val();
       if (val) {
         var date = new Date(val);
-        var displayVal = flatpickr.formatDate(date, 'M J, Y h:i K');
-        var label = $el.find('label').text();
+        let displayVal = flatpickr.formatDate(date, 'M J, Y h:i K');
+        let label = $el.find('label').text();
         addResult(label, val, displayVal, $input.attr('name'));
         hideDropdownMenuItem($el.attr('data-filter'));
       }
@@ -230,10 +230,6 @@ function setupFilterListForm($filterList) {
 
   function setFiltering() {
     $filterList.addClass('filtering');
-  }
-
-  function inputHasValue($input) {
-    return ($input.val() && $input.val().length);
   }
 
 }

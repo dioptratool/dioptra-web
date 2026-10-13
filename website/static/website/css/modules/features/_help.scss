@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'init' as *;
+
 .help {
   display: inline-block;
   position: relative;
@@ -96,14 +99,10 @@
   color: $color-mineshaft;
 }
 
-.help__modal-label {
-  @include element-invisible();
-}
-
 .help__close {
   background-color: transparent;
   border: none;
-  color: darken($color-topaz, 4%);
+  color: color.adjust($color-topaz, $lightness: -4%);
   font-size: 28px;
   height: 4rem;
   padding: 0;

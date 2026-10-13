@@ -5,3 +5,4 @@ media
 **/*.pyc
 **/__pycache__/
 validation_scripts/*
+**/node_modules

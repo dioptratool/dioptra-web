@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .analysis-table__bulk-assign-btn,
 .analysis-fix-data__submit {
   @include button-submit();
@@ -32,14 +34,4 @@
   border: 1px solid $color-lapis;
   border-color: $color-lapis;
   color: $color-lapis;
-}
-
-.analysis-fix-data__footer {
-  background-color: $color-lapis;
-  border-radius: 0 0 4px 4px;
-  color: $color-white;
-  display: flex;
-  justify-content: space-between;
-  min-height: 6.2rem;
-  padding: 1rem 1.1rem 1rem 2.4rem;
 }

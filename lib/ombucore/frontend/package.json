@@ -1,0 +1,21 @@
+{
+  "name": "@ombucore/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ombucore front-end assets: admin panels stylesheets/scripts, the page-wide jQuery and the CKEditor 5 bundle.",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    "./build-runner": "./build-runner.mjs"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch"
+  },
+  "devDependencies": {
+    "ckeditor5": "48.5.2",
+    "esbuild": "^0.28.2",
+    "jquery": "4.0.0",
+    "sass": "^1.105.1"
+  }
+}

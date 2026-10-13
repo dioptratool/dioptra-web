@@ -1,0 +1,10 @@
+// Fade transition used by panels alert messages (`.fade` + `.in`).
+
+.fade {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+
+  &.in {
+    opacity: 1;
+  }
+}

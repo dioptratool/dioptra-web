@@ -1,6 +1,8 @@
 /**
  * Form Tabs with `error` and `changed` styles.
  */
+@use 'sass:color';
+@use 'settings' as *;
 
 .help-block {
   margin: 0 0 2.0em 0;
@@ -8,7 +10,7 @@
   font-style: italic;
 
   &, .has-error & {
-    color: lighten($panel-charcoal, 30);
+    color: color.adjust($panel-charcoal, $lightness: 30%);
   }
 
   p, ul, li {
@@ -70,11 +72,6 @@ html.is-in-panel {
       border-radius: 3px;
     }
   }
-}
-
-.form-no-tabs {
-    padding-top: $panel-padding * 0.5;
-    padding-bottom: $panel-padding * 0.5;
 }
 
 .form-tabs {
@@ -273,7 +270,7 @@ html.is-in-panel {
       }
     }
     .form-control {
-      @include box-shadow(none);
+      box-shadow: none;
       border-radius: $border-radius-small;
 
       &[type="number"] {
@@ -281,7 +278,7 @@ html.is-in-panel {
       }
 
       &:focus {
-        border-color: darken($input-border, 10%);
+        border-color: color.adjust($input-border, $lightness: -10%);
         @include default-focus();
       }
 
@@ -305,7 +302,7 @@ html.is-in-panel {
       .form-control {
         border-color: $input-border;
         &:focus {
-          border-color: darken($input-border, 10%);
+          border-color: color.adjust($input-border, $lightness: -10%);
           @include default-focus();
 
         }
@@ -361,9 +358,9 @@ html.is-in-panel {
         text-transform: uppercase;
       }
       .form-control {
-        @include box-shadow(none);
+        box-shadow: none;
         &:focus {
-          border-color: darken($input-border, 10%);
+          border-color: color.adjust($input-border, $lightness: -10%);
           @include default-focus();
         }
       }
@@ -375,7 +372,7 @@ html.is-in-panel {
         .form-control {
           border-color: $input-border;
           &:focus {
-            border-color: darken($input-border, 10%);
+            border-color: color.adjust($input-border, $lightness: -10%);
             @include default-focus();
 
           }
@@ -403,7 +400,8 @@ html.is-in-panel {
       color: $btn-cancel-color;
 
       &:hover, &:focus {
-        background: darken($btn-cancel-bg, 10%);
+        // to-gamut clamps like darken() did, so a transparent bg stays valid.
+        background: color.to-gamut(color.adjust($btn-cancel-bg, $lightness: -10%), $method: clip);
         color: $btn-cancel-color;
       }
 
@@ -417,7 +415,7 @@ html.is-in-panel {
       color: $panel-white;
       
       &:hover, &:focus {
-        background-color: darken($panel-gray-dark, 10);
+        background-color: color.adjust($panel-gray-dark, $lightness: -10%);
       }    
 
       &:focus {
@@ -440,7 +438,7 @@ html.is-in-panel {
 
       &:hover,
       &:focus {
-        background-color: darken($btn-default-bg, 10%);
+        background-color: color.adjust($btn-default-bg, $lightness: -10%);
         color: $btn-default-color;
       }
     }
@@ -459,7 +457,7 @@ html.is-in-panel {
 
       &:hover,
       &:focus {
-        background-color: darken(rgb(128, 128, 128), 10%);
+        background-color: color.adjust(rgb(128, 128, 128), $lightness: -10%);
       }
     }
   }
@@ -581,12 +579,6 @@ ul.any_urlfield-url_type.inline {
     flex: 1 1 auto;
     margin-left: 0;
   }
-}
-
-.panel-foot--help-text {
-  float: left;
-  padding-right: 30px;
-  width: 50%;
 }
 
 // Overrides button layout for Operations tab

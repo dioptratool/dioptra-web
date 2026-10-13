@@ -1,3 +1,8 @@
+@use 'sass:color';
+@use 'settings' as *;
+@use 'foundation/buttons';
+@use 'foundation/dropdowns';
+
 html.is-in-panel .form-group {
 
   &.disabled {
@@ -15,7 +20,7 @@ html.is-in-panel .form-group {
       position: relative;
       margin: 0 0.5em 0.5em 0;
       padding-right: 35px;
-      background-color: darken($panel-gray, 8);
+      background-color: color.adjust($panel-gray, $lightness: -8%);
       font-weight: $font-weight-light;
       min-width: 0;
 
@@ -26,10 +31,10 @@ html.is-in-panel .form-group {
         right: 0;
         width: 30px;
         font-size: 22px;
-        color: darken($panel-gray, 20);
+        color: color.adjust($panel-gray, $lightness: -20%);
 
         &:hover {
-          color: darken($panel-gray, 50);
+          color: color.adjust($panel-gray, $lightness: -50%);
         }
       }
     }

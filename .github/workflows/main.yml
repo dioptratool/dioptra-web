@@ -48,6 +48,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # `make install` also installs and builds the front-end assets.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+
       - name: Install Application Dependencies
         run: |
           pip install --upgrade pip

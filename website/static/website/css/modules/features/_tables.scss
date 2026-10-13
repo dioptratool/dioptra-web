@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .rte table {
   & {
     border-collapse: separate;

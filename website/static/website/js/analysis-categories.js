@@ -23,13 +23,6 @@ $(function() {
     $('.analysis-table__actions').hide();
   });
 
-  $('body').on('click', '.actions-menu__item', function () {
-    var popover = this.closest('[popover]');
-    if (popover && typeof popover.hidePopover === 'function') {
-      popover.hidePopover();
-    }
-  });
-
   $('.analysis-table__set-contribution input[type="checkbox"]').on('change', function(e) {
     $(this).closest('label').toggleClass('checked')
   });

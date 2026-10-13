@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 @media print {
   .help {
     display: none
@@ -44,15 +46,6 @@
     background-color: #BDD5ED;
     text-decoration: none;
   }
-}
-
-.insights__download_pdf {
-  @include button-submit();
-  display: inline-block;
-  margin-right: 1.5rem;
-  padding: 0.8rem 1rem;
-  text-align: center;
-  @include font-size(13, 1.3846);
 }
 
 .insights__header {
@@ -133,7 +126,7 @@
 // An intervention's metadata, below its parameters.
 // Figma: Dioptra 2.4 Intervention Metadata, node 1059:1573.
 .insights__metadata {
-  background-color: #f1f7fd;
+  background-color: $color-moonstone;
   border-radius: 0.4rem;
   box-sizing: border-box;
   color: $color-mineshaft;
@@ -193,11 +186,6 @@
   }
 }
 
-.insight__header {
- display: block;
- margin-right: 0
-}
-
 .insights__header-secondary {
  padding-right: 1em;
 }
@@ -216,7 +204,7 @@
 }
 
 .insights__intervention-tab {
-  background-color: #F1F7FD;
+  background-color: $color-moonstone;
   border: none;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;

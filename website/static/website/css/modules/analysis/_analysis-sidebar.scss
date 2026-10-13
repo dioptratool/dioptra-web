@@ -1,3 +1,5 @@
+@use 'init' as *;
+
 .analysis-sidebar {
   background-color: $color-light-black;
   color: $color-white;
@@ -221,45 +223,4 @@ a.analysis-sidebar__navigation-subnav-link {
       color: $color-white;
     }
   }  
-}
-
-.analysis-sidebar__navigation.analysis-sidebar__navigation--subcomponent {
-  background: transparent;
-  padding-left: 0;
-
-  li:last-child > .analysis-sidebar__navigation-link {
-    background-color: rgb(105, 191, 121);
-    border-radius: 2px;
-    color: rgb(51, 51, 51);
-    margin-left: 1.2rem;
-    margin-right: 1.2rem;
-    margin-top: 0.5rem;
-    padding: 0.7rem 0;
-    text-align: center;
-    font-size: 14px;
-    font-size: 1.4rem;
-    line-height: 1.14286;
-
-    &.analysis-sidebar__navigation-link--locked {
-      background-color: $color-mineshaft;
-      color: $color-smoke;
-    }
-  }
-}
-.analysis-sidebar__navigation-item--subcomponent {
-  .analysis-sidebar__navigation-subnav-link {
-    color: $color-white;
-
-    &.analysis-sidebar__navigation-subnav-link--locked {
-      color: $color-smoke;
-    }
-    &.analysis-sidebar__navigation-subnav-link--complete {
-      background-color: transparent;
-      color: $color-white;
-    }
-    &.analysis-sidebar__navigation-subnav-link--active {
-      background-color: transparent;
-      color: $color-light-blue;
-    }
-  }
 }

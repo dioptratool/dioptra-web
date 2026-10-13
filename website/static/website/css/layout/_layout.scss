@@ -3,6 +3,7 @@
 //
 // Layout structure
 //
+@use 'init' as *;
 
 .container {
   max-width: $breakpoint-desktop-wide;

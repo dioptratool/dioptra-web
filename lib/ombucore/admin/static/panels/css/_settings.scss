@@ -1,0 +1,26 @@
+// Panels settings: constants, themeable overrides, mixins and the foundation
+// variables, configured with the panels defaults. Partials load them with
+//   @use 'settings' as *;
+// Projects re-theme panels by configuring this module before anything else
+// loads it, e.g. `@forward 'panels/css/settings' with ($text-color: …)`.
+@use 'constants' as c;
+
+@forward 'constants';
+@forward 'overrides';
+@forward 'foundation/variables' with (
+  $font-family-sans-serif: ('Rubik', sans-serif) !default,
+  $text-color: c.$panel-charcoal !default,
+  $link-color: c.$panel-blue-light !default,
+  $brand-primary: c.$panel-blue-dark !default,
+  $state-danger-text: c.$color-ombu-red !default,
+  $btn-primary-color: c.$panel-white !default,
+  $btn-primary-bg: #0372ff !default,
+  $btn-primary-border: #0066e9 !default,
+  $btn-danger-color: c.$panel-white !default,
+  $btn-danger-bg: #d9534f !default,
+  $btn-danger-border: #d9534f !default,
+  $btn-default-color: c.$panel-charcoal !default,
+  $btn-default-bg: c.$panel-white !default,
+  $btn-default-border: #adadad !default
+);
+@forward 'mixins';

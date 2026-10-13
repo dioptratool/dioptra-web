@@ -18,7 +18,6 @@ $panel-blue-new-2: rgb(74, 144, 226);
 $gradient-ombu-brand: linear-gradient(to top, rgb(241, 91, 87) 5%, rgb(242,106,91) 20%, rgb(245,135,98) 37%, rgb(120,189,180) 59%, rgb(89,148,183) 85%, rgb(77,93,170) 100%);
 $color-ombu-red: rgb(241, 91, 87);
 $color-ombu-orange: rgb(245,135,98);
-$state-danger-text: $color-ombu-red;
 $color-ombu-blue: rgb(109, 197, 212);
 $color-ombu-pink: rgb(243, 167, 173);
 
@@ -26,12 +25,10 @@ $panel-width: 66%;
 $mobile-panel-offset: 40px;
 $font-size-root: 16px;  // This value defines 1rem.
 $panel-padding: 1rem;
-$brand-primary: $panel-blue-dark;
 
 $panel-shadow-height: 5px;
 $panel-shadow-color: rgba(0, 0, 0, 0.4);
 
-$border-radius-small: 3px;
 
 $panel-form-dot-size: 10px;
 

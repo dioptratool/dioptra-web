@@ -2,55 +2,53 @@
 // The primary stylesheet
 //
 
-// Init
-@import 'init';
+// Foundation
+@use 'init/foundation';
 
 // Base
-@import 'base/reset';
-@import 'base/base';
+@use 'base/reset';
+@use 'base/base';
 
 // Plugins
 
 // Layouts
-@import 'layout/layout';
+@use 'layout/layout';
 
 // Module
-@import 'modules/plugins/flatpickr';
-@import 'modules/plugins/tag-editor';
+@use 'modules/plugins/flatpickr';
 
-@import 'modules/features/accessibility-links';
-@import 'modules/features/btn';
-@import 'modules/features/actions-menu';
-@import 'modules/features/forms';
-@import 'modules/features/tables';
-@import 'modules/features/alerts';
-@import 'modules/features/filters';
-@import 'modules/features/pager';
-@import 'modules/features/help';
-@import 'modules/features/step-help';
-@import 'modules/features/ombuassets';
+@use 'modules/features/btn';
+@use 'modules/features/actions-menu';
+@use 'modules/features/forms';
+@use 'modules/features/tables';
+@use 'modules/features/alerts';
+@use 'modules/features/filters';
+@use 'modules/features/pager';
+@use 'modules/features/help';
+@use 'modules/features/step-help';
+@use 'modules/features/ombuassets';
 
-@import 'modules/global/header';
+@use 'modules/global/header';
 
-@import 'modules/pages/login/login';
-@import 'modules/pages/login/social-providers';
-@import 'modules/pages/dashboard/dashboard';
-@import 'modules/pages/help-menu';
-@import 'modules/pages/help-page';
+@use 'modules/pages/login/login';
+@use 'modules/pages/login/social-providers';
+@use 'modules/pages/dashboard/dashboard';
+@use 'modules/pages/help-menu';
+@use 'modules/pages/help-page';
 
-@import 'modules/analysis/analysis';
-@import 'modules/analysis/analysis-sidebar';
-@import 'modules/analysis/analysis-navigation';
-@import 'modules/analysis/analysis-table';
-@import 'modules/analysis/analysis-fix-missing-data';
-@import 'modules/analysis/analysis-subcomponent';
-@import 'modules/analysis/analysis-lifecycle';
+@use 'modules/analysis/analysis';
+@use 'modules/analysis/analysis-sidebar';
+@use 'modules/analysis/analysis-navigation';
+@use 'modules/analysis/analysis-table';
+@use 'modules/analysis/analysis-fix-missing-data';
+@use 'modules/analysis/analysis-subcomponent';
+@use 'modules/analysis/analysis-lifecycle';
 
-@import 'modules/insights/insights-global';
-@import 'modules/insights/efficiency-item';
-@import 'modules/insights/comparison';
-@import 'modules/insights/strategies';
-@import 'modules/insights/cost-breakdown';
-@import 'modules/insights/cost-model';
-@import 'modules/insights/lessons';
-@import 'modules/insights/subcomponent-chart';
+@use 'modules/insights/insights-global';
+@use 'modules/insights/efficiency-item';
+@use 'modules/insights/comparison';
+@use 'modules/insights/strategies';
+@use 'modules/insights/cost-breakdown';
+@use 'modules/insights/cost-model';
+@use 'modules/insights/lessons';
+@use 'modules/insights/subcomponent-chart';

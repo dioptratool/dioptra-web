@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'constants' as *;
+
 // Mixins
 
 @mixin clearfix() {
@@ -31,7 +34,7 @@
 }
 
 @mixin default-focus-dark() {
-  outline: 1px dotted #ffffff;
+  outline: 1px dotted $color-white;
   outline: 5px auto -webkit-focus-ring-color;
 }
 
@@ -69,7 +72,7 @@
   }
 
   &:hover {
-    background-color: darken($color-green, 10%);
+    background-color: color.adjust($color-green, $lightness: -10%);
     color: $color-white;
     text-decoration: none;
   } 

@@ -1,0 +1,63 @@
+// Page container and the two grid columns the templates use.
+@use 'variables' as *;
+
+@mixin clearfix-both {
+  &::before,
+  &::after {
+    display: table;
+    content: " ";
+  }
+
+  &::after {
+    clear: both;
+  }
+}
+
+.container {
+  padding-right: $grid-gutter-width * 0.5;
+  padding-left: $grid-gutter-width * 0.5;
+  margin-right: auto;
+  margin-left: auto;
+  @include clearfix-both;
+
+  @media (min-width: $screen-sm-min) {
+    width: $container-sm;
+  }
+
+  @media (min-width: $screen-md-min) {
+    width: $container-md;
+  }
+
+  @media (min-width: $screen-lg-min) {
+    width: $container-lg;
+  }
+}
+
+.row {
+  margin-right: $grid-gutter-width * -0.5;
+  margin-left: $grid-gutter-width * -0.5;
+  @include clearfix-both;
+}
+
+.col-md-6,
+.col-md-12 {
+  position: relative;
+  min-height: 1px;
+  padding-right: $grid-gutter-width * 0.5;
+  padding-left: $grid-gutter-width * 0.5;
+}
+
+@media (min-width: $screen-md-min) {
+  .col-md-6,
+  .col-md-12 {
+    float: left;
+  }
+
+  .col-md-6 {
+    width: 50%;
+  }
+
+  .col-md-12 {
+    width: 100%;
+  }
+}

@@ -1,0 +1,131 @@
+// Foundation settings.
+//
+// The subset of Bootstrap 3's variables still used by the foundation
+// partials and project stylesheets, with the same names and defaults so
+// existing overrides keep working. Set any of them before importing the
+// foundation to customise it.
+@use 'sass:color';
+@use 'sass:math';
+
+// Colors
+$gray-base: #000 !default;
+$gray-darker: color.adjust($gray-base, $lightness: 13.5%) !default;
+$gray-dark: color.adjust($gray-base, $lightness: 20%) !default;
+$gray: color.adjust($gray-base, $lightness: 33.5%) !default;
+$gray-light: color.adjust($gray-base, $lightness: 46.7%) !default;
+$gray-lighter: color.adjust($gray-base, $lightness: 93.5%) !default;
+
+$brand-primary: color.adjust(#428bca, $lightness: -6.5%) !default;
+$brand-success: #5cb85c !default;
+$brand-info: #5bc0de !default;
+$brand-warning: #f0ad4e !default;
+$brand-danger: #d9534f !default;
+
+$body-bg: #fff !default;
+$text-color: $gray-dark !default;
+$text-muted: $gray-light !default;
+$link-color: $brand-primary !default;
+$link-hover-color: color.adjust($link-color, $lightness: -15%) !default;
+
+$state-success-text: #3c763d !default;
+$state-success-bg: #dff0d8 !default;
+$state-success-border: color.adjust($state-success-bg, $hue: -10deg, $lightness: -5%) !default;
+$state-info-text: #31708f !default;
+$state-info-bg: #d9edf7 !default;
+$state-info-border: color.adjust($state-info-bg, $hue: -10deg, $lightness: -7%) !default;
+$state-warning-text: #8a6d3b !default;
+$state-warning-bg: #fcf8e3 !default;
+$state-warning-border: color.adjust($state-warning-bg, $hue: -10deg, $lightness: -5%) !default;
+$state-danger-text: #a94442 !default;
+$state-danger-bg: #f2dede !default;
+$state-danger-border: color.adjust($state-danger-bg, $hue: -10deg, $lightness: -5%) !default;
+
+// Typography
+$font-family-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+$font-family-base: $font-family-sans-serif !default;
+$font-size-base: 14px !default;
+$font-size-large: math.ceil($font-size-base * 1.25) !default;
+$font-size-small: math.ceil($font-size-base * 0.85) !default;
+$font-size-h1: math.floor($font-size-base * 2.6) !default;
+$font-size-h2: math.floor($font-size-base * 2.15) !default;
+$font-size-h3: math.ceil($font-size-base * 1.7) !default;
+$font-size-h4: math.ceil($font-size-base * 1.25) !default;
+$font-size-h5: $font-size-base !default;
+$font-size-h6: math.ceil($font-size-base * 0.85) !default;
+$line-height-base: 1.428571429 !default;
+$line-height-computed: math.floor($font-size-base * $line-height-base) !default;
+$line-height-small: 1.5 !default;
+$headings-font-weight: 500 !default;
+$headings-line-height: 1.1 !default;
+$headings-small-color: $gray-light !default;
+$blockquote-font-size: $font-size-base * 1.25 !default;
+$blockquote-border-color: $gray-lighter !default;
+$hr-border: $gray-lighter !default;
+
+// Layout
+$screen-sm-min: 768px !default;
+$screen-md-min: 992px !default;
+$screen-lg-min: 1200px !default;
+$screen-xs-max: $screen-sm-min - 1 !default;
+$screen-sm: $screen-sm-min !default;
+$screen-md: $screen-md-min !default;
+$screen-lg: $screen-lg-min !default;
+$grid-gutter-width: 30px !default;
+$container-sm: 720px + $grid-gutter-width !default;
+$container-md: 940px + $grid-gutter-width !default;
+$container-lg: 1140px + $grid-gutter-width !default;
+
+// Components
+$padding-base-vertical: 6px !default;
+$padding-base-horizontal: 12px !default;
+$padding-small-vertical: 5px !default;
+$padding-small-horizontal: 10px !default;
+$border-radius-base: 4px !default;
+$border-radius-small: 3px !default;
+$cursor-disabled: not-allowed !default;
+$focus-outline: 5px auto -webkit-focus-ring-color !default;
+
+// Forms
+$input-bg: #fff !default;
+$input-bg-disabled: $gray-lighter !default;
+$input-color: $gray !default;
+$input-border: #ccc !default;
+$input-border-focus: #66afe9 !default;
+$input-color-placeholder: #999 !default;
+$input-height-base: $line-height-computed + ($padding-base-vertical * 2) + 2 !default;
+$form-group-margin-bottom: 15px !default;
+$legend-color: $gray-dark !default;
+$legend-border-color: #e5e5e5 !default;
+
+// Buttons
+$btn-default-color: #333 !default;
+$btn-default-bg: #fff !default;
+$btn-default-border: #ccc !default;
+$btn-primary-color: #fff !default;
+$btn-primary-bg: $brand-primary !default;
+$btn-primary-border: color.adjust($btn-primary-bg, $lightness: -5%) !default;
+$btn-success-color: #fff !default;
+$btn-success-bg: $brand-success !default;
+$btn-success-border: color.adjust($btn-success-bg, $lightness: -5%) !default;
+$btn-info-color: #fff !default;
+$btn-info-bg: $brand-info !default;
+$btn-info-border: color.adjust($btn-info-bg, $lightness: -5%) !default;
+$btn-danger-color: #fff !default;
+$btn-danger-bg: $brand-danger !default;
+$btn-danger-border: color.adjust($btn-danger-bg, $lightness: -5%) !default;
+
+// Dropdowns
+$dropdown-bg: #fff !default;
+$dropdown-border: rgba(0, 0, 0, 0.15) !default;
+$dropdown-link-color: $gray-dark !default;
+$dropdown-link-hover-color: color.adjust($gray-dark, $lightness: -5%) !default;
+$dropdown-link-hover-bg: #f5f5f5 !default;
+$dropdown-link-active-color: #fff !default;
+$dropdown-link-active-bg: $brand-primary !default;
+$dropdown-link-disabled-color: $gray-light !default;
+$zindex-dropdown: 1000 !default;
+
+// Tables
+$table-cell-padding: 8px !default;
+$table-bg-nested: #fff !default;
+$table-border-color: #ddd !default;

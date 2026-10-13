@@ -1,6 +1,8 @@
 /**
  * Panels managed from the parent page.
  */
+@use 'settings' as *;
+
 #panels-container {
   position: fixed;
   top: 0;
@@ -100,9 +102,6 @@
 
     .loading {
       @include loading-spinner();
-    }
-
-    .panel-inner {
     }
 
     iframe {

@@ -1,4 +1,6 @@
 // colors
+@use 'styleguide-constants' as *;
+
 .styleguide__colors-group {
   display: flex;
   flex-wrap: wrap;
@@ -15,9 +17,6 @@
   padding-left: $styleguide-gutter-side-tile;
   margin-bottom: 3rem;
   padding-right: $styleguide-gutter-side-tile;
-}
-
-.styleguide__colors-heading {
 }
 
 .styleguide__colors-label {
