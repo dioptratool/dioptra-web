@@ -36,7 +36,7 @@ RUN apk add --no-cache \
       nginx \
       chromium \
     && apk upgrade \
-    && apk upgrade sqlite cargo \
+    && apk upgrade --no-cache ca-certificates sqlite cargo \
     && pip install --no-cache-dir -r requirements/remote.txt \
     && pip install --no-cache-dir setuptools \
     && echo $BUILD_SHA > /var/www/GIT_SHA

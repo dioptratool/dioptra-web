@@ -13,7 +13,7 @@ RUN apk add --no-cache  \
     postgresql-client \
     chromium \
     && apk upgrade \
-    && apk upgrade sqlite cargo \
+    && apk upgrade --no-cache ca-certificates sqlite cargo \
     && pip install --no-cache-dir -r requirements/development.txt \
     && pip install --no-cache-dir setuptools
 

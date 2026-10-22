@@ -12,8 +12,8 @@ babel==2.17.0
     # via -r requirements/base.in
 beautifulsoup4==4.13.4
     # via -r requirements/base.in
-certifi==2025.7.14
-    # via requests
+certifi==2026.10.19
+    # via -r requirements/base.in
 charset-normalizer==3.4.2
     # via requests
 django==5.2.4
@@ -69,6 +69,8 @@ pillow==11.3.0
     # via
     #   django-ckeditor-5
     #   pilkit
+pip==26.2.2
+    # via -r requirements/base.in
 psycopg[binary,pool]==3.2.9
     # via -r requirements/base.in
 psycopg-binary==3.2.9
