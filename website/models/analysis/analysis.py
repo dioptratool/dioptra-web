@@ -1245,6 +1245,7 @@ class Analysis(models.Model):
         label: str | None = None,
         order: int | None = None,
         parameters: dict | None = None,
+        metadata: dict | None = None,
     ) -> InterventionInstance:
         if parameters is None:
             parameters = {}
@@ -1256,6 +1257,7 @@ class Analysis(models.Model):
             label=label,
             order=order,
             parameters=parameters,
+            metadata=metadata or {},
         )
 
     def remove_intervention(self, intervention_id: int):

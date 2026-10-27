@@ -32,7 +32,9 @@ from .utils import (
     BulkCreateManager,
     _check_analysis_status,
     clean_csv_number,
+    metadata_values,
     parse_csv_currency_to_decimal,
+    seed_metadata_definitions,
 )
 from ...data_loading.cost_line_items import load_cost_line_items_from_file
 from ...models.cost_line_item import CostLineItemInterventionAllocation
@@ -252,7 +254,14 @@ class Command(BuildCommand):
                     each_output_metric in OUTPUT_METRICS_BY_ID
                 ), f"{each_output_metric} is not defined as an OutputMetric in Intervention: {each['name']}"
 
-            self.interventions[each["name"]] = Intervention.objects.create(**each)
+            fields = {key: value for key, value in each.items() if key != "metadata_fields"}
+            self.interventions[each["name"]] = Intervention.objects.create(**fields)
+            # The optional metadata definitions; sample analyses take values through _metadata().
+            seed_metadata_definitions(self.interventions[each["name"]], each.get("metadata_fields", []))
+
+    def _metadata(self, intervention_name: str, values: dict) -> dict:
+        """Stored metadata for a seeded intervention, from readable field names and option labels."""
+        return metadata_values(self.interventions[intervention_name], values)
 
     @staticmethod
     def add_cost_efficiency_strategies():
@@ -301,6 +310,14 @@ class Command(BuildCommand):
             parameters={
                 "number_of_people": 2992,
             },
+            metadata=self._metadata(
+                "GBV Case Management",
+                {
+                    "Service delivery setting": "Women's centre",
+                    "Average sessions per client": "4.5",
+                    "Referral pathway documented": "Yes",
+                },
+            ),
         )
         self._import_sample_transactions_and_clis_to_analysis(
             bangladesh_fund,
@@ -325,6 +342,18 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Mobile money",
+                    "Targeting criteria": ["Displaced households", "Female-headed households"],
+                    "Transfer value per household": "150",
+                    "Number of transfer rounds": "6",
+                    "Average household size": "5.8",
+                    "Share delivered digitally": "100",
+                    "Implementing partner": "Iraq Cash Consortium",
+                },
+            ),
         )
         self._import_sample_transactions_and_clis_to_analysis(
             jordan_fund,
@@ -347,6 +376,13 @@ class Command(BuildCommand):
             parameters={
                 "number_of_outputs": 10000,
             },
+            metadata=self._metadata(
+                "General Program",
+                {
+                    "Programme focus": "Community health worker programme",
+                    "Delivery partners": ["Government", "Local NGO"],
+                },
+            ),
         )
         self._import_sample_transactions_and_clis_to_analysis(
             yemen_fund,
@@ -369,6 +405,13 @@ class Command(BuildCommand):
             parameters={
                 "number_of_people": 890,
             },
+            metadata=self._metadata(
+                "Legal Aid Case Management",
+                {
+                    "Legal issue categories": ["Civil documentation", "Housing, land and property"],
+                    "Average case duration in days": "45",
+                },
+            ),
         )
         self._import_cost_line_items_from_file(ydp_philippines, "DF186 Budget Upload.csv")
         ydp_philippines.auto_categorize_cost_line_items()
@@ -390,6 +433,17 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Cash in hand",
+                    "Targeting criteria": ["Host community", "Large households"],
+                    "Transfer value per household": "90.50",
+                    "Number of transfer rounds": "3",
+                    "Share delivered digitally": "0",
+                    "Implementing partner": "IRC Iraq",
+                },
+            ),
         )
         self._import_cost_line_items_from_file(cash_iraq, "DF186 Budget Upload.csv")
         cash_iraq.auto_categorize_cost_line_items()
@@ -426,6 +480,16 @@ class Command(BuildCommand):
         self.add_debug_analyses()
 
     def add_debug_analyses(self):
+        # "A Small Test Analysis" and the 8-intervention sample deliberately carry no metadata values.
+        gbv_metadata = self._metadata(
+            "GBV Case Management",
+            {
+                "Service delivery setting": "Mobile team",
+                "Average sessions per client": "3",
+                "Referral pathway documented": "No",
+            },
+        )
+
         # Step 1
         analysis_step1 = Analysis.objects.create(
             title="Sample Analysis - Step 1 (Define) Complete",
@@ -452,6 +516,19 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            # Cloned into every later step sample with the analysis.
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Voucher",
+                    "Targeting criteria": ["Displaced households"],
+                    "Transfer value per household": "120",
+                    "Number of transfer rounds": "4",
+                    "Average household size": "6.2",
+                    "Share delivered digitally": "25.5",
+                    "Implementing partner": "Mali Cash Working Group",
+                },
+            ),
         )
         _check_analysis_status(analysis_step1, "interventions")
 
@@ -463,6 +540,7 @@ class Command(BuildCommand):
             parameters={
                 "number_of_people": 2992,
             },
+            metadata=gbv_metadata,
         )
         analysis_step1_multi.save()
         _check_analysis_status(analysis_step1_multi, "interventions")
@@ -492,6 +570,7 @@ class Command(BuildCommand):
             parameters={
                 "number_of_people": 2992,
             },
+            metadata=gbv_metadata,
         )
         analysis_step2_multi.save()
         _check_analysis_status(analysis_step2_multi, "load-data")
@@ -516,6 +595,7 @@ class Command(BuildCommand):
             parameters={
                 "number_of_people": 2992,
             },
+            metadata=gbv_metadata,
         )
         analysis_step3_multi.save()
         _check_analysis_status(analysis_step3_multi, "categorize")
@@ -604,6 +684,16 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Bank transfer",
+                    "Targeting criteria": ["Female-headed households", "Persons with disabilities"],
+                    "Transfer value per household": "200",
+                    "Number of transfer rounds": "2",
+                    "Share delivered digitally": "100",
+                },
+            ),
         )
 
         self._import_sample_transactions_and_clis_to_analysis(
@@ -649,6 +739,18 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Mobile money",
+                    "Targeting criteria": ["Displaced households"],
+                    "Transfer value per household": "75",
+                    "Number of transfer rounds": "12",
+                    "Average household size": "4.9",
+                    "Share delivered digitally": "80",
+                    "Implementing partner": "Mali Cash Working Group",
+                },
+            ),
         )
 
         self._import_sample_transactions_and_clis_to_analysis(
@@ -701,6 +803,17 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Cash in hand",
+                    "Targeting criteria": ["Host community"],
+                    "Transfer value per household": "60",
+                    "Number of transfer rounds": "1",
+                    "Share delivered digitally": "0",
+                    "Implementing partner": "Local partner",
+                },
+            ),
         )
 
         self._import_cost_line_items_from_file(
@@ -745,12 +858,32 @@ class Command(BuildCommand):
                 "number_of_households": 10,
                 "value_of_cash_distributed": 10_000,
             },
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Voucher",
+                    "Targeting criteria": ["Large households", "Displaced households"],
+                    "Transfer value per household": "110",
+                    "Number of transfer rounds": "5",
+                    "Average household size": "7",
+                    "Share delivered digitally": "40",
+                    "Implementing partner": "Mali Cash Working Group",
+                },
+            ),
         )
         analysis.add_intervention(
             self.interventions["GBV Case Management"],
             parameters={
                 "number_of_people": 2992,
             },
+            metadata=self._metadata(
+                "GBV Case Management",
+                {
+                    "Service delivery setting": "Health facility",
+                    "Average sessions per client": "2",
+                    "Referral pathway documented": "Yes",
+                },
+            ),
         )
 
         self._import_sample_transactions_and_clis_to_analysis(
@@ -799,6 +932,10 @@ class Command(BuildCommand):
             parameters={
                 "number_of_outputs": 800,
             },
+            metadata=self._metadata(
+                "General Program",
+                {"Programme focus": "Classroom learning model", "Delivery partners": ["Community groups"]},
+            ),
         )
         analysis.add_intervention(
             self.interventions["General Program"],
@@ -806,6 +943,13 @@ class Command(BuildCommand):
             parameters={
                 "number_of_outputs": 500,
             },
+            metadata=self._metadata(
+                "General Program",
+                {
+                    "Programme focus": "After-school tutoring",
+                    "Delivery partners": ["Private sector", "Government"],
+                },
+            ),
         )
         analysis.add_intervention(
             self.interventions["Teacher Professional Development"],
@@ -845,6 +989,10 @@ class Command(BuildCommand):
             parameters={
                 "number_of_outputs": 800,
             },
+            metadata=self._metadata(
+                "General Program",
+                {"Programme focus": "Classroom learning model", "Delivery partners": ["Community groups"]},
+            ),
         )
         analysis.add_intervention(
             self.interventions["General Program"],
@@ -852,6 +1000,13 @@ class Command(BuildCommand):
             parameters={
                 "number_of_outputs": 500,
             },
+            metadata=self._metadata(
+                "General Program",
+                {
+                    "Programme focus": "After-school tutoring",
+                    "Delivery partners": ["Private sector", "Government"],
+                },
+            ),
         )
         analysis.add_intervention(
             self.interventions["Teacher Professional Development"],

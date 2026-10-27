@@ -4,7 +4,13 @@ from decimal import Decimal
 
 from django.apps import apps
 
-from website.models import Analysis
+from website.intervention_metadata import validate_number
+from website.models import (
+    Analysis,
+    InterventionMetadataField,
+    InterventionMetadataOption,
+    MetadataFieldType,
+)
 from website.workflows import AnalysisWorkflow
 from website.workflows._steps_base import SubStep
 
@@ -95,3 +101,60 @@ def _check_analysis_status(analysis: Analysis, expected_step_name: str) -> None:
     assert (
         completed_step == expected_step_name
     ), f'Expected the last completed step for "{analysis.title}" to be: {expected_step_name} but got {completed_step}'
+
+
+def seed_metadata_definitions(intervention, specs: list[dict]) -> dict[str, InterventionMetadataField]:
+    """
+    Create an intervention's metadata fields, and their options, from seed specs in the given order.
+
+    A spec has ``name``, ``field_type``, ``number_type`` for a Number field and ``options`` (labels)
+    for a choice field. Returns the fields by name.
+    """
+    fields = {}
+    for order, spec in enumerate(specs):
+        field = InterventionMetadataField.objects.create(
+            intervention=intervention,
+            name=spec["name"],
+            field_type=spec["field_type"],
+            number_type=spec.get("number_type"),
+            order=order,
+        )
+        for option_order, label in enumerate(spec.get("options", [])):
+            InterventionMetadataOption.objects.create(field=field, label=label, order=option_order)
+        fields[field.name] = field
+    return fields
+
+
+def metadata_values(intervention, values: dict) -> dict:
+    """
+    The stored metadata dict for readable seed values keyed by field name.
+
+    Option labels become option keys (a list for a multiple-choice field, which also accepts one
+    label), numbers are validated for their type, text is stored as given. An unknown field name
+    or option label raises ValueError so a typo fails the build, as a bad parameter does.
+    """
+    definitions = {
+        definition.name: definition for definition in intervention.metadata_fields.prefetch_related("options")
+    }
+    stored = {}
+    for name, value in values.items():
+        definition = definitions.get(name)
+        if definition is None:
+            raise ValueError(f"{intervention.name!r} has no metadata field {name!r}")
+        if definition.is_choice:
+            keys_by_label = {option.label: option.storage_key for option in definition.options.all()}
+            labels = value if isinstance(value, list) else [value]
+            for label in labels:
+                if label not in keys_by_label:
+                    raise ValueError(f"{intervention.name!r} field {name!r} has no option {label!r}")
+            if definition.field_type == MetadataFieldType.SINGLE_CHOICE:
+                if len(labels) != 1:
+                    raise ValueError(f"{intervention.name!r} field {name!r} takes one option")
+                stored[definition.storage_key] = keys_by_label[labels[0]]
+            else:
+                stored[definition.storage_key] = [keys_by_label[label] for label in labels]
+        elif definition.is_number:
+            stored[definition.storage_key] = validate_number(str(value), definition.number_type)
+        else:
+            stored[definition.storage_key] = str(value)
+    return stored

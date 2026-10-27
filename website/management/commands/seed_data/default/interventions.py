@@ -1,3 +1,6 @@
+# Metadata definitions ("metadata_fields") are optional per intervention: a list of
+# {"name", "field_type", "number_type" (Number fields), "options" (choice fields, labels)}, created in
+# order by the build; see website.management.commands.utils.seed_metadata_definitions.
 INTERVENTIONS = [
     {
         "name": "Access to Clean Water",
@@ -49,6 +52,19 @@ INTERVENTIONS = [
         "icon": "cash",
         "group": "Cash",
         "output_metrics": ["NumberOfHouseholds"],
+        "metadata_fields": [
+            {
+                "name": "Condition type",
+                "field_type": "multiple_choice",
+                "options": ["School attendance", "Health check-ups", "Vaccination", "Training attendance"],
+            },
+            {
+                "name": "Transfer modality",
+                "field_type": "single_choice",
+                "options": ["Cash in hand", "Mobile money", "Bank transfer", "Voucher"],
+            },
+            {"name": "Transfer value per household", "field_type": "number", "number_type": "currency"},
+        ],
     },
     {
         "name": "Community Accountability Program",
@@ -84,6 +100,14 @@ INTERVENTIONS = [
         "icon": "cash",
         "group": "Health",
         "output_metrics": ["NumberOfOutputs"],
+        "metadata_fields": [
+            {"name": "Programme focus", "field_type": "free_text"},
+            {
+                "name": "Delivery partners",
+                "field_type": "multiple_choice",
+                "options": ["Local NGO", "Government", "Private sector", "Community groups"],
+            },
+        ],
     },
     {
         "name": "Legal Aid Case Management",
@@ -91,6 +115,19 @@ INTERVENTIONS = [
         "icon": "legal_aid",
         "group": "Protection",
         "output_metrics": ["NumberOfPeople"],
+        "metadata_fields": [
+            {
+                "name": "Legal issue categories",
+                "field_type": "multiple_choice",
+                "options": [
+                    "Civil documentation",
+                    "Housing, land and property",
+                    "Detention",
+                    "Asylum and refugee status",
+                ],
+            },
+            {"name": "Average case duration in days", "field_type": "number", "number_type": "integer"},
+        ],
     },
     {
         "name": "Mental Health and Psychosocial Support",
@@ -143,6 +180,15 @@ INTERVENTIONS = [
         "icon": "gbv_survivors",
         "group": "Health",
         "output_metrics": ["NumberOfPeople"],
+        "metadata_fields": [
+            {
+                "name": "Service delivery setting",
+                "field_type": "single_choice",
+                "options": ["Women's centre", "Mobile team", "Health facility", "Community based"],
+            },
+            {"name": "Average sessions per client", "field_type": "number", "number_type": "decimal"},
+            {"name": "Referral pathway documented", "field_type": "single_choice", "options": ["Yes", "No"]},
+        ],
     },
     {
         "name": "Teacher Training",
@@ -172,6 +218,30 @@ INTERVENTIONS = [
         "group": "Cash",
         "output_metrics": ["ValueOfCashDistributed", "NumberOfHouseholds"],
         "subcomponent_labels": ["First", "Second", "Third", "Last"],
+        # One field of every type, so the sample data exercises the whole metadata feature.
+        "metadata_fields": [
+            {
+                "name": "Transfer modality",
+                "field_type": "single_choice",
+                "options": ["Cash in hand", "Mobile money", "Bank transfer", "Voucher"],
+            },
+            {
+                "name": "Targeting criteria",
+                "field_type": "multiple_choice",
+                "options": [
+                    "Female-headed households",
+                    "Displaced households",
+                    "Host community",
+                    "Persons with disabilities",
+                    "Large households",
+                ],
+            },
+            {"name": "Transfer value per household", "field_type": "number", "number_type": "currency"},
+            {"name": "Number of transfer rounds", "field_type": "number", "number_type": "integer"},
+            {"name": "Average household size", "field_type": "number", "number_type": "decimal"},
+            {"name": "Share delivered digitally", "field_type": "number", "number_type": "percentage"},
+            {"name": "Implementing partner", "field_type": "free_text"},
+        ],
     },
     {
         "name": "Protection Case Management",
