@@ -15,7 +15,7 @@
 
                 {% if object_list %}
                     <div class="dashboard__table-wrapper">
-                        <table class="dashboard__table">
+                        <table class="data-table">
                             <thead>
                             <tr>
                                 <th><span>{% translate 'Grants'|label_override:'ci_grant_code' %}</span>{% include 'features/_dashboard-order-link.html' with column='grants' column_name='grants' order_by=filter.form.order_by.value.0 %}</th>
@@ -70,7 +70,7 @@
                                             {% endif %}
                                         {% endwith %}
                                     </td>
-                                    <td class="dashboard__table-actions">
+                                    <td class="dashboard__actions-cell">
                                         {% include 'analysis/_lifecycle-actions.html' with analysis=analysis %}
                                     </td>
                                 </tr>

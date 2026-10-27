@@ -19,28 +19,30 @@
     </p>
     {% if analyses %}
         <p class="metadata-impact__lead">{% blocktranslate count counter=analyses|length %}{{ counter }} analysis is affected:{% plural %}{{ counter }} analyses are affected:{% endblocktranslate %}</p>
-        <table class="metadata-impact__table">
-            <thead>
-                <tr>
-                    <th>{% translate 'Title' %}</th>
-                    <th>{% translate 'Status' %}</th>
-                    <th>{% translate 'Owner' %}</th>
-                    <th>{% translate 'Country' %}</th>
-                    <th>{% translate 'Last Updated' %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for analysis in analyses %}
+        <div class="metadata-impact__table-wrapper">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td>{{ analysis.title }}</td>
-                        <td class="metadata-impact__status">{% include 'analysis/_lifecycle-badges.html' %}</td>
-                        <td>{{ analysis.owner.name|default:'' }}</td>
-                        <td>{{ analysis.country.name|default:'' }}</td>
-                        <td>{{ analysis.updated|date }}</td>
+                        <th>{% translate 'Title' %}</th>
+                        <th>{% translate 'Status' %}</th>
+                        <th>{% translate 'Owner' %}</th>
+                        <th>{% translate 'Country' %}</th>
+                        <th>{% translate 'Last Updated' %}</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for analysis in analyses %}
+                        <tr>
+                            <td>{{ analysis.title }}</td>
+                            <td class="metadata-impact__status">{% include 'analysis/_lifecycle-badges.html' %}</td>
+                            <td>{{ analysis.owner.name|default:'' }}</td>
+                            <td>{{ analysis.country.name|default:'' }}</td>
+                            <td>{{ analysis.updated|date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
         <p>{% translate 'No analysis holds a value for this.' %}</p>
     {% endif %}
