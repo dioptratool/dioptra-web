@@ -2,11 +2,14 @@
 
 import json
 import re
+from urllib.parse import urlencode
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
+from django.utils.formats import date_format
+from django.utils.timezone import localtime
 
 from website.forms.intervention_metadata import metadata_field_name as name_of
 from website.forms.widgets import MetadataEditorWidget
@@ -244,6 +247,20 @@ class TestParentSave:
         assert "data-metadata-editor" in content
         assert "Partner" in content
         assert f"intervention={intervention.pk}" in content
+
+    def test_the_editor_and_the_field_panel_carry_the_impact_url(self, client_with_admin):
+        intervention = InterventionFactory(output_metrics=[OUTPUT_METRIC_CHOICES[0][0]])
+        impact = f"{reverse('intervention-metadata-impact')}?intervention={intervention.pk}"
+        assert (
+            f'data-impact-url="{impact}"' in client_with_admin.get(change_url(intervention)).content.decode()
+        )
+        assert (
+            f'data-impact-url="{impact}"'
+            in client_with_admin.get(draft_url("field", intervention)).content.decode()
+        )
+        # A new intervention has nothing stored, so there is nothing to list.
+        assert 'data-impact-url=""' in client_with_admin.get(add_url()).content.decode()
+        assert 'data-impact-url=""' in client_with_admin.get(draft_url("field")).content.decode()
 
     def test_the_metadata_tab_states_the_field_limit_under_the_list(self, client_with_admin):
         intervention = InterventionFactory(output_metrics=[OUTPUT_METRIC_CHOICES[0][0]])
@@ -533,3 +550,133 @@ class TestMetadataOnlyEditsOnACompleteWorkflow:
         assert after.status_changed_at == before.status_changed_at
         assert after.output_costs == before.output_costs
         assert after.updated > before.updated
+
+
+# ---------------------------------------------------------------------------------------------
+# The impact panel: the analyses affected by deleting a field or option or changing a type
+# ---------------------------------------------------------------------------------------------
+
+
+def impact_url(intervention, field=None, action="delete_field", option=None, raw=None):
+    query = {"intervention": intervention.pk if intervention else "", "action": action}
+    if field is not None:
+        query["field"] = field.storage_key
+    if option is not None:
+        query["option"] = option.storage_key
+    query.update(raw or {})
+    return f"{reverse('intervention-metadata-impact')}?{urlencode(query)}"
+
+
+@pytest.fixture
+def impacted():
+    """A text field held by two analyses and an untouched third; the option field has A and B."""
+    intervention = InterventionFactory()
+    text = InterventionMetadataFieldFactory(intervention=intervention, name="Partner organisation")
+    single = InterventionMetadataFieldFactory(
+        intervention=intervention, name="Setting", field_type=MetadataFieldType.SINGLE_CHOICE
+    )
+    a = InterventionMetadataOptionFactory(field=single, label="Rural")
+    b = InterventionMetadataOptionFactory(field=single, label="Urban")
+    validated = AnalysisFactory(
+        title="Validated cash transfer", lifecycle__analysis_status=AnalysisStatus.VALIDATED
+    )
+    in_progress = AnalysisFactory(title="Draft cash transfer")
+    untouched = AnalysisFactory(title="Untouched analysis")
+    InterventionInstanceFactory(
+        analysis=validated,
+        intervention=intervention,
+        metadata={text.storage_key: "Oxfam", single.storage_key: a.storage_key},
+    )
+    InterventionInstanceFactory(
+        analysis=in_progress,
+        intervention=intervention,
+        metadata={text.storage_key: "BRAC", single.storage_key: b.storage_key},
+    )
+    InterventionInstanceFactory(analysis=untouched, intervention=intervention, metadata={})
+    return {
+        "intervention": intervention,
+        "text": text,
+        "single": single,
+        "A": a,
+        "B": b,
+        "validated": validated,
+        "in_progress": in_progress,
+        "untouched": untouched,
+    }
+
+
+@pytest.mark.django_db
+class TestImpactPanel:
+    def test_the_affected_analyses_are_tabled_with_status_owner_country_and_date(
+        self, client_with_admin, impacted
+    ):
+        i = impacted
+        response = client_with_admin.get(impact_url(i["intervention"], i["text"]))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Partner organisation" in content
+        assert "All associated data within the analyses using this field will be deleted." in content
+        for analysis in (i["validated"], i["in_progress"]):
+            analysis.refresh_from_db()
+            assert analysis.title in content
+            assert analysis.get_analysis_status_display() in content
+            assert analysis.owner.name in content
+            assert analysis.country.name in content
+            assert date_format(localtime(analysis.updated)) in content
+        assert i["untouched"].title not in content
+        # The affected analyses come before the untouched one would, in title order.
+        assert content.index("Draft cash transfer") < content.index("Validated cash transfer")
+        assert "data-metadata-impact-confirm" in content
+        assert "Yes, delete" in content
+        assert 'data-panels-action="reject-close"' in content
+
+    def test_archived_analyses_are_listed_with_the_archived_tag(self, client_with_admin, impacted):
+        i = impacted
+        Analysis.objects.filter(pk=i["validated"].pk).update(is_archived=True)
+        content = client_with_admin.get(impact_url(i["intervention"], i["text"])).content.decode()
+        assert i["validated"].title in content
+        assert 'class="lifecycle-tag"' in content and "Archived" in content
+
+    def test_an_option_lists_only_the_analyses_that_selected_it(self, client_with_admin, impacted):
+        i = impacted
+        content = client_with_admin.get(
+            impact_url(i["intervention"], i["single"], action="delete_option", option=i["A"])
+        ).content.decode()
+        assert "Rural" in content and "Setting" in content
+        assert "All analysis metadata fields with this option selected will have it removed." in content
+        assert i["validated"].title in content
+        assert i["in_progress"].title not in content
+
+    def test_a_type_change_has_its_own_wording(self, client_with_admin, impacted):
+        i = impacted
+        content = client_with_admin.get(
+            impact_url(i["intervention"], i["text"], action="change_type")
+        ).content.decode()
+        assert "Saving this intervention will discard existing values for this field." in content
+        assert "Yes, change type" in content
+        assert i["validated"].title in content and i["in_progress"].title in content
+
+    def test_unknown_keys_actions_and_interventions_are_not_found(self, client_with_admin, impacted):
+        i = impacted
+        other_field = InterventionMetadataFieldFactory()  # another intervention's
+        for url in (
+            impact_url(i["intervention"], other_field),
+            impact_url(i["intervention"], None),
+            impact_url(i["intervention"], i["text"], raw={"field": "not-a-uuid"}),
+            impact_url(i["intervention"], i["single"], action="delete_option"),
+            impact_url(i["intervention"], i["text"], action="delete_option", option=i["A"]),
+            impact_url(i["intervention"], i["text"], action="nope"),
+            impact_url(None, i["text"]),
+            impact_url(i["intervention"], i["text"], raw={"intervention": "x"}),
+            impact_url(i["intervention"], i["text"], raw={"intervention": i["intervention"].pk + 1000}),
+        ):
+            assert client_with_admin.get(url).status_code == 404, url
+
+    def test_basic_users_are_forbidden(self, client, impacted):
+        client.force_login(UserFactory())
+        assert client.get(impact_url(impacted["intervention"], impacted["text"])).status_code == 403
+
+    def test_anonymous_is_sent_to_log_in(self, client, impacted):
+        response = client.get(impact_url(impacted["intervention"], impacted["text"]))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")

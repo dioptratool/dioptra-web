@@ -71,3 +71,86 @@
   font-size: 16px;
   margin: 0 0 16px;
 }
+
+
+// The impact panel: the analyses affected by a definition change, with their lifecycle badges.
+// The badge colours follow modules/analysis/_analysis-lifecycle.scss, which is rem-based and so
+// cannot be shared with this bundle.
+.metadata-impact__lead {
+  font-weight: $font-weight-bold;
+  margin: 0 0 8px;
+}
+
+.metadata-impact__table {
+  border: 1px solid $color-smoke;
+  border-collapse: separate;
+  border-radius: 2px;
+  margin: 0 0 15px;
+  text-align: left;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid $color-moonstone;
+    font-size: 13px;
+    line-height: 1.3;
+    padding: 8px 10px;
+    vertical-align: middle;
+  }
+
+  th {
+    background-color: $color-moonstone-2;
+    color: $color-boulder;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  tr:last-child > td {
+    border-bottom: none;
+  }
+}
+
+.metadata-impact__status {
+  white-space: nowrap;
+
+  .lifecycle-badge,
+  .lifecycle-tag {
+    align-items: center;
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .lifecycle-badge {
+    border-radius: 14px;
+    padding: 5px 9px;
+  }
+
+  .lifecycle-badge--in_progress {
+    background-color: #d9efdd;
+    color: #31753e;
+  }
+
+  .lifecycle-badge--complete {
+    background-color: #4d935a;
+    color: $color-white;
+  }
+
+  .lifecycle-badge--validated {
+    background-color: #196dab;
+    color: $color-white;
+  }
+
+  .lifecycle-tag {
+    border: 1px solid #48453c;
+    border-radius: 2px;
+    color: #48453c;
+    margin-right: 4px;
+    padding: 3px 6px;
+  }
+}

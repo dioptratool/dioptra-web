@@ -10,6 +10,10 @@
  * Anything read from the fragment is untrusted: row text goes through escapeHtml and draft ids
  * are set as attributes through jQuery, never interpolated into markup.
  * Options are added, removed, reordered and renamed (through a nested panel) inline.
+ *
+ * Deleting a field or option that analyses hold a value for, or changing such a field's type,
+ * first opens the impact panel (data-impact-url), which lists the affected analyses and resolves
+ * {confirmed: true} from its Yes button; cancelling or closing it leaves the draft as it was.
  */
 (function () {
   'use strict';
@@ -28,9 +32,6 @@
     percentage: 'Percentage',
     currency: 'Currency'
   };
-  var DELETE_FIELD_WARNING = 'Are you sure you want to delete this metadata field? All associated data within the analyses using this field will be deleted. This action cannot be undone.';
-  var DELETE_OPTION_WARNING = 'Are you sure you want to delete this option? All analysis metadata fields with this option selected will have it removed. This action cannot be undone.';
-  var TYPE_CHANGE_WARNING = 'Saving this intervention will discard existing values for this field.';
   var UNADDED_OPTION_WARNING = 'The option label you typed has not been added and will be lost. Continue without adding it?';
 
   function uid() {
@@ -59,6 +60,16 @@
     return url + '#draft=' + encodeURIComponent(JSON.stringify(draft));
   }
 
+  // Opens the impact panel for a change to stored values and runs onConfirmed when its Yes button
+  // resolves it; a cancel or close resolves nothing. Without an impact URL (a new intervention)
+  // nothing is stored, but the callers never ask then: nothing of a new intervention is in use.
+  function confirmImpact(impactUrl, params, onConfirmed) {
+    if (!impactUrl) return;
+    Panels.open(impactUrl + '&' + new URLSearchParams(params).toString()).then(function (result) {
+      if (result && result.confirmed) onConfirmed();
+    });
+  }
+
   function sortByOrder(items, $list) {
     var order = $list.children().map(function (i, li) { return $(li).attr('data-draft-id'); }).get();
     items.sort(function (a, b) { return order.indexOf(a.draft_id) - order.indexOf(b.draft_id); });
@@ -72,6 +83,7 @@
     var $list = $root.find('.metadata-editor__list');
     var $add = $root.find('.metadata-editor__add');
     var fieldUrl = $root.attr('data-field-url');
+    var impactUrl = $root.attr('data-impact-url');
     var maxFields = parseInt($root.attr('data-max-fields'), 10) || 20;
     var original = $input.attr('data-original');
     var state;
@@ -118,7 +130,11 @@
     }
 
     function removeField(field) {
-      if (field.in_use && !window.confirm(DELETE_FIELD_WARNING)) return;
+      if (!field.in_use) return discardField(field);
+      confirmImpact(impactUrl, { field: field.key, action: 'delete_field' }, function () { discardField(field); });
+    }
+
+    function discardField(field) {
       state.fields = state.fields.filter(function (existing) { return existing.draft_id !== field.draft_id; });
       commit();
     }
@@ -173,6 +189,7 @@
     var $optionInput = $form.find('.metadata-options__input');
     var $optionAdd = $form.find('.metadata-options__add-btn');
     var optionUrl = $form.attr('data-option-url');
+    var impactUrl = $form.attr('data-impact-url');
     var options = [];
 
     if (!bound) {
@@ -193,6 +210,7 @@
     }
     var inUse = /^(true|on|1)$/i.test($inUse.val() || '');
     var originalType = typeSignature();
+    var typeChangeConfirmed = false;
 
     function typeSignature() { return ($type.val() || '') + '|' + ($type.val() === 'number' ? ($numberType.val() || '') : ''); }
     function isChoice() { return CHOICE_TYPES.indexOf($type.val()) >= 0; }
@@ -233,7 +251,15 @@
     }
 
     function removeOption(option) {
-      if (option.in_use && !window.confirm(DELETE_OPTION_WARNING)) return;
+      if (!option.in_use) return discardOption(option);
+      confirmImpact(
+        impactUrl,
+        { field: $key.val(), option: option.key, action: 'delete_option' },
+        function () { discardOption(option); }
+      );
+    }
+
+    function discardOption(option) {
       options = options.filter(function (existing) { return existing !== option; });
       syncOptions();
     }
@@ -262,9 +288,13 @@
 
     // The option input is deliberately untracked (the form allows abandonment because the controls
     // are filled from the fragment), so the panels framework never sees a label that was typed but
-    // not added. Warn before Save or a reject (Cancel, close, veil, Escape) silently drops it.
+    // not added. Warn before Save or a reject (Cancel, close, veil, Escape) silently drops it; once
+    // the user agrees, the label is cleared so a resubmit after the impact panel does not ask again.
     function confirmDiscardingPendingOption() {
-      return !$optionInput.val().trim() || window.confirm(UNADDED_OPTION_WARNING);
+      if (!$optionInput.val().trim()) return true;
+      if (!window.confirm(UNADDED_OPTION_WARNING)) return false;
+      $optionInput.val('');
+      return true;
     }
 
     $type.on('change', function () { updateSections(); validate(); });
@@ -277,7 +307,14 @@
     $optionAdd.on('click', function (event) { event.preventDefault(); addOption(); });
     $form.on('submit', function (event) {
       if (!confirmDiscardingPendingOption()) { event.preventDefault(); return; }
-      if (inUse && typeSignature() !== originalType && !window.confirm(TYPE_CHANGE_WARNING)) event.preventDefault();
+      // A type change retires the stored values: confirm it on the impact panel, then resubmit.
+      if (inUse && typeSignature() !== originalType && !typeChangeConfirmed) {
+        event.preventDefault();
+        confirmImpact(impactUrl, { field: $key.val(), action: 'change_type' }, function () {
+          typeChangeConfirmed = true;
+          form.requestSubmit();
+        });
+      }
     });
     if (window.Panels && Panels.current) {
       Panels.current.on('beforeReject', function (event) {

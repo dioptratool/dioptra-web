@@ -169,6 +169,8 @@ class MetadataEditorWidget(forms.Widget):
                 "fields": [self._row(field) for field in fields if isinstance(field, dict)],
                 "field_url": reverse("intervention-metadata-draft", kwargs={"mode": "field"}) + query,
                 "option_url": reverse("intervention-metadata-draft", kwargs={"mode": "option_label"}) + query,
+                # The affected-analyses confirmation; a new intervention has nothing stored to list.
+                "impact_url": reverse("intervention-metadata-impact") + query if query else "",
                 "max_fields": MAX_FIELDS_PER_INTERVENTION,
             }
         )

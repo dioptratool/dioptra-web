@@ -1,0 +1,63 @@
+{% extends 'html-panel.html' %}
+{% load i18n %}
+
+{% block panel-body %}
+    <p class="delete-confirmation lead">
+        {% if action == 'delete_field' %}
+            {% blocktranslate trimmed with name=field.name %}
+                Are you sure you want to delete the metadata field "{{ name }}"? All associated data within the analyses using this field will be deleted. This action cannot be undone.
+            {% endblocktranslate %}
+        {% elif action == 'delete_option' %}
+            {% blocktranslate trimmed with label=option.label name=field.name %}
+                Are you sure you want to delete the option "{{ label }}" of "{{ name }}"? All analysis metadata fields with this option selected will have it removed. This action cannot be undone.
+            {% endblocktranslate %}
+        {% else %}
+            {% blocktranslate trimmed with name=field.name %}
+                Saving this intervention will discard existing values for this field. The values of "{{ name }}" in the analyses below will be lost.
+            {% endblocktranslate %}
+        {% endif %}
+    </p>
+    {% if analyses %}
+        <p class="metadata-impact__lead">{% blocktranslate count counter=analyses|length %}{{ counter }} analysis is affected:{% plural %}{{ counter }} analyses are affected:{% endblocktranslate %}</p>
+        <table class="metadata-impact__table">
+            <thead>
+                <tr>
+                    <th>{% translate 'Title' %}</th>
+                    <th>{% translate 'Status' %}</th>
+                    <th>{% translate 'Owner' %}</th>
+                    <th>{% translate 'Country' %}</th>
+                    <th>{% translate 'Last Updated' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for analysis in analyses %}
+                    <tr>
+                        <td>{{ analysis.title }}</td>
+                        <td class="metadata-impact__status">{% include 'analysis/_lifecycle-badges.html' %}</td>
+                        <td>{{ analysis.owner.name|default:'' }}</td>
+                        <td>{{ analysis.country.name|default:'' }}</td>
+                        <td>{{ analysis.updated|date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{% translate 'No analysis holds a value for this.' %}</p>
+    {% endif %}
+{% endblock panel-body %}
+
+{% block panel-foot %}
+    <a href="#" class="btn btn-danger" data-metadata-impact-confirm>{% if action == 'change_type' %}{% translate 'Yes, change type' %}{% else %}{% translate 'Yes, delete' %}{% endif %}</a>
+    <a href="" data-panels-action="reject-close" class="btn btn-cancel">{% translate 'No, cancel' %}</a>
+{% endblock panel-foot %}
+
+{% block extrascript %}
+    <script type="text/javascript">
+        $(function () {
+            $('[data-metadata-impact-confirm]').on('click', function (e) {
+                e.preventDefault();
+                Panels.current.resolve({ confirmed: true });
+            });
+        });
+    </script>
+{% endblock extrascript %}

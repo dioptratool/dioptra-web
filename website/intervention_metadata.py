@@ -273,6 +273,32 @@ def metadata_usage(intervention) -> tuple[set[str], set[str]]:
     return field_keys, option_keys
 
 
+def metadata_impact(intervention, field_key: str, option_key: str | None = None) -> list[Analysis]:
+    """
+    The analyses that would lose a value: those with an instance of the intervention holding a
+    nonblank value for ``field_key``, or, given ``option_key``, with that option selected.
+
+    Each analysis once, by title, with owner and country loaded; archived analyses are included.
+    Stored values are read as ``metadata_usage`` reads them, so this lists exactly the analyses
+    behind an "in use" flag. Two queries however many instances there are.
+    """
+    analysis_ids = set()
+    for analysis_id, metadata in InterventionInstance.objects.filter(
+        intervention=intervention, analysis__isnull=False
+    ).values_list("analysis_id", "metadata"):
+        value = (metadata or {}).get(field_key)
+        if value in ("", [], None):
+            continue
+        if option_key is not None and option_key not in (value if isinstance(value, list) else [value]):
+            continue
+        analysis_ids.add(analysis_id)
+    return list(
+        Analysis.objects.filter(pk__in=analysis_ids)
+        .select_related("owner", "country")
+        .order_by("title", "pk")
+    )
+
+
 # ---- definition drafts ------------------------------------------------------------------------------
 
 

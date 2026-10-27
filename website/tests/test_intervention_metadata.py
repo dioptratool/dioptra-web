@@ -12,6 +12,7 @@ from website.intervention_metadata import (
     build_draft,
     excel_number_format,
     format_number,
+    metadata_impact,
     metadata_usage,
     MetadataDraftError,
     prune_metadata,
@@ -872,3 +873,72 @@ class TestMetadataLookup:
             ("Approach", "Z"),
         ]
         assert lookup[third.id] == []
+
+
+# ---------------------------------------------------------------------------------------------
+# Impact of a definition change
+# ---------------------------------------------------------------------------------------------
+
+
+def impact_instance(definitions, analysis, metadata):
+    return InterventionInstanceFactory(
+        analysis=analysis, intervention=definitions["intervention"], metadata=metadata
+    )
+
+
+@pytest.mark.django_db
+class TestMetadataImpact:
+    def test_analyses_holding_a_value_for_the_field_once_each_by_title(self, definitions):
+        d = definitions
+        bravo = AnalysisFactory(title="Bravo")
+        alpha = AnalysisFactory(title="Alpha")
+        for analysis, value in ((bravo, "x"), (alpha, "y"), (alpha, "z")):
+            impact_instance(d, analysis, {d["text"].storage_key: value})
+        impact_instance(d, AnalysisFactory(title="Charlie"), {d["number"].storage_key: "1"})
+
+        assert metadata_impact(d["intervention"], d["text"].storage_key) == [alpha, bravo]
+
+    def test_blank_values_and_instances_without_an_analysis_do_not_count(self, definitions):
+        d = definitions
+        for value in ("", []):
+            impact_instance(d, AnalysisFactory(), {d["text"].storage_key: value})
+        impact_instance(d, None, {d["text"].storage_key: "orphan"})
+
+        assert metadata_impact(d["intervention"], d["text"].storage_key) == []
+
+    def test_an_option_counts_only_where_it_is_selected(self, definitions):
+        d = definitions
+        single = AnalysisFactory(title="Single")
+        multi = AnalysisFactory(title="Multi")
+        other = AnalysisFactory(title="Other")
+        impact_instance(d, single, {d["single"].storage_key: d["A"].storage_key})
+        impact_instance(d, multi, {d["multi"].storage_key: [d["X"].storage_key, d["Y"].storage_key]})
+        impact_instance(
+            d,
+            other,
+            {d["single"].storage_key: d["B"].storage_key, d["multi"].storage_key: [d["Z"].storage_key]},
+        )
+
+        assert metadata_impact(d["intervention"], d["single"].storage_key, d["A"].storage_key) == [single]
+        assert metadata_impact(d["intervention"], d["multi"].storage_key, d["Y"].storage_key) == [multi]
+        assert metadata_impact(d["intervention"], d["multi"].storage_key, d["Z"].storage_key) == [other]
+
+    def test_archived_analyses_are_included(self, definitions):
+        d = definitions
+        archived = AnalysisFactory(title="Archived", lifecycle__is_archived=True)
+        impact_instance(d, archived, {d["text"].storage_key: "x"})
+
+        assert metadata_impact(d["intervention"], d["text"].storage_key) == [archived]
+
+    def test_two_queries_load_the_analyses_with_owner_and_country(
+        self, definitions, django_assert_num_queries
+    ):
+        d = definitions
+        for title in ("One", "Two"):
+            impact_instance(d, AnalysisFactory(title=title), {d["text"].storage_key: "x"})
+
+        # The instances' values, then the affected analyses with owner and country: never more.
+        with django_assert_num_queries(2):
+            analyses = metadata_impact(d["intervention"], d["text"].storage_key)
+            names = [(analysis.owner.name, analysis.country.name) for analysis in analyses]
+        assert len(names) == 2

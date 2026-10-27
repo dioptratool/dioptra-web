@@ -70,7 +70,7 @@ from website.views.analysis_lifecycle import (
     AnalysisUnarchiveView,
 )
 from website.views.duplicator import DuplicateView
-from website.views.intervention_metadata import InterventionMetadataDraftView
+from website.views.intervention_metadata import InterventionMetadataDraftView, InterventionMetadataImpactView
 from website.views.analysis.steps.interventions import (
     EditSubcomponentLabel,
     Interventions,
@@ -281,6 +281,11 @@ urlpatterns = [
         "panels/intervention-metadata/<str:mode>/",
         InterventionMetadataDraftView.as_view(),
         name="intervention-metadata-draft",
+    ),
+    path(
+        "panels/intervention-metadata-impact/",
+        InterventionMetadataImpactView.as_view(),
+        name="intervention-metadata-impact",
     ),
     path(
         "analysis/<int:pk>/archive/",

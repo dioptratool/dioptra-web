@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="metadata-editor" data-metadata-editor data-field-url="{{ widget.field_url }}" data-option-url="{{ widget.option_url }}" data-max-fields="{{ widget.max_fields }}">
+<div class="metadata-editor" data-metadata-editor data-field-url="{{ widget.field_url }}" data-option-url="{{ widget.option_url }}" data-impact-url="{{ widget.impact_url }}" data-max-fields="{{ widget.max_fields }}">
     <input type="hidden" name="{{ widget.name }}" value="{{ widget.draft_json }}" class="metadata-editor__draft notrackchange" data-original="{{ widget.draft_json }}">
     <p class="help_text">{% blocktranslate with max=widget.max_fields %}This section allows for managing optional metadata fields for this intervention. You may edit, re-order, or add up to a maximum of {{ max }} fields.{% endblocktranslate %}</p>
     <ul class="metadata-editor__list">
