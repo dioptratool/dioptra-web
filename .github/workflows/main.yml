@@ -32,15 +32,15 @@ jobs:
           echo "TRANSACTION_STORE_PORT=9005" >> "$GITHUB_ENV"
 
       - name: Checkout files
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Setup Python Pip cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: cache-pip
         with:
           path: ~/.cache/pip
@@ -90,6 +90,9 @@ jobs:
   # Build Docker images, conditional on GITHUB_REF version being a build
   # candidate. See the `get_version` step.
   build:
+    env:
+      AWS_ROLE: ${{ secrets.AWS_ROLE }}
+      AWS_REGION: eu-west-1
     runs-on: ubuntu-latest
     needs: verify
     steps:
@@ -105,29 +108,29 @@ jobs:
           echo "RELEASE_VERSION: ${release_version}"
           # For the SemVer matching regex, see https://regex101.com/r/Ly7O1x/3/
           is_build_candidate=$(if [[ $release_version == latest ]] || [[ $release_version =~ ^v[0-9]*\.[0-9]*\.[0-9]*(-(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$ ]]; then echo "true"; fi)
-          echo "Build canidates are SemVer tags with the v prefix (i.e. 1.0.0, 1.0.0-dev1) and the tag latest"
+          echo "Build canidates are SemVer tags with the v prefix (i.e. v1.0.0, v1.0.0-dev1) and the tag latest"
           if [[ $is_build_candidate ]]; then echo "'${release_version}' is a build candidate."; else echo "'${release_version}' is not a build candidate. Stopping."; fi
           echo "is_build_candidate=$is_build_candidate" >> $GITHUB_ENV
           echo "release_version=$release_version" >> $GITHUB_ENV
 
-      - name: Checkout files
-        uses: actions/checkout@v6
-        if: ${{ env.is_build_candidate }}
-
-      - name: Login to Amazon with Access Key
+      - name: Login to Amazon Role
         uses: aws-actions/configure-aws-credentials@v6
         if: ${{ env.is_build_candidate }}
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-session-name: deploy-user-session-build
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        if: ${{ env.is_build_candidate }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+        if: ${{ env.is_build_candidate }}
 
-      - name: Build the image
+      - name: Checkout files
+        uses: actions/checkout@v7
+        if: ${{ env.is_build_candidate }}
+
+      - name: Build and push the remote images
         id: buildImage
         if: ${{ env.is_build_candidate }}
         env:
