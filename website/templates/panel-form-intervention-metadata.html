@@ -3,7 +3,7 @@
 
 {% block form-start %}
     <form action="#" method="POST" accept-charset="utf-8" class="panel-form metadata-field-form" novalidate="novalidate"
-          data-metadata-field-form data-mode="{{ mode }}" data-bound="{{ bound|yesno:'true,false' }}" data-option-url="{{ option_url }}" data-impact-url="{{ impact_url }}">
+          data-metadata-field-form data-mode="{{ mode }}" data-bound="{{ bound|yesno:'true,false' }}" data-option-url="{{ option_url }}" data-impact-url="{{ impact_url }}" data-min-options="{{ min_options }}" data-max-options="{{ max_options }}">
 {% endblock form-start %}
 
 {% block panel-body %}
@@ -28,10 +28,11 @@
             <label class="control-label"><span>{% translate 'Options' %}</span><em><sup title="{% translate 'This is a required field' %}">*</sup></em></label>
             <ul class="metadata-options__list"></ul>
             <div class="metadata-options__add">
-                <input type="text" class="form-control notrackchange metadata-options__input" placeholder="{% translate 'Add option label' %}" maxlength="100">
+                <input type="text" class="form-control notrackchange metadata-options__input" placeholder="{% translate 'Add option label' %}" maxlength="{{ label_max_length }}">
                 <button type="button" class="btn btn-sm btn-primary metadata-options__add-btn" disabled>{% translate 'Add Option' %}</button>
             </div>
-            <p class="help_text">{% translate 'Maximum of 10' %}</p>
+            <p class="help_text">{% blocktranslate with min=min_options max=max_options %}{{ min }} to {{ max }} options, each with a different label{% endblocktranslate %}</p>
+            <div class="help-block errors metadata-options__error" hidden><ul><li><em></em></li></ul></div>
             {% if form.options.errors %}
                 <div class="help-block errors">
                     <ul>
@@ -44,6 +45,7 @@
         </div>
     {% else %}
         {% include 'bootstrap/field.html' with field=form.label|add_input_classes %}
+        <div class="help-block errors metadata-options__error" hidden><ul><li><em></em></li></ul></div>
     {% endif %}
 {% endblock panel-body %}
 

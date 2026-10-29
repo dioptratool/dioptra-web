@@ -23,6 +23,7 @@ from ombucore.admin.views.mixins import PanelUIMixin
 from website.forms.intervention_metadata import MetadataFieldDraftForm, OptionLabelForm
 from website.intervention_metadata import metadata_impact
 from website.models import Intervention, InterventionMetadataField, InterventionMetadataOption
+from website.models.intervention_metadata import MAX_OPTIONS_PER_FIELD, MIN_OPTIONS_PER_FIELD, NAME_MAX_LENGTH
 
 
 class InterventionMetadataDraftView(LoginRequiredMixin, FormView):
@@ -64,6 +65,11 @@ class InterventionMetadataDraftView(LoginRequiredMixin, FormView):
         query = self.request.GET.urlencode()
         context["mode"] = self.mode
         context["bound"] = self.request.method == "POST"
+        # The option limits, stated once in the model constants: the template renders them for the
+        # note, the add box and the data attributes the editor script reads.
+        context["min_options"] = MIN_OPTIONS_PER_FIELD
+        context["max_options"] = MAX_OPTIONS_PER_FIELD
+        context["label_max_length"] = NAME_MAX_LENGTH
         context["option_url"] = reverse("intervention-metadata-draft", kwargs={"mode": "option_label"}) + (
             f"?{query}" if query else ""
         )

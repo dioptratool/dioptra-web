@@ -9,7 +9,9 @@
  * request; the controls are filled from it once, unless the server re-rendered a posted form.
  * Anything read from the fragment is untrusted: row text goes through escapeHtml and draft ids
  * are set as attributes through jQuery, never interpolated into markup.
- * Options are added, removed, reordered and renamed (through a nested panel) inline.
+ * Options are added, removed, reordered and renamed (through a nested panel) inline. Labels must
+ * be unique regardless of case; the option count limits come from the form's data attributes,
+ * rendered from the model constants, and the server checks all of it again.
  *
  * Deleting a field or option that analyses hold a value for, or changing such a field's type,
  * first opens the impact panel (data-impact-url), which lists the affected analyses and resolves
@@ -18,7 +20,6 @@
 (function () {
   'use strict';
 
-  var MAX_OPTIONS = 10;
   var CHOICE_TYPES = ['multiple_choice', 'single_choice'];
   var TYPE_LABELS = {
     free_text: 'Free Text',
@@ -40,6 +41,21 @@
 
   function escapeHtml(text) {
     return $('<span>').text(text == null ? '' : String(text)).html();
+  }
+
+  // Labels are compared trimmed and case-insensitively, as the server and its constraint do.
+  function sameLabel(a, b) {
+    return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+  }
+
+  function duplicateLabelMessage(label) {
+    return label.trim() + ': option labels must be unique.';
+  }
+
+  // The inline message slot under the option controls; empty hides it.
+  function showError($error, message) {
+    $error.find('em').text(message || '');
+    $error.prop('hidden', !message);
   }
 
   // The list's type cell: a Number field shows its sub-type, as MetadataEditorWidget renders it.
@@ -84,7 +100,7 @@
     var $add = $root.find('.metadata-editor__add');
     var fieldUrl = $root.attr('data-field-url');
     var impactUrl = $root.attr('data-impact-url');
-    var maxFields = parseInt($root.attr('data-max-fields'), 10) || 20;
+    var maxFields = parseInt($root.attr('data-max-fields'), 10);
     var original = $input.attr('data-original');
     var state;
     try { state = JSON.parse($input.val()); } catch (error) { state = null; }
@@ -159,11 +175,17 @@
   function setupOptionLabelForm($form, bound) {
     var $label = $form.find('[name="label"]');
     var $save = $form.find('.metadata-field-form__save');
-    if (!bound) {
-      var draft = fragmentDraft();
-      if (draft && typeof draft.label === 'string') $label.val(draft.label);
+    var $error = $form.find('.metadata-options__error');
+    var draft = fragmentDraft();
+    // The sibling labels travel in the fragment so a rename cannot repeat one of them.
+    var taken = draft && Array.isArray(draft.taken) ? draft.taken.filter(function (label) { return typeof label === 'string'; }) : [];
+    if (!bound && draft && typeof draft.label === 'string') $label.val(draft.label);
+    function validate() {
+      var label = $label.val().trim();
+      var duplicate = !!label && taken.some(function (other) { return sameLabel(other, label); });
+      showError($error, duplicate ? duplicateLabelMessage(label) : '');
+      $save.prop('disabled', !label || duplicate);
     }
-    function validate() { $save.prop('disabled', !$label.val().trim()); }
     $label.on('input', validate);
     validate();
     $label.trigger('focus');
@@ -188,8 +210,11 @@
     var $list = $form.find('.metadata-options__list');
     var $optionInput = $form.find('.metadata-options__input');
     var $optionAdd = $form.find('.metadata-options__add-btn');
+    var $optionError = $form.find('.metadata-options__error');
     var optionUrl = $form.attr('data-option-url');
     var impactUrl = $form.attr('data-impact-url');
+    var minOptions = parseInt($form.attr('data-min-options'), 10);
+    var maxOptions = parseInt($form.attr('data-max-options'), 10);
     var options = [];
 
     if (!bound) {
@@ -215,7 +240,12 @@
     function typeSignature() { return ($type.val() || '') + '|' + ($type.val() === 'number' ? ($numberType.val() || '') : ''); }
     function isChoice() { return CHOICE_TYPES.indexOf($type.val()) >= 0; }
 
+    function labelTaken(label, except) {
+      return options.some(function (other) { return other !== except && sameLabel(other.label, label); });
+    }
+
     function syncOptions() {
+      showError($optionError, '');
       $optionsInput.val(JSON.stringify(options));
       renderOptions();
       validate();
@@ -239,12 +269,14 @@
         $row.find('.metadata-options__remove').on('click', function (event) { event.preventDefault(); removeOption(option); });
         $list.append($row);
       });
-      $form.find('.metadata-options__add').toggle(options.length < MAX_OPTIONS);
+      $form.find('.metadata-options__add').toggle(options.length < maxOptions);
     }
 
     function editOption(option) {
-      Panels.open(withDraft(optionUrl, { label: option.label })).then(function (result) {
+      var taken = options.filter(function (other) { return other !== option; }).map(function (other) { return other.label; });
+      Panels.open(withDraft(optionUrl, { label: option.label, taken: taken })).then(function (result) {
         if (!result || typeof result.label !== 'string') return;
+        if (labelTaken(result.label, option)) return showError($optionError, duplicateLabelMessage(result.label));
         option.label = result.label;
         syncOptions();
       });
@@ -266,7 +298,8 @@
 
     function addOption() {
       var label = $optionInput.val().trim();
-      if (!label || options.length >= MAX_OPTIONS) return;
+      if (!label || options.length >= maxOptions) return;
+      if (labelTaken(label)) return showError($optionError, duplicateLabelMessage(label));
       options.push({ draft_id: uid(), id: null, key: null, label: label, in_use: false });
       $optionInput.val('');
       $optionAdd.prop('disabled', true);
@@ -282,7 +315,7 @@
     function validate() {
       var valid = !!$name.val().trim() && !!$type.val();
       if ($type.val() === 'number') valid = valid && !!$numberType.val();
-      if (isChoice()) valid = valid && options.length > 0;
+      if (isChoice()) valid = valid && options.length >= minOptions;
       $save.prop('disabled', !valid);
     }
 
@@ -300,7 +333,10 @@
     $type.on('change', function () { updateSections(); validate(); });
     $numberType.on('change', validate);
     $name.on('input', validate);
-    $optionInput.on('input', function () { $optionAdd.prop('disabled', !$optionInput.val().trim()); });
+    $optionInput.on('input', function () {
+      showError($optionError, '');
+      $optionAdd.prop('disabled', !$optionInput.val().trim());
+    });
     $optionInput.on('keydown', function (event) {
       if (event.key === 'Enter') { event.preventDefault(); addOption(); }
     });

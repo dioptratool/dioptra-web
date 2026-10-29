@@ -14,6 +14,7 @@ from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 MAX_FIELDS_PER_INTERVENTION = 20
+MIN_OPTIONS_PER_FIELD = 2
 MAX_OPTIONS_PER_FIELD = 10
 NAME_MAX_LENGTH = 100
 FREE_TEXT_MAX_LENGTH = 255
@@ -100,6 +101,12 @@ class InterventionMetadataOption(models.Model):
         verbose_name = _("Intervention Metadata Option")
         verbose_name_plural = _("Intervention Metadata Options")
         ordering = ["order", "pk"]
+        constraints = [
+            # Labels are unique within a field regardless of case (trimmed by the forms).
+            models.UniqueConstraint(
+                Lower("label"), F("field"), name="unique_metadata_option_label_per_field"
+            ),
+        ]
 
     def __str__(self):
         return self.label

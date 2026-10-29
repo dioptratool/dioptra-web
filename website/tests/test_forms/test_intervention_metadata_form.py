@@ -161,6 +161,26 @@ class TestDraftForms:
         assert not form.is_valid()
         assert "options" in form.errors
 
+        form = MetadataFieldDraftForm(
+            data={
+                "name": "C",
+                "field_type": MetadataFieldType.SINGLE_CHOICE,
+                "options": json.dumps([{"label": "Urban"}]),
+            }
+        )
+        assert not form.is_valid()
+        assert form.errors["options"] == ["Add at least 2 options."]
+
+        form = MetadataFieldDraftForm(
+            data={
+                "name": "C",
+                "field_type": MetadataFieldType.SINGLE_CHOICE,
+                "options": json.dumps([{"label": "Urban"}, {"label": " urban"}, {"label": "Rural"}]),
+            }
+        )
+        assert not form.is_valid()
+        assert form.errors["options"] == ["Urban: option labels must be unique."]
+
     def test_option_label_form(self):
         assert OptionLabelForm(data={"label": " Outpatient "}).is_valid()
         assert not OptionLabelForm(data={"label": ""}).is_valid()

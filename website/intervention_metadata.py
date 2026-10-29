@@ -32,6 +32,7 @@ from website.models import (
 from website.models.intervention_metadata import (
     MAX_FIELDS_PER_INTERVENTION,
     MAX_OPTIONS_PER_FIELD,
+    MIN_OPTIONS_PER_FIELD,
     NAME_MAX_LENGTH,
     NUMBER_MAX_DIGITS,
     MetadataFieldType,
@@ -350,6 +351,9 @@ def normalize_field_row(row: dict) -> dict:
     """
     One draft field validated on its own content and returned normalized.
 
+    A choice field needs between MIN_OPTIONS_PER_FIELD and MAX_OPTIONS_PER_FIELD options, each
+    with a label that is unique within the field regardless of case (labels are trimmed first).
+
     Raises ValidationError with a dict keyed by "name", "field_type", "number_type" or "options".
     """
     if not isinstance(row, dict):
@@ -376,6 +380,7 @@ def normalize_field_row(row: dict) -> dict:
         raw_options = row.get("options") or []
         if not isinstance(raw_options, list):
             raw_options = []
+        seen_labels = {}
         for raw in raw_options:
             if not isinstance(raw, dict):
                 continue
@@ -388,6 +393,13 @@ def normalize_field_row(row: dict) -> dict:
                     _("Option labels may use at most %(max)s characters.") % {"max": NAME_MAX_LENGTH}
                 )
                 continue
+            folded = label.casefold()
+            if folded in seen_labels:
+                message = _("%(label)s: option labels must be unique.") % {"label": seen_labels[folded]}
+                if message not in errors.setdefault("options", []):
+                    errors["options"].append(message)
+                continue
+            seen_labels[folded] = label
             options.append(
                 {
                     "draft_id": _text(raw.get("draft_id")) or uuid.uuid4().hex,
@@ -397,8 +409,8 @@ def normalize_field_row(row: dict) -> dict:
                     "in_use": bool(raw.get("in_use")),
                 }
             )
-        if not options and "options" not in errors:
-            errors["options"] = [_("Add at least one option.")]
+        if len(options) < MIN_OPTIONS_PER_FIELD and "options" not in errors:
+            errors["options"] = [_("Add at least %(min)s options.") % {"min": MIN_OPTIONS_PER_FIELD}]
         elif len(options) > MAX_OPTIONS_PER_FIELD:
             errors.setdefault("options", []).append(
                 _("A field may have at most %(max)s options.") % {"max": MAX_OPTIONS_PER_FIELD}
@@ -476,8 +488,9 @@ def save_draft(intervention, rows: list[dict]) -> None:
     Reconcile the intervention's definitions with validated draft rows, in one transaction.
 
     Removed records are deleted, kept ones updated (a real type or number-type change rotates the
-    field's key, retiring its values), new ones created with new keys. Names are first moved to
-    placeholders so two fields can swap names under the unique constraint. A conflict with what
+    field's key, retiring its values), new ones created with new keys. Names, and option labels,
+    are first moved to placeholders so two fields (or options) can swap under the unique
+    constraints. A conflict with what
     another editor saved meanwhile, including a submitted record they deleted, surfaces as
     MetadataDraftError after a full rollback.
 
@@ -565,6 +578,11 @@ def _save_options(definition, row):
     for pk, option in existing.items():
         if pk not in submitted_ids:
             option.delete()
+    for draft in row["options"]:
+        if draft["id"] is not None:
+            option = _still_present(existing, draft["id"])
+            option.label = f"__placeholder__{uuid.uuid4().hex}"
+            option.save(update_fields=["label"])
     for order, draft in enumerate(row["options"]):
         if draft["id"] is not None:
             option = _still_present(existing, draft["id"])

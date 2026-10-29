@@ -14,7 +14,12 @@ from django.utils.timezone import localtime
 from website.forms.intervention_metadata import metadata_field_name as name_of
 from website.forms.widgets import MetadataEditorWidget
 from website.intervention_metadata import build_draft
-from website.models.intervention_metadata import MAX_FIELDS_PER_INTERVENTION
+from website.models.intervention_metadata import (
+    MAX_FIELDS_PER_INTERVENTION,
+    MAX_OPTIONS_PER_FIELD,
+    MIN_OPTIONS_PER_FIELD,
+    NAME_MAX_LENGTH,
+)
 from website.workflows.utils import WORKFLOW_PREFETCHES, recalculate_analysis
 from website.models import (
     Analysis,
@@ -171,12 +176,24 @@ class TestFieldPanelPost:
         assert "Choose a number type." in content
         assert payload_of(response) is None
 
-    def test_choice_fields_need_an_option(self, client_with_admin):
+    def test_choice_fields_need_two_options_with_distinct_labels(self, client_with_admin):
+        for options in ("[]", json.dumps([{"label": "Urban"}])):
+            response = client_with_admin.post(
+                draft_url("field"),
+                data={"name": "C", "field_type": MetadataFieldType.SINGLE_CHOICE, "options": options},
+            )
+            assert "Add at least 2 options." in response.content.decode()
+            assert payload_of(response) is None
+
         response = client_with_admin.post(
             draft_url("field"),
-            data={"name": "C", "field_type": MetadataFieldType.SINGLE_CHOICE, "options": "[]"},
+            data={
+                "name": "C",
+                "field_type": MetadataFieldType.SINGLE_CHOICE,
+                "options": json.dumps([{"label": "Urban"}, {"label": "urban "}]),
+            },
         )
-        assert "Add at least one option." in response.content.decode()
+        assert "Urban: option labels must be unique." in response.content.decode()
         assert payload_of(response) is None
 
     def test_full_length_non_ascii_names_and_labels_travel_in_the_post_body(self, client_with_admin):
@@ -209,7 +226,9 @@ class TestParentSave:
             "fields": [
                 text_row("Implementation Partner"),
                 choice_row("Treatment Approach", ["Community-based", "Outpatient"]),
-                choice_row("Target Age Group", ["0-5 months"], MetadataFieldType.SINGLE_CHOICE),
+                choice_row(
+                    "Target Age Group", ["0-5 months", "6-23 months"], MetadataFieldType.SINGLE_CHOICE
+                ),
                 number_row("Community Volunteers"),
             ]
         }
@@ -269,6 +288,20 @@ class TestParentSave:
         assert f"Maximum of {MAX_FIELDS_PER_INTERVENTION}" in content
         assert content.index("metadata-editor__add") < content.index(
             f"Maximum of {MAX_FIELDS_PER_INTERVENTION}"
+        )
+
+    def test_the_field_panel_takes_its_option_limits_from_the_model_constants(self, client_with_admin):
+        content = client_with_admin.get(draft_url("field")).content.decode()
+        # The script reads the limits from the form, the note states them, the add box caps the label.
+        assert f'data-min-options="{MIN_OPTIONS_PER_FIELD}"' in content
+        assert f'data-max-options="{MAX_OPTIONS_PER_FIELD}"' in content
+        assert (
+            f"{MIN_OPTIONS_PER_FIELD} to {MAX_OPTIONS_PER_FIELD} options, each with a different label"
+            in content
+        )
+        assert (
+            f'metadata-options__input" placeholder="Add option label" maxlength="{NAME_MAX_LENGTH}"'
+            in content
         )
 
     def test_the_field_list_shows_the_number_sub_type(self, client_with_admin):

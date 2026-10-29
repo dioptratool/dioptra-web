@@ -119,6 +119,19 @@ class TestDefinitions:
         InterventionMetadataFieldFactory(name="partner")
         assert InterventionMetadataField.objects.filter(name__iexact="partner").count() == 2
 
+    def test_option_labels_are_unique_within_a_field_regardless_of_case(self):
+        field = InterventionMetadataFieldFactory(field_type=MetadataFieldType.SINGLE_CHOICE)
+        InterventionMetadataOptionFactory(field=field, label="Urban")
+
+        with pytest.raises(IntegrityError):
+            with transaction.atomic():
+                InterventionMetadataOptionFactory(field=field, label="URBAN")
+
+        # The same label on another field is fine.
+        other = InterventionMetadataFieldFactory(field_type=MetadataFieldType.SINGLE_CHOICE)
+        InterventionMetadataOptionFactory(field=other, label="urban")
+        assert InterventionMetadataOption.objects.filter(label__iexact="urban").count() == 2
+
     def test_a_number_field_needs_a_number_type_and_nothing_else_may_have_one(self):
         with pytest.raises(IntegrityError):
             with transaction.atomic():
@@ -425,14 +438,14 @@ class TestDraftValidation:
     @pytest.mark.parametrize(
         "field_type", [MetadataFieldType.SINGLE_CHOICE, MetadataFieldType.MULTIPLE_CHOICE]
     )
-    def test_choice_fields_need_one_to_ten_options(self, field_type):
+    def test_choice_fields_need_two_to_ten_options(self, field_type):
         intervention = InterventionFactory()
-        for count in (0, 11):
+        for count in (0, 1, 11):
             with pytest.raises(ValidationError):
                 validate_draft(
                     intervention, {"fields": [choice_row("C", [f"o{n}" for n in range(count)], field_type)]}
                 )
-        for count in (1, 10):
+        for count in (2, 10):
             rows = validate_draft(
                 intervention, {"fields": [choice_row("C", [f"o{n}" for n in range(count)], field_type)]}
             )
@@ -443,9 +456,22 @@ class TestDraftValidation:
         validate_draft(intervention, {"fields": [text_row("n" * 100)]})
         with pytest.raises(ValidationError):
             validate_draft(intervention, {"fields": [text_row("n" * 101)]})
-        validate_draft(intervention, {"fields": [choice_row("C", ["l" * 100])]})
+        validate_draft(intervention, {"fields": [choice_row("C", ["l" * 100, "m"])]})
         with pytest.raises(ValidationError):
-            validate_draft(intervention, {"fields": [choice_row("C", ["l" * 101])]})
+            validate_draft(intervention, {"fields": [choice_row("C", ["l" * 101, "m"])]})
+
+    def test_option_labels_are_trimmed_and_unique_regardless_of_case(self):
+        intervention = InterventionFactory()
+        rows = validate_draft(intervention, {"fields": [choice_row("C", ["  Urban ", "Rural"])]})
+        assert [option["label"] for option in rows[0]["options"]] == ["Urban", "Rural"]
+        with pytest.raises(ValidationError) as excinfo:
+            validate_draft(intervention, {"fields": [choice_row("C", [" Urban", "urban ", "Rural"])]})
+        assert "Urban: option labels must be unique." in str(excinfo.value)
+        # The same label on another field is fine.
+        validate_draft(
+            intervention,
+            {"fields": [choice_row("C", ["Urban", "Rural"]), choice_row("D", ["urban", "Camp"])]},
+        )
 
     def test_names_are_trimmed_and_unique_regardless_of_case(self):
         intervention = InterventionFactory()
@@ -564,6 +590,16 @@ class TestDraftPersistence:
         assert InterventionMetadataField.objects.get(pk=d["text"].pk).name == "Age"
         assert InterventionMetadataField.objects.get(pk=d["single"].pk).name == "Partner"
 
+    def test_two_options_can_swap_labels(self, definitions):
+        d = definitions
+        draft = build_draft(d["intervention"])["fields"]
+        by_name = {f["name"]: f for f in draft}
+        first, second = by_name["Age"]["options"]
+        first["label"], second["label"] = "B", "A"
+        apply(d["intervention"], rows_for(draft))
+        assert InterventionMetadataOption.objects.get(pk=d["A"].pk).label == "B"
+        assert InterventionMetadataOption.objects.get(pk=d["B"].pk).label == "A"
+
     def test_type_change_rotates_the_key_and_retires_the_values(self, definitions):
         d = definitions
         instance = instance_with(d, {d["text"].storage_key: "Amoud"})
@@ -633,7 +669,9 @@ class TestDraftPersistence:
         draft = build_draft(d["intervention"])["fields"]
         by_name = {f["name"]: f for f in draft}
         by_name["Approach"]["options"] = [o for o in by_name["Approach"]["options"] if o["label"] != "X"]
+        # Age keeps two options (B and a new C) once A is gone, as a choice field must.
         by_name["Age"]["options"] = [o for o in by_name["Age"]["options"] if o["label"] != "A"]
+        by_name["Age"]["options"].append({"label": "C"})
         apply(d["intervention"], rows_for(draft))
         rows = resolve_metadata(InterventionInstance.objects.get(pk=instance.pk))
         assert [(r.name, r.display) for r in rows] == [("Approach", "Y")]
@@ -739,7 +777,9 @@ class TestDefinitionChangesTouchTheAnalysesShowingLess:
         draft = build_draft(d["intervention"])["fields"]
         by_name = {f["name"]: f for f in draft}
         by_name["Approach"]["options"] = [o for o in by_name["Approach"]["options"] if o["label"] != "X"]
+        # Age keeps two options (B and a new C) once A is gone, as a choice field must.
         by_name["Age"]["options"] = [o for o in by_name["Age"]["options"] if o["label"] != "A"]
+        by_name["Age"]["options"].append({"label": "C"})
 
         apply(d["intervention"], rows_for(draft))
 
