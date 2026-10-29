@@ -66,6 +66,12 @@ def _get_cost_breakdown_categories_and_cost_types(an_analysis: Analysis):
     )
 
 
+def _write_section_title(ws: worksheet, row: int, title: str) -> None:
+    """A bold, unfilled title in column A, as the other sections of the sheet are titled."""
+    ws[f"A{row}"] = title
+    ws[f"A{row}"].font = Font(bold=True)
+
+
 def _write_metadata_table(
     ws: worksheet,
     an_analysis: Analysis,
@@ -76,19 +82,20 @@ def _write_metadata_table(
     metadata_rows=(),
 ) -> int:
     """
-    Write the metadata table to the provided worksheet in the upper left corner.
+    Write the metadata table to the provided worksheet in the upper left corner, in two titled
+    sections: "Analysis Metadata" holds the analysis rows, the calculation parameters and the
+    trailing analysis rows; "Intervention Metadata" holds the intervention instance's resolved
+    metadata values (`metadata_rows`, see `website.intervention_metadata.resolve_metadata`) after
+    one empty row, and is left out entirely when there are no values.
 
     Mutate the incoming parameter_metadata dictionary to contain row information for each parameter to be used later
     in the spreadsheet workflow
 
-    `metadata_rows` are the intervention instance's resolved metadata values (see
-    `website.intervention_metadata.resolve_metadata`); they are written right after the calculation
-    parameters, so the parameter cell references above stay where they are, with one empty row on
-    each side to set them apart from the analysis rows. Without values the layout is unchanged.
-
-    Returns the last row with data on it to position other things on the page.
+    Returns the next free row to position other things on the page.
     """
     row = starting_row
+    _write_section_title(ws, row, "Analysis Metadata")
+    row += 1
 
     metadata = [
         ("Analysis Title", an_analysis.title),
@@ -105,7 +112,7 @@ def _write_metadata_table(
         ("Intervention Being Analyzed", intervention_instance.display_name()),
     ]
 
-    parameter_row = len(metadata) + 1
+    parameter_row = row + len(metadata)
     for parameter_key, value in intervention_instance.parameters.items():
         for each_output_metric in intervention_instance.intervention.output_metric_objects():
             if parameter_key not in each_output_metric.parameters:
@@ -119,9 +126,6 @@ def _write_metadata_table(
             # Store each metric's row for later use building formulas
             parameter_metadata[parameter_key] = parameter_row
             parameter_row += 1
-
-    # The rows written so far; the intervention metadata goes right after them.
-    leading_count = len(metadata)
 
     metadata += [
         ("Output count data source", an_analysis.output_count_source),
@@ -137,9 +141,7 @@ def _write_metadata_table(
         ("Analysis URL", analysis_url),
     ]
 
-    for index, (key, val) in enumerate(metadata):
-        if index == leading_count and metadata_rows:
-            row = _write_intervention_metadata_rows(ws, row + 1, metadata_rows, an_analysis) + 1
+    for key, val in metadata:
         _style_key_value_row(ws, row)
         ws[f"A{row}"] = key
         if key in [
@@ -162,6 +164,11 @@ def _write_metadata_table(
             ws[f"B{row}"].number_format = "#,##0.00"
 
         row += 1
+
+    if metadata_rows:
+        row += 1  # One empty row sets the sections apart.
+        _write_section_title(ws, row, "Intervention Metadata")
+        row = _write_intervention_metadata_rows(ws, row + 1, metadata_rows, an_analysis)
 
     return row
 

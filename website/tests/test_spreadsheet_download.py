@@ -101,12 +101,14 @@ class TestFullCostModelSpreadsheetEndpoint:
         assert resp.status_code == 200
         worksheet = load_workbook(filename=io.BytesIO(b"".join(resp.streaming_content))).worksheets[0]
         labels = [cell.value for cell in worksheet["A"]]
-        assert labels[:3] == ["Analysis Title", "Analysis Type", "Analysis Status"]
-        assert worksheet["B3"].value == "In Progress"
+        assert labels[:4] == ["Analysis Metadata", "Analysis Title", "Analysis Type", "Analysis Status"]
+        assert worksheet["B4"].value == "In Progress"
         start = labels.index("Partner")
-        # One empty row on each side of the intervention metadata block.
-        assert labels[start - 1] is None
-        assert labels[start : start + 5] == ["Partner", "Volunteers", "Age", None, "Output count data source"]
+        # The block follows the analysis rows: an empty row, its title, then the values.
+        assert labels.index("Analysis URL") == start - 3
+        assert labels[start - 2] is None
+        assert labels[start - 1] == "Intervention Metadata"
+        assert labels[start : start + 4] == ["Partner", "Volunteers", "Age", None]
         assert [worksheet[f"B{start + 1 + offset}"].value for offset in range(3)] == [
             "Save the Children",
             0,
