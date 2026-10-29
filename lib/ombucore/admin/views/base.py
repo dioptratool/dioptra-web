@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
+from django.db import transaction
 from django.db.models import CharField, ProtectedError
 from django.forms.models import model_to_dict
 from django.http import HttpResponseBadRequest, JsonResponse
@@ -293,18 +294,19 @@ class DeleteView(PanelUIMixin, DetailView):
         try:
             # Generate the success message before the object is deleted.
             success_message = self.get_success_message(obj_dict)
-            self.object.delete()
+            with transaction.atomic():
+                # Log before deleting: a deleted instance has no pk, so the entry could not
+                # reference it afterwards. The transaction drops the entry if the delete is refused.
+                self.model_admin.log(
+                    actor=self.request.user,
+                    action=self.log_action,
+                    obj=self.object,
+                    message=self.get_log_message(obj_dict),
+                )
+                self.object.delete()
             self.deleted = True
             if success_message:
                 messages.success(self.request, success_message)
-
-            # Log the event.
-            self.model_admin.log(
-                actor=self.request.user,
-                action=self.log_action,
-                obj=self.object,
-                message=self.get_log_message(obj_dict),
-            )
             self.panel_commands.append(commands.Resolve({"operation": "deleted"}))
         except ProtectedError:
             self.protected = True

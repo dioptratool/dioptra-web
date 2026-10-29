@@ -15,11 +15,11 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from app_log.logger import notify_of_log_entry
 from website.app_log.loggers import (
     log_analysis_archived,
     log_analysis_status_changed,
     log_analysis_unarchived,
+    notify_after_commit,
 )
 from website.models import Analysis, AnalysisStatus
 from website.permissions import is_dioptra_admin
@@ -113,7 +113,7 @@ def change_analysis_status(
         entry = log_analysis_status_changed(
             analysis, str(current.label), str(target.label), user=user, automatic=automatic
         )
-        _notify_after_commit(entry)
+        notify_after_commit(entry)
     return analysis
 
 
@@ -142,7 +142,7 @@ def set_analysis_archived(analysis_id: int, actor, archived: bool) -> Analysis:
             entry = log_analysis_archived(analysis, user=actor)
         else:
             entry = log_analysis_unarchived(analysis, user=actor)
-        _notify_after_commit(entry)
+        notify_after_commit(entry)
     return analysis
 
 
@@ -160,12 +160,3 @@ def _check_transition_permission(actor, analysis: Analysis, current: AnalysisSta
         raise AnalysisLifecyclePermissionDenied(
             _("Only an administrator can mark an analysis as Validated or change a Validated analysis.")
         )
-
-
-def _notify_after_commit(entry):
-    # A named function rather than functools.partial: Django reports a failing robust callback
-    # by its __qualname__, which a partial does not have.
-    def notify_subscribers():
-        notify_of_log_entry(entry)
-
-    transaction.on_commit(notify_subscribers, robust=True)

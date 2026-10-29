@@ -1,18 +1,23 @@
 import django_filters
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
+from django.db import transaction
+from django.db.models import ProtectedError, Q
+from django.forms.models import model_to_dict
 from django.urls import path
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from ombucore.admin import panel_commands as commands
 from ombucore.admin.actionlink import ActionLink
 from ombucore.admin.filterset import FilterSet
 from ombucore.admin.modeladmin.base import ModelAdmin
 from ombucore.admin.sites import site
 from ombucore.admin.views import ChangeView, DeleteView
 from website import models as website_models
+from website.app_log.loggers import log_analysis_deleted, notify_after_commit
 from website.forms.analysis import ReassignOwnerForm
 
 User = get_user_model()
@@ -76,6 +81,24 @@ class AnalysisDeleteView(DeleteView):
         if not request.user.has_perm("website.delete_analysis", analysis):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+    def delete(self):
+        # Logged like the other analysis lifecycle events: the entry is created with the deletion
+        # in one transaction and subscribers are notified once it has committed.
+        obj_dict = model_to_dict(self.object)
+        success_message = self.get_success_message(obj_dict)
+        try:
+            with transaction.atomic():
+                entry = log_analysis_deleted(self.object, user=self.request.user)
+                self.object.delete()
+                notify_after_commit(entry)
+        except ProtectedError:
+            self.protected = True
+            messages.error(self.request, self.get_protected_error_message(obj_dict))
+            return
+        self.deleted = True
+        messages.success(self.request, success_message)
+        self.panel_commands.append(commands.Resolve({"operation": "deleted"}))
 
 
 class AnalysisReassignView(ChangeView):

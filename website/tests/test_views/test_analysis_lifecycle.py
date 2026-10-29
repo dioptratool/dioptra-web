@@ -4,6 +4,7 @@ import datetime
 import json
 
 import pytest
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.contrib.contenttypes.models import ContentType
@@ -11,7 +12,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from app_log.models import AppLogEntry
+from app_log.models import AppLogEntry, Email, Subscription
 from website.models import Analysis, AnalysisStatus, Settings
 from website.tests.factories import AnalysisFactory, CategoryFactory, InterventionFactory, UserFactory
 from website.tests.utils import import_test_transaction_store
@@ -427,6 +428,10 @@ class TestStatusChangePanel:
         assert len(status_entries(row)) == 1
 
 
+def delete_url(analysis):
+    return reverse("ombucore.admin:website_analysis_delete", args=[analysis.pk])
+
+
 @pytest.mark.django_db
 class TestArchivePanels:
     def test_owner_archives_and_unarchives_a_validated_analysis(self, client):
@@ -509,6 +514,50 @@ class TestArchivePanels:
 
         client.force_login(admin)
         assert client.get(url).status_code == 200
+
+
+@pytest.mark.django_db
+class TestDeletePanel:
+    def test_confirmed_delete_removes_the_analysis_and_logs_it(self, admin, admin_client):
+        analysis = AnalysisFactory(title="Nutrition 2024")
+
+        response = admin_client.get(delete_url(analysis), {"confirmed": ""})
+
+        assert response.status_code == 200
+        assert '"operation": "deleted"' in response.content.decode()
+        assert not Analysis.objects.filter(pk=analysis.pk).exists()
+        [entry] = AppLogEntry.objects.filter(action="Deleted")
+        assert entry.actor_user == admin
+        assert entry.content_type == ContentType.objects.get_for_model(Analysis)
+        assert entry.object_id == analysis.pk
+        assert entry.message == "Deleted analysis Nutrition 2024."
+
+    def test_opening_the_confirmation_deletes_and_logs_nothing(self, admin_client):
+        analysis = AnalysisFactory()
+
+        response = admin_client.get(delete_url(analysis))
+
+        assert response.status_code == 200
+        assert Analysis.objects.filter(pk=analysis.pk).exists()
+        assert not AppLogEntry.objects.filter(action="Deleted").exists()
+
+    def test_subscribers_are_notified_after_commit(self, admin_client, django_capture_on_commit_callbacks):
+        apps.get_app_config("app_log").load_notifiers()
+        subscriber = UserFactory()
+        analysis = AnalysisFactory(title="Nutrition 2024")
+        Subscription.objects.create(
+            owner=subscriber, notifier="app_log.notifiers.SendEmailNotifier", action="Deleted"
+        )
+
+        with django_capture_on_commit_callbacks() as callbacks:
+            admin_client.get(delete_url(analysis), {"confirmed": ""})
+            assert Email.objects.count() == 0
+
+        assert len(callbacks) == 1
+        callbacks[0]()
+        [email] = Email.objects.all()
+        assert email.to_address == subscriber.email
+        assert "Nutrition 2024" in email.subject
 
 
 # ---------------------------------------------------------------------------------------------

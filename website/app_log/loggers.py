@@ -1,4 +1,6 @@
-from app_log.logger import create_entry, log
+from django.db import transaction
+
+from app_log.logger import create_entry, log, notify_of_log_entry
 
 # Actor recorded for work no user performed, matching the auth signal entries.
 SYSTEM_ACTOR = "System"
@@ -15,10 +17,6 @@ def log_analysis_updated(analysis, user=None):
         analysis,
         f"Updated properties of analysis {analysis.title}.",
     )
-
-
-def log_analysis_deleted(analysis, user=None):
-    log(user, "Deleted", analysis, f"Deleted analysis {analysis.title}.")
 
 
 def log_analysis_transactions_imported(analysis, transaction_count, cost_item_count, user=None):
@@ -379,8 +377,19 @@ def log_analysis_cost_items_corrected(analysis, message, user=None):
 
 
 # Lifecycle events. These create the entry only, so the caller's transaction decides whether it
-# stays; the caller notifies subscribers after commit with `app_log.logger.notify_of_log_entry`.
+# stays; the caller notifies subscribers after commit with `notify_after_commit`.
 # The broad `log()` wrapper is not used: it swallows errors and notifies synchronously.
+
+
+def notify_after_commit(entry):
+    """Notify the subscribers of ``entry`` once the surrounding transaction has committed."""
+
+    # A named function rather than functools.partial: Django reports a failing robust callback
+    # by its __qualname__, which a partial does not have.
+    def notify_subscribers():
+        notify_of_log_entry(entry)
+
+    transaction.on_commit(notify_subscribers, robust=True)
 
 
 def log_analysis_status_changed(analysis, old_status_label, new_status_label, user=None, automatic=False):
@@ -416,4 +425,13 @@ def log_analysis_unarchived(analysis, user=None):
         action="Unarchived",
         obj=analysis,
         message=f"Unarchived analysis {analysis.title}.",
+    )
+
+
+def log_analysis_deleted(analysis, user=None):
+    return create_entry(
+        actor=user or SYSTEM_ACTOR,
+        action="Deleted",
+        obj=analysis,
+        message=f"Deleted analysis {analysis.title}.",
     )
