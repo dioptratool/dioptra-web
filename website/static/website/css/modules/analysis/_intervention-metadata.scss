@@ -59,6 +59,11 @@
   }
 }
 
+// Keep the shared .help-block display rule from exposing an empty error badge.
+.metadata-options__error[hidden] {
+  display: none;
+}
+
 
 // The metadata section of the intervention instance panel.
 .intervention-metadata-section {
