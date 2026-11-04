@@ -106,7 +106,7 @@ pilkit==3.0
     # via
     #   -r requirements/base.txt
     #   django-imagekit
-pillow==11.3.0
+pillow==13.0.0
     # via
     #   -r requirements/base.txt
     #   django-ckeditor-5
