@@ -106,8 +106,9 @@ pbr==6.1.1
     # via stevedore
 pilkit==3.0
     # via django-imagekit
-pillow==11.3.0
+pillow==13.0.0
     # via
+    #   -r requirements/base.in
     #   django-ckeditor-5
     #   pilkit
 pip==26.2.2

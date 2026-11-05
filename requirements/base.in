@@ -30,6 +30,9 @@ xlrd==2.0.2
 # currency
 Babel==2.17.0
 
-# CVE-2026-111943
+# Pinned CVE-2026-111943
 certifi==2026.10.19
 pip=26.2.2
+
+# Pinned for CVE-2026-112900
+pillow>=13.0.0
