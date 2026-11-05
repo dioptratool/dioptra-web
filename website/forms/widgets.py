@@ -109,31 +109,33 @@ class ArrayCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 class SortableSelectMultipleSubcomponentLabelsWidget(forms.Select):
     template_name: str = "widgets/select-labels.html"
     instance_pk: int | None = None
+    # Per label, its position in the saved label list (None when it is not a saved label).
+    # Set by the form; the editor posts the list back so percentages follow their component
+    # through reorders and removals. Rendered as the widget's own ``subcomponent_sources`` input.
+    sources: list | None = None
 
     def get_context(self, name: str, value: str, attrs: dict | None = None) -> dict:
         context = super().get_context(name, value, attrs)
-        json_value = json.loads(value) if isinstance(value, str) else value
-        json_value = json_value or []
-        choices = []
-        for idx, label in enumerate(json_value):
-            choices.append(
-                {
-                    "id": self.instance_pk,
-                    "label": label,
-                    "label_idx": idx,
-                    "change_url": reverse(
-                        "subcomponent-label-edit-label",
-                        kwargs={
-                            "label": label,
-                            "label_idx": idx,
-                        },
-                    ),
-                }
-            )
+        try:
+            json_value = json.loads(value) if isinstance(value, str) else value
+        except ValueError:
+            json_value = []
+        json_value = json_value if isinstance(json_value, list) else []
+        sources = self.sources if self.sources is not None and len(self.sources) == len(json_value) else None
+        if sources is None:
+            sources = [None] * len(json_value)
+        choices = [
+            {"id": self.instance_pk, "label": label, "source": source}
+            for label, source in zip(json_value, sources)
+        ]
 
         context[name] = [c["label"] for c in choices]
+        context["subcomponent_sources"] = sources
         context["sortable"] = True
         context["choices"] = choices
+        # The rename child panel; the editor appends ?label=<encoded label>.
+        context["edit_url"] = reverse("subcomponent-label-edit-label")
+        context["max_label_length"] = 255
         return context
 
 

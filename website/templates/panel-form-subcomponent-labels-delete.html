@@ -7,8 +7,12 @@
 
 {% block panel-body %}
   <p class="delete-confirmation lead">
-      Are you sure you want to delete the sub-component analysis? All
-      work done in the analysis will be cleared.</p>
+      Delete the sub-component analysis for {{ view.intervention_instance.display_name }}?</p>
+  <ul class="delete-confirmation">
+      <li>This intervention's sub-component percentages and skipped rows are deleted.</li>
+      <li>Cost data, categories and intervention allocations are kept.</li>
+      <li>Adding sub-components to this intervention again starts from blank.</li>
+  </ul>
 {% endblock panel-body %}
 
 {% block panel-foot %}

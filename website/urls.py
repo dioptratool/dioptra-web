@@ -14,7 +14,6 @@ from website.admin.cost_type_category_mapping import (
 )
 from website.admin.country import UploadCountriesPanel
 from website.admin.insight_comparison_data import UploadInsightComparisonDataPanel
-from website.admin.subcomponent_analysis import SubcomponentsDeleteView
 from website.help import views as help_views
 from website.users.views import AdminLoginView, CustomPasswordResetFromKeyView
 from website.views import intervention
@@ -116,7 +115,7 @@ urlpatterns = [
         name="analysis-define-create",
     ),
     path(
-        "subcomponents/label/change/<int:label_idx>/<path:label>",
+        "subcomponents/label/change/",
         EditSubcomponentLabel.as_view(),
         name="subcomponent-label-edit-label",
     ),
@@ -296,11 +295,6 @@ urlpatterns = [
         "analysis/<int:pk>/unarchive/",
         AnalysisUnarchiveView.as_view(),
         name="analysis-unarchive",
-    ),
-    path(
-        "panels/analysis/<int:pk>/subcomponent_cost_analysis/<int:subcomponent_pk>/delete/",
-        SubcomponentsDeleteView.as_view(),
-        name="subcomponent-cost-analysis-delete",
     ),
     path(
         "grant/<int:pk>/category-help/",

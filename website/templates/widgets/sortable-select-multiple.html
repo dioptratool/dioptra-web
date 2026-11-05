@@ -4,7 +4,7 @@
     <ul class="panels-relation-widget--results panels--reorder--results" id="{{ list_id }}">
         {% for choice in choices %}
             <li class="panels-relation-widget--result" data-id="{{ choice.id }}" data-ctype-id="undefined"
-                data-obj-info="{{ choice|jsonattr }}" {% if widget.attrs.prevent_add_remove %} data-prevent-add-remove="true"{% endif %}>
+                data-obj-info="{{ choice|jsonattr }}">
         {% endfor %}
     </ul>
 </div>

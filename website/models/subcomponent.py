@@ -34,6 +34,11 @@ class SubcomponentCostAnalysis(models.Model):
         related_name="+",
     )
 
+    # Incremented whenever labels are added, removed or reordered (not renamed). Forms that
+    # write percentages, which are stored by label position, carry it so a form opened
+    # before such a change is rejected instead of writing onto the wrong components.
+    revision = models.PositiveIntegerField(default=0, editable=False)
+
     class Meta:
         verbose_name = _("Subcomponent Cost Analysis")
         verbose_name_plural = _("Subcomponent Cost Analyses")

@@ -171,6 +171,10 @@ class Command(BaseCommand):
 
             for i, analysis_data in enumerate(analysis_info.iterator()):
                 analysis_start_time = time.time()  # Start timing for this analysis
+                # Re-authenticate per analysis: in multi-hour runs the session was lost part-way
+                # through, after which every page redirected to the login screen and the whole
+                # tail of the run reported failures that had nothing to do with the pages.
+                client.force_login(user)
 
                 a_id, a_title, a_created = analysis_data
                 if i % 20 == 0:

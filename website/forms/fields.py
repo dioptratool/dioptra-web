@@ -60,14 +60,34 @@ class ThousandsSeparatedDecimalField(DecimalField):
 
 
 class SubcomponentLabelField(forms.JSONField):
+    """
+    A list of sub-component labels, shared by the analysis label editor and the
+    intervention-type defaults editor. Labels are trimmed, must not be blank, must be unique
+    within the list ignoring case, and are limited to 255 characters and 8 labels.
+    """
+
     widget = SortableSelectMultipleSubcomponentLabelsWidget
 
-    def clean(self, value: list) -> dict:
+    MAX_LABELS = 8
+    MAX_LENGTH = 255
+
+    def clean(self, value: list) -> list[str]:
         value = super().clean(value)
+        if value is None:
+            return []
         SubcomponentLabelsType.validate(value)
-        if len(value) > 8:
+        labels = [label.strip() for label in value]
+        if any(not label for label in labels):
+            raise ValidationError(_("Labels cannot be blank."), code="blank")
+        if any(len(label) > self.MAX_LENGTH for label in labels):
+            raise ValidationError(
+                _("Labels can be at most %(max)d characters.") % {"max": self.MAX_LENGTH}, code="max_length"
+            )
+        if len({label.casefold() for label in labels}) != len(labels):
+            raise ValidationError(_("Labels must be unique (ignoring case)."), code="unique")
+        if len(labels) > self.MAX_LABELS:
             raise ValidationError(_("No more than 8 sublabels are allowed."), code="invalid")
-        return value
+        return labels
 
 
 class InterventionInstanceChoiceField(ModelChoiceField):

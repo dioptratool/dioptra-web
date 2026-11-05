@@ -10,6 +10,15 @@
 
 {% block analysis_content %}
   <h2 class="analysis__other_costs__subtitle">{{ step.subtitle }}s</h2>
+  {% if needs_split_ids %}
+    <div class="analysis__message analysis__message--error analysis__message--table">
+      {% blocktranslate count counter=needs_split_ids|length trimmed %}
+        {{ counter }} item needs its sub-component percentages entered or updated before this step is complete. The intervention's sub-components were added or changed after the item was saved. Edit the item to complete it.
+      {% plural %}
+        {{ counter }} items need their sub-component percentages entered or updated before this step is complete. The intervention's sub-components were added or changed after the items were saved. Edit each item to complete it.
+      {% endblocktranslate %}
+    </div>
+  {% endif %}
 
   <div class="analysis-table__wrapper">
     <table class="analysis-table__table analysis-table__table--fix-data">
@@ -44,11 +53,16 @@
       {% else %}
         {% for cost_line_item in cost_line_items %}
           <tbody class="analysis-table__tbody">
-          <tr>
+          <tr{% if cost_line_item.id in needs_split_ids %} class="error" data-needs-subcomponent-split="{{ cost_line_item.id }}"{% endif %}>
             {% if show_cost_type_column %}
             <td>{{ cost_line_item.config.cost_type.name }}</td>
             {% endif %}
-            <td>{{ cost_line_item.budget_line_description }}</td>
+            <td>
+              {{ cost_line_item.budget_line_description }}
+              {% if cost_line_item.id in needs_split_ids %}
+                <div class="analysis-table__cost-items analysis-table__cost-items--error">{% translate 'Sub-component percentages needed' %}</div>
+              {% endif %}
+            </td>
             {% for field_name, _ in additional_fields.items %}
               <td>{{ cost_line_item|object_getattr:field_name|floatformat:2 }}</td>
             {% endfor %}

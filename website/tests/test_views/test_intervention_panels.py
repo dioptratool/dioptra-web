@@ -15,6 +15,7 @@ from website.tests.factories import (
     CostLineItemInterventionAllocationFactory,
     InterventionFactory,
     InterventionInstanceFactory,
+    SubcomponentCostAllocationFactory,
     SubcomponentCostAnalysisFactory,
     UserFactory,
 )
@@ -497,16 +498,6 @@ class TestInterventionsStepPage:
         assert "Add Sub-Component Analysis" in content
         assert "Manage Interventions" in content
 
-    def test_page_hides_subcomponent_actions_when_locked(
-        self, client_with_admin, analysis_workflow_with_loaddata_complete
-    ):
-        analysis = analysis_workflow_with_loaddata_complete.analysis
-
-        response = client_with_admin.get(reverse("analysis-interventions", kwargs={"pk": analysis.pk}))
-
-        assert response.status_code == 200
-        assert "Add Sub-Component Analysis" not in response.content.decode()
-
     def test_page_renders_with_no_interventions(self, client_with_admin, defaults):
         analysis = AnalysisFactory()
 
@@ -571,7 +562,7 @@ class TestSubcomponentLabelsPanels:
 
         assert response.status_code == 404
 
-    def test_locked_labels_panel_rejects_count_change(
+    def test_labels_panel_accepts_a_count_change_after_data_load(
         self, client_with_admin, analysis_workflow_with_loaddata_complete
     ):
         analysis = analysis_workflow_with_loaddata_complete.analysis
@@ -583,13 +574,42 @@ class TestSubcomponentLabelsPanels:
 
         response = client_with_admin.post(
             self._labels_url(instance),
-            {"subcomponent_labels": '["Setup", "Delivery", "Admin"]'},
+            {"subcomponent_labels": '["Setup", "Delivery", "Admin"]', "subcomponent_sources": "[0, 1, null]"},
         )
 
         assert response.status_code == 200
-        assert "Sub-component labels cannot be added or removed" in response.content.decode()
         instance.refresh_from_db()
-        assert instance.subcomponent_cost_analysis.subcomponent_labels == ["Setup", "Delivery"]
+        assert instance.subcomponent_cost_analysis.subcomponent_labels == ["Setup", "Delivery", "Admin"]
+
+    def test_labels_panel_reorders_percentages_with_their_labels_after_data_load(
+        self, client_with_admin, analysis_workflow_with_loaddata_complete
+    ):
+        from decimal import Decimal
+
+        analysis = analysis_workflow_with_loaddata_complete.analysis
+        instance = analysis.interventioninstance_set.first()
+        subcomponent_analysis = SubcomponentCostAnalysisFactory(
+            intervention_instance=instance,
+            subcomponent_labels=["Setup", "Delivery"],
+        )
+        config = CostLineItemConfigFactory(cost_line_item=CostLineItemFactory(analysis=analysis))
+        CostLineItemInterventionAllocationFactory(
+            cli_config=config, intervention_instance=instance, allocation=Decimal("100")
+        )
+        row = SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis, cli_config=config, allocations={"0": "70", "1": "30"}
+        )
+
+        response = client_with_admin.post(
+            self._labels_url(instance),
+            {"subcomponent_labels": '["Delivery", "Setup"]', "subcomponent_sources": "[1, 0]"},
+        )
+
+        assert response.status_code == 200
+        subcomponent_analysis.refresh_from_db()
+        row.refresh_from_db()
+        assert subcomponent_analysis.subcomponent_labels == ["Delivery", "Setup"]
+        assert row.allocations == {"0": "30", "1": "70"}
 
     def test_delete_panel_removes_subcomponent_cost_analysis(self, client_with_admin, defaults):
         instance = InterventionInstanceFactory()
@@ -603,7 +623,7 @@ class TestSubcomponentLabelsPanels:
         assert response.status_code == 200
         assert not SubcomponentCostAnalysis.objects.filter(intervention_instance=instance).exists()
 
-    def test_delete_panel_denied_when_locked(
+    def test_delete_panel_allowed_after_data_load(
         self, client_with_admin, analysis_workflow_with_loaddata_complete
     ):
         analysis = analysis_workflow_with_loaddata_complete.analysis
@@ -615,5 +635,5 @@ class TestSubcomponentLabelsPanels:
 
         response = client_with_admin.post(self._delete_url(instance), {})
 
-        assert response.status_code == 403
-        assert SubcomponentCostAnalysis.objects.filter(intervention_instance=instance).exists()
+        assert response.status_code == 200
+        assert not SubcomponentCostAnalysis.objects.filter(intervention_instance=instance).exists()

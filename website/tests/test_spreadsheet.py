@@ -642,6 +642,14 @@ class TestAnalysisSpreadsheet:
             allocations={},
             skipped=True,
         )
+        # An in-kind item allocated to this intervention needs a complete split too (86.6);
+        # without one the In-Kind Contributions step is incomplete and the export is blocked.
+        in_kind_item = spreadsheet_analysis.cost_line_items.get(budget_line_description="In Kind Line Item")
+        SubcomponentCostAllocationFactory(
+            subcomponent_analysis=subcomponent_analysis,
+            cli_config=in_kind_item.config,
+            allocations={"0": "50", "1": "50"},
+        )
         rf.user = UserFactory()
 
         response = full_cost_model_spreadsheet(rf, spreadsheet_analysis.pk)

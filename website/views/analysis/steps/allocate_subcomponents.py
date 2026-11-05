@@ -16,6 +16,7 @@ from website.forms.analysis import AllocateSubcomponentsBulkForm
 from website.models import Analysis, CostLineItem, CostLineItemConfig, InterventionInstance
 from website.models.cost_type import ProgramCost
 from website.models.subcomponent import SubcomponentCostAllocation
+from website.subcomponent_labels import STALE_MESSAGE, is_stale
 from website.views.mixins import (
     AnalysisPermissionRequiredMixin,
     AnalysisStepDetailMixin,
@@ -169,6 +170,9 @@ class AllocateSubcomponentsInterventionGrant(
         filterset_class = self.get_filterset_class()
         self.filterset = self.get_filterset(filterset_class)
         self.object_list = self.modify_queryset(self.filterset.qs)
+        if self._submission_is_stale(request):
+            # Nothing is saved: the posted positions describe a label list that no longer exists.
+            return self.render_to_response(self.get_context_data(stale_message=STALE_MESSAGE))
         data = self._get_subcomponent_allocations_from_post(request)
         data, errors = self._validate_subcomponent_data(data)
         if errors:
@@ -188,6 +192,15 @@ class AllocateSubcomponentsInterventionGrant(
             self.workflow.calculate_if_possible(request.user)
         query = f"?{request.GET.urlencode()}" if request.GET else ""
         return redirect(self.request.path + query)
+
+    def _submission_is_stale(self, request) -> bool:
+        if "subcomponent_revision" not in request.POST and "subcomponent_analysis_id" not in request.POST:
+            return False
+        return is_stale(
+            self.step.subcomponent_analysis,
+            request.POST.get("subcomponent_analysis_id"),
+            request.POST.get("subcomponent_revision"),
+        )
 
     def _get_subcomponent_allocations_from_post(self, request):
         data = {}
@@ -330,6 +343,7 @@ class AllocateSubcomponentsBulk(
         kwargs = super().get_form_kwargs()
         kwargs["initial"]["config_ids"] = self.config_ids
         kwargs["subcomponent_labels"] = self.subcomponent_analysis.subcomponent_labels or []
+        kwargs["expected_revision"] = self.subcomponent_analysis.revision
         return kwargs
 
     def form_valid(self, form):

@@ -9,23 +9,22 @@
 {% endif %}
 
 <div id="subcomponent-label-type-fields">
-    {% if not widget.attrs.prevent_add_remove %}
-
-        <p class="help_text">The following are suggested labels for the sub-components to be analyzed. You may edit,
-            re-order, or add to them.</p>
-    {% else %}
-        <p class="help_text"> The following are confirmed labels for the sub-components to be analyzed.
-            You may edit or re-order them. To change label quantity, the sub-component analysis must be reset.</p>
-    {% endif %}
-    <div id="subcomponent-labels-container">
+    <p class="help_text">These are the labels for the sub-components to be analyzed. You may edit, re-order,
+        add to, or remove them. Sub-components all use the same output count; if different output counts are
+        needed, use additional interventions instead.</p>
+    <p class="help_text">After cost data is loaded, a new sub-component needs its percentages entered on the
+        Allocate Sub-Component Costs step, and removing one may leave cost items incomplete until their
+        percentages are updated. Existing percentages stay with their sub-components.</p>
+    <div id="subcomponent-labels-container" data-edit-url="{{ edit_url }}">
         <input type="hidden" name="subcomponent_labels" id="subcomponent_labels" value="{{ subcomponent_labels|dict_to_json }}" class="panels--store">
         <input type="hidden" name="subcomponent_labels_old" id="subcomponent_labels_old" value="{{ subcomponent_labels|dict_to_json }}">
+        <input type="hidden" name="subcomponent_sources" id="subcomponent_sources" value="{{ subcomponent_sources|dict_to_json }}">
 
         {% include "widgets/sortable-select-multiple.html" with choices=choices list_id="subcomponent-labels-added" autosort="false" %}
 
         <div id="add-label-widget" hidden="hidden">
             <div style="margin-bottom: 0.25rem;">
-                <input type="text" id="add-label-input" class="form-control notrackchange" placeholder="Add new label">
+                <input type="text" id="add-label-input" class="form-control notrackchange" placeholder="Add new label" maxlength="{{ max_label_length }}">
             </div>
             <div>
                 <button type="button" id="add-label-btn" class="btn btn-sm btn-primary" disabled>Add</button>
@@ -33,9 +32,7 @@
             </div>
         </div>
 
-        {% if not widget.attrs.prevent_add_remove %}
-            <a href="#" id="add-label-link" class="btn btn-sm btn-primary">Add a label</a>
+        <a href="#" id="add-label-link" class="btn btn-sm btn-primary">Add a label</a>
         <p class="help_text">Maximum of 8</p>
-        {% endif %}
     </div>
 </div>

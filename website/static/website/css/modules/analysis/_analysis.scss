@@ -162,6 +162,15 @@
   color: $color-lapis;
 }
 
+.analysis__message--error {
+  border-radius: 6px;
+  max-width: 100%;
+  padding: 1.2rem 1.6rem;
+  background-color: rgba(253, 232, 232, 1);
+  color: $color-lichen;
+  @include font-size(14, 1.1429);
+}
+
 .analysis__message--table {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;

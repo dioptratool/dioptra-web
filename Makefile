@@ -246,13 +246,19 @@ validate-release:
 	@cd validation_scripts/ && ./validate_new_version.sh
 
 ## validate-release-range: env-OLD env-NEW Run the whole release validation between two git refs, no manual branch switching
-##   Usage: make validate-release-range OLD=<ref> NEW=<ref> [BACKUPS=/path/to/backups]
+##   Usage: make validate-release-range OLD=<ref> NEW=<ref> [BACKUPS=/path/to/backups] [JOBS=4]
 ##   Snapshots every backup on OLD (preflight), validates them all on NEW, restores your
 ##   checkout, and writes per-backup reports plus a summary to validation_scripts/results/.
-##   Requires a clean working tree. BACKUPS defaults to validation_scripts/backups.
+##   Each backup is restored into its own database (validation_<label>) and backups run JOBS
+##   at a time. Requires a clean working tree. BACKUPS defaults to validation_scripts/backups.
 .PHONY: validate-release-range
 validate-release-range: env-OLD env-NEW
-	@./validation_scripts/validate_release_range.sh "$(OLD)" "$(NEW)" "$(BACKUPS)"
+	@JOBS="$(or $(JOBS),4)" ./validation_scripts/validate_release_range.sh "$(OLD)" "$(NEW)" "$(BACKUPS)"
+
+## validate-release-cleanup: : Drop the validation_<label> databases left behind by the release validation
+.PHONY: validate-release-cleanup
+validate-release-cleanup:
+	@bash -c 'source validation_scripts/lib.sh && drop_validation_databases'
 
 ## fmt-check-hadolint: : Run hadolint on Dockerfiles
 # We're ignoring these rules:

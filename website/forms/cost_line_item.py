@@ -18,6 +18,7 @@ from website.models import (
 )
 from website.models.cost_line_item import CostLineItemInterventionAllocation
 from website.models.cost_type import Support
+from website.subcomponent_labels import STALE_MESSAGE, is_stale
 
 COMMON_COST_LINE_ITEM_FIELDS = [
     "analysis",
@@ -265,6 +266,11 @@ class InKindCostLineItemForm(AddCostLineItemForm):
             subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
             allocation_row = existing_allocations.get(subcomponent_analysis.id)
             allocations = allocation_row.allocations if allocation_row else {}
+            # Percentages are stored by label position; the revision lets a form opened
+            # before the labels were restructured be rejected (see SubcomponentCostAnalysis).
+            self.fields[self.subcomponent_revision_field_name(subcomponent_analysis.id)] = forms.CharField(
+                required=False, widget=forms.HiddenInput(), initial=subcomponent_analysis.revision
+            )
             for idx, label in enumerate(subcomponent_analysis.subcomponent_labels or []):
                 self.fields[self.subcomponent_field_name(subcomponent_analysis.id, idx)] = (
                     PositiveFixedDecimalField(
@@ -280,6 +286,10 @@ class InKindCostLineItemForm(AddCostLineItemForm):
     @staticmethod
     def subcomponent_field_name(subcomponent_analysis_id, idx):
         return f"intervention_subcomponent_allocation_{subcomponent_analysis_id}_{idx}"
+
+    @staticmethod
+    def subcomponent_revision_field_name(subcomponent_analysis_id):
+        return f"subcomponent_revision_{subcomponent_analysis_id}"
 
     @staticmethod
     def is_intervention_allocation_field(field_name):
@@ -360,11 +370,18 @@ class InKindCostLineItemForm(AddCostLineItemForm):
             if not hasattr(intervention_instance, "subcomponent_cost_analysis"):
                 continue
 
+            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
+            revision_field = self.subcomponent_revision_field_name(subcomponent_analysis.id)
+            if revision_field in self.data and is_stale(
+                subcomponent_analysis, subcomponent_analysis.id, self.data.get(revision_field)
+            ):
+                self.add_error(None, STALE_MESSAGE)
+                continue
+
             allocation = cleaned_data.get(f"intervention_allocation_{intervention_instance.id}")
             if allocation in (None, 0):
                 continue
 
-            subcomponent_analysis = intervention_instance.subcomponent_cost_analysis
             labels = subcomponent_analysis.subcomponent_labels or []
             if not labels:
                 continue

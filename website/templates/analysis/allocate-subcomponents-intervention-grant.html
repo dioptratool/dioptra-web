@@ -22,6 +22,9 @@
             <div class="analysis-table__summary">{% blocktranslate %}{{ cost_line_items_count }} Cost Items to allocate{% endblocktranslate %}</div>
         </div>
 
+        {% if stale_message %}
+            <div class="analysis__message analysis__message--error analysis__message--table">{{ stale_message }}</div>
+        {% endif %}
         <div class="analysis-table__categories">
             {% for cost_type_category_grant, cost_line_items in category_items %}
                 {% with category_complete=categories_complete|dict_get:cost_type_category_grant.id %}
@@ -31,6 +34,8 @@
                 >
                     <form action="{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" method="POST" novalidate data-show-loading-on-submit class="allocate-bulk-form warn-unsaved-changes">
                         {% csrf_token %}
+                        <input type="hidden" name="subcomponent_analysis_id" value="{{ step.subcomponent_analysis.id }}">
+                        <input type="hidden" name="subcomponent_revision" value="{{ step.subcomponent_analysis.revision }}">
 
                         <div class="analysis-table__category-header">
                             <h3 class="analysis-table__category-name">{{ cost_type_category_grant.cost_type_category.category.name }}{% help_category cost_type_category_grant.cost_type_category.category.name 'allocate_costs' %}</h3>
@@ -104,7 +109,7 @@
                 form.querySelectorAll('input.analysis-table__subcomponent-allocate-input[data-subcomponent-idx="' + subcomponentIdx + '"]').forEach((input) => {
                     if (input.disabled) return;
                     input.value = sourceInput.value;
-                    updateSubcomponentTotal(input.closest('tr'));
+                    updateSubcomponentTotal(input.closest('tr'), true);
                 });
             });
 
@@ -114,7 +119,7 @@
             function handleAllocationInput(e) {
                 const input = e.target;
                 if (input.matches('input.analysis-table__subcomponent-allocate-input')) {
-                    updateSubcomponentTotal(input.closest('tr'));
+                    updateSubcomponentTotal(input.closest('tr'), true);
                 } else if (input.matches('input[name^="cost_line_item_subcomponent_allocation_"][type="checkbox"]')) {
                     const row = input.closest('tr');
                     row?.querySelectorAll('input.analysis-table__subcomponent-allocate-input').forEach((allocationInput) => {
@@ -124,7 +129,9 @@
                 }
             }
 
-            function updateSubcomponentTotal(row) {
+            // fillBlanks: only a user edit may turn a blank into an explicit 0. On page load a
+            // blank stays blank, so a newly added component is not silently allocated 0%.
+            function updateSubcomponentTotal(row, fillBlanks = false) {
                 if (!row) return;
 
                 const totalEl = row.querySelector('.analysis-table__subcomponent-total');
@@ -148,7 +155,7 @@
                 row.classList.toggle('error', !valid);
                 setErrorStatus(row.closest('form'));
 
-                if (total == 100) {
+                if (fillBlanks && total == 100) {
                     row.querySelectorAll('input.analysis-table__subcomponent-allocate-input').forEach(function (input) {
                         if (!input.value.length) input.value = 0;
                     });

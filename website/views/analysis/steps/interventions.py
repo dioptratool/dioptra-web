@@ -1,10 +1,11 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _l
 from django.views.generic import TemplateView
 
+from app_log.logger import log
 from ombucore.admin import panel_commands as commands
 from ombucore.admin.views import FormView as PanelsFormView
 from website.currency import currency_code
@@ -16,7 +17,6 @@ from website.forms.analysis import (
 from website.models import Analysis, InterventionInstance
 from website.models.utils import intervention_parameters_display
 from website.views.mixins import AnalysisObjectMixin, AnalysisPermissionRequiredMixin, AnalysisStepMixin
-from website.workflows import AnalysisWorkflow
 from website.workflows.utils import recalculate_analysis
 
 
@@ -29,8 +29,6 @@ class Interventions(AnalysisPermissionRequiredMixin, AnalysisStepMixin, Analysis
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        labels_locked = self.workflow.get_step("load-data").is_complete
-        context["labels_locked"] = labels_locked
         context["currency"] = currency_code(analysis=self.analysis)
         context["manage_url"] = (
             reverse("ombucore.admin:website_interventioninstance_changelist")
@@ -72,8 +70,6 @@ class InterventionInstancePanelMixin:
         self.intervention_instance = get_object_or_404(
             InterventionInstance, pk=kwargs["instance_pk"], analysis=self.analysis
         )
-        self.workflow = AnalysisWorkflow(self.analysis)
-        self.labels_locked = self.workflow.get_step("load-data").is_complete
 
     def has_permission(self):
         perms = self.get_permission_required()
@@ -90,7 +86,6 @@ class InterventionSubcomponentLabels(InterventionInstancePanelMixin, PermissionR
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["intervention_instance"] = self.intervention_instance
-        kwargs["locked"] = self.labels_locked
         return kwargs
 
     def form_valid(self, form):
@@ -105,23 +100,31 @@ class InterventionSubcomponentLabels(InterventionInstancePanelMixin, PermissionR
 class InterventionSubcomponentLabelsDelete(
     InterventionInstancePanelMixin, PermissionRequiredMixin, PanelsFormView
 ):
+    """
+    The one way to remove an intervention's sub-component analysis, before or after data
+    load. Deletes that analysis with its percentages and skip flags; cost data, categories
+    and intervention allocations are untouched.
+    """
+
     form_class = SubcomponentLabelsDeleteConfirmForm
     supertitle = _l("Delete")
     title = _l("Sub-Component Analysis")
     permission_required = "website.change_analysis"
     template_name = "panel-form-subcomponent-labels-delete.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        # Anonymous users fall through to the login redirect.
-        if request.user.is_authenticated and self.labels_locked:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
     def form_valid(self, form):
         if hasattr(self.intervention_instance, "subcomponent_cost_analysis"):
             subcomponent_analysis = self.intervention_instance.subcomponent_cost_analysis
-            subcomponent_analysis.reset_cost_line_items()
-            subcomponent_analysis.delete()
+            with transaction.atomic():
+                # Log while the object still exists; app_log cannot reference a deleted row.
+                log(
+                    actor=self.request.user,
+                    action="Deleted",
+                    obj=subcomponent_analysis,
+                    message=f"Deleted the sub-component analysis for {self.intervention_instance.display_name()}.",
+                )
+                subcomponent_analysis.reset_cost_line_items()
+                subcomponent_analysis.delete()
             recalculate_analysis(self.analysis, self.request.user)
         return super().form_valid(form)
 
@@ -130,6 +133,12 @@ class InterventionSubcomponentLabelsDelete(
 
 
 class EditSubcomponentLabel(PermissionRequiredMixin, PanelsFormView):
+    """
+    Child panel that renames one label in the editor. The current label arrives in the
+    query string (``?label=``) so any text, including ``#``, ``?`` and ``/``, survives; the
+    editor keeps track of which component is being renamed.
+    """
+
     form_class = SubcomponentLabelEditForm
     supertitle = _l("Edit")
     title = _l("Sub-component Label")
@@ -137,18 +146,11 @@ class EditSubcomponentLabel(PermissionRequiredMixin, PanelsFormView):
     template_name = "panel-form.html"
 
     def get_initial(self):
-        return {"label": self.kwargs.get("label", "")}
+        return {"label": self.request.GET.get("label", "")}
 
     def form_valid(self, form):
         self.new_label = form.cleaned_data["label"]
         return super().form_valid(form)
 
     def get_success_commands(self):
-        return [
-            commands.Resolve(
-                {
-                    "new_label": self.new_label,
-                    "label_idx": self.kwargs["label_idx"],
-                }
-            )
-        ]
+        return [commands.Resolve({"new_label": self.new_label})]

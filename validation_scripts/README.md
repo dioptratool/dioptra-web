@@ -5,7 +5,7 @@
 The whole preflight → validate cycle, no manual branch switching:
 
 ```shell
-make validate-release-range OLD=v2.1 NEW=v2.2-rc4 BACKUPS=~/dioptra-backups
+make validate-release-range OLD=v2.3.1 NEW=v2.5-rc1 BACKUPS=~/dioptra-backups JOBS=6
 ```
 
 This checks out `OLD`, snapshots every `*.backup` in `BACKUPS` (default `validation_scripts/backups`), checks
@@ -13,6 +13,28 @@ out `NEW`, runs the full validation for every backup, restores your original che
 writes per-backup reports plus `summary-<old>-vs-<new>.md` to `validation_scripts/results/`. Exits non-zero on
 any failure. Requires a clean working tree (untracked files are fine) and the Docker databases running; `NEW`
 must contain the current validation tooling. Both phases run in your current virtualenv.
+
+**Parallel, one database per backup.** Each backup is restored into its own database on the local Postgres
+container, `validation_<label>` (the label lower-cased, non-alphanumerics as `_`), and every step reaches it
+through `DATABASE_NAME`. Backups run `JOBS` at a time (default 4) in both phases; with 18 cores and the
+endpoint checks being the slow part, `JOBS=6` to `9` is fine. Per-backup output goes to
+`results/<label>.log` (every step's output), `<label>.status` (`PASSED`/`FAILED`), `-endpoints.md` and
+`-diff.md`; the preflight log is `<label>-preflight.log`. The databases are left in place so a diff can be
+investigated against its data; `make validate-release-cleanup` drops every `validation_*` database.
+
+**Backups from different versions.** `OLD` is one ref per run, so group backups by the version they were
+taken from and run once per group, e.g. with symlink folders:
+
+```shell
+mkdir -p ~/val/prod-2.3.1 ~/val/testing-2.4.0-dev10
+ln -s ~/backups/dioptra-default-*-production-v2.3.1-*.backup ~/val/prod-2.3.1/
+ln -s ~/backups/dioptra-default-testing-eu-v2.4.0-dev10-*.backup ~/val/testing-2.4.0-dev10/
+make validate-release-range OLD=v2.3.1 NEW=v2.5-rc1 BACKUPS=~/val/prod-2.3.1 JOBS=7
+make validate-release-range OLD=v2.4.0-dev10 NEW=v2.5-rc1 BACKUPS=~/val/testing-2.4.0-dev10
+```
+
+Running an old ref's code against a newer backup's schema would snapshot the wrong baseline; the per-group
+runs avoid that.
 
 The two-step flow below still works when you want to run the phases separately (e.g. the backups were snapshot
 on another machine). Both scripts honor `BACKUP_DIR=/path` as an override for `validation_scripts/backups`.
@@ -66,8 +88,10 @@ This will validate that all endpoints load and compare the statuses and output c
 preflight. The endpoint check authenticates as `analytics@dioptratool.org` by default — override with
 `VALIDATION_USER=someone@example.org make validate-release`.
 
-Results are written to `validation_scripts/results/` as markdown (`-endpoints.md`, `-diff.md`). The command
-exits non-zero when any backup shows endpoint failures or status/output differences, so it can gate a release.
+Results are written to `validation_scripts/results/` as markdown (`-endpoints.md`, `-diff.md`) plus a
+`<label>.log` and `<label>.status` per backup. The command exits non-zero when any backup shows endpoint
+failures or status/output differences, so it can gate a release. Both `make validate-release-preflight` and
+`make validate-release` honor `JOBS` and use the per-backup databases described above.
 
 What is compared per analysis: workflow status, `last_updated`, the legacy single `output_cost` number, the
 full `output_costs` JSON (all interventions × metrics, numeric tolerance), and the live-computed sub-component

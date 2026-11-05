@@ -23,7 +23,9 @@ from website.models import CostTypeCategoryMapping, Transaction
 from website.models import InsightComparisonData
 from website.models import Intervention, InterventionGroup
 from website.models import Settings
-from website.models import SubcomponentCostAnalysis
+from website.models import SubcomponentCostAllocation, SubcomponentCostAnalysis
+from website.models import AnalysisCostType, AnalysisStatus, CostLineItem
+from website.analysis_lifecycle import change_analysis_status
 from .seed_data.default import COST_TYPES
 from .seed_data.default.categories import DEFAULT_CATEGORY
 from .seed_data.default.cost_types import DEFAULT_COST_TYPE
@@ -244,7 +246,8 @@ class Command(BuildCommand):
         for group_name in groups:
             self.groups[group_name] = InterventionGroup.objects.create(name=group_name)
 
-        for each in INTERVENTIONS:
+        for seed in INTERVENTIONS:
+            each = dict(seed)  # never mutate the module-level seed data
             if each.get("group"):
                 each["group"] = self.groups[each["group"]]
 
@@ -644,6 +647,7 @@ class Command(BuildCommand):
         self.add_client_provided_multiintervention_analysis()
         self.add_client_provided_multiintervention_analysis_more_complete()
         self.add_debug_analysis_with_eight_intervention_subcomponents()
+        self.add_debug_analysis_with_subcomponents_complete()
 
         ###########################
         # Add Other Cost Line Items step
@@ -1285,6 +1289,142 @@ class Command(BuildCommand):
             cost_type_category.save()
 
         _check_analysis_status(analysis, "categorize")
+
+    def add_debug_analysis_with_subcomponents_complete(self):
+        """
+        A complete analysis for demonstrating sub-components (Feature 86): two interventions,
+        each with a sub-component analysis, every program-cost row split with varied
+        percentages (one row skipped), an in-kind contribution split across sub-components,
+        outputs calculated, and the lifecycle status set to Complete. Adding, removing or
+        reordering sub-components on it exercises the after-data-load behaviour from a finished
+        state.
+        """
+        analysis = Analysis.objects.create(
+            title="Sample Analysis - Main Flow Complete - With Sub-Components",
+            analysis_type=self.analysis_types["Budget projection data"],
+            description=(
+                "Two interventions with sub-components. Every allocation is complete, one cost "
+                "item's sub-component row is skipped, and an in-kind contribution is split "
+                "across the cash intervention's sub-components."
+            ),
+            start_date=datetime.date(2023, 1, 15),
+            end_date=datetime.date(2023, 6, 30),
+            country=self.countries["Mali"],
+            grants="Unknown",
+            in_kind_contributions=True,
+            owner=User.objects.get(name="Akmal Shah"),
+        )
+
+        cash = analysis.add_intervention(
+            self.interventions["Unconditional Cash Transfer"],
+            parameters={"number_of_households": 10, "value_of_cash_distributed": 10_000},
+            metadata=self._metadata(
+                "Unconditional Cash Transfer",
+                {
+                    "Transfer modality": "Mobile money",
+                    "Targeting criteria": ["Large households"],
+                    "Transfer value per household": "95",
+                    "Number of transfer rounds": "3",
+                    "Average household size": "6",
+                    "Share delivered digitally": "80",
+                    "Implementing partner": "Mali Cash Working Group",
+                },
+            ),
+        )
+        gbv = analysis.add_intervention(
+            self.interventions["GBV Case Management"],
+            parameters={"number_of_people": 2992},
+            metadata=self._metadata(
+                "GBV Case Management",
+                {
+                    "Service delivery setting": "Women's centre",
+                    "Average sessions per client": "4",
+                    "Referral pathway documented": "Yes",
+                },
+            ),
+        )
+        cash_subcomponents = SubcomponentCostAnalysis.objects.create(
+            intervention_instance=cash,
+            subcomponent_labels=[
+                "Cash delivery",
+                "Targeting and registration",
+                "Post-distribution monitoring",
+            ],
+        )
+        gbv_subcomponents = SubcomponentCostAnalysis.objects.create(
+            intervention_instance=gbv,
+            subcomponent_labels=["Case management", "Psychosocial support"],
+        )
+
+        self._import_sample_transactions_and_clis_to_analysis(
+            analysis,
+            "transactions_10_entries.csv",
+            only_grant_codes=["ER342"],
+        )
+        analysis.auto_categorize_cost_line_items()
+        analysis.ensure_cost_type_category_objects()
+        analysis.save()
+        for cost_type_category in analysis.cost_type_categories.all():
+            cost_type_category.confirmed = True
+            cost_type_category.save()
+
+        # Intervention shares and sub-component splits cycle through three patterns so the
+        # demo shows varied values, explicit zeroes, and (on the second cash row) a skipped row.
+        intervention_shares = [(60, 40), (100, 0), (30, 70)]
+        cash_splits = [
+            {"0": "50", "1": "30", "2": "20"},
+            {"0": "70", "1": "0", "2": "30"},
+            {"0": "100", "1": "0", "2": "0"},
+        ]
+        gbv_splits = [{"0": "60", "1": "40"}, {"0": "25", "1": "75"}, {"0": "0", "1": "100"}]
+        skipped_cash_row = 1
+        for index, cost_line_item in enumerate(analysis.cost_line_items.order_by("id")):
+            cash_share, gbv_share = intervention_shares[index % 3]
+            for instance, subcomponents, splits, share in (
+                (cash, cash_subcomponents, cash_splits, cash_share),
+                (gbv, gbv_subcomponents, gbv_splits, gbv_share),
+            ):
+                CostLineItemInterventionAllocation.objects.create(
+                    intervention_instance=instance,
+                    allocation=Decimal(share),
+                    cli_config=cost_line_item.config,
+                )
+                if not share:
+                    continue
+                skipped = instance is cash and index == skipped_cash_row
+                SubcomponentCostAllocation.objects.create(
+                    subcomponent_analysis=subcomponents,
+                    cli_config=cost_line_item.config,
+                    allocations={} if skipped else splits[index % 3],
+                    skipped=skipped,
+                )
+
+        # An in-kind contribution allocated to the cash intervention and split across its
+        # sub-components; removing or adding a cash sub-component makes this item incomplete.
+        in_kind_item = CostLineItem.objects.create(
+            analysis=analysis,
+            grant_code="ER342",
+            budget_line_description="Donated hygiene kits",
+            quantity=Decimal("200"),
+            unit_cost=Decimal("12.50"),
+            total_cost=Decimal("2500"),
+            note="Kits donated by a local partner; valued at local market price.",
+        )
+        in_kind_config = CostLineItemConfig.objects.create(
+            cost_line_item=in_kind_item, analysis_cost_type=AnalysisCostType.IN_KIND
+        )
+        CostLineItemInterventionAllocation.objects.create(
+            intervention_instance=cash, allocation=Decimal("100"), cli_config=in_kind_config
+        )
+        SubcomponentCostAllocation.objects.create(
+            subcomponent_analysis=cash_subcomponents,
+            cli_config=in_kind_config,
+            allocations={"0": "50", "1": "30", "2": "20"},
+        )
+
+        _check_analysis_status(analysis, "insights")
+        AnalysisWorkflow(analysis).calculate_if_possible()
+        change_analysis_status(analysis.pk, analysis.owner, AnalysisStatus.COMPLETE)
 
     @betterdb.transaction()
     def _import_sample_transactions_and_clis_to_analysis(

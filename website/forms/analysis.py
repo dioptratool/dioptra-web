@@ -1,3 +1,4 @@
+import json
 import re
 from typing import TYPE_CHECKING
 
@@ -18,6 +19,13 @@ from website.models import (
     SubcomponentCostAnalysis,
 )
 from website.models.field_label import FieldLabelOverrides
+from website.subcomponent_labels import (
+    STALE_MESSAGE,
+    Component,
+    is_stale,
+    update_subcomponent_labels,
+    validate_sources,
+)
 
 if TYPE_CHECKING:
     from website.users.models import User
@@ -207,9 +215,13 @@ class AllocateSubcomponentsBulkForm(forms.Form):
     """
 
     config_ids = forms.TypedMultipleChoiceField(coerce=int, widget=forms.MultipleHiddenInput())
+    # The sub-component analysis revision the panel was opened on (see SubcomponentCostAnalysis).
+    subcomponent_revision = forms.CharField(required=False, widget=forms.HiddenInput())
 
-    def __init__(self, *args, subcomponent_labels, **kwargs):
+    def __init__(self, *args, subcomponent_labels, expected_revision=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.expected_revision = expected_revision
+        self.fields["subcomponent_revision"].initial = expected_revision
         self.fields["config_ids"].choices = (
             (config_id, config_id) for config_id in kwargs["initial"]["config_ids"]
         )
@@ -225,6 +237,9 @@ class AllocateSubcomponentsBulkForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        if "subcomponent_revision" in self.data and self.expected_revision is not None:
+            if str(self.data.get("subcomponent_revision")) != str(self.expected_revision):
+                raise ValidationError(STALE_MESSAGE)
         allocation_sum = sum(
             value
             for name, value in cleaned_data.items()
@@ -307,47 +322,127 @@ class SubcomponentLabelsForm(forms.Form):
     """
     Edits the sub-component labels of an InterventionInstance, creating or
     deleting its SubcomponentCostAnalysis as needed.
+
+    Percentages are stored by label position, so the editor posts, alongside each
+    label, the position it came from (``subcomponent_sources``: an int per label,
+    or null for a new one). Saving remaps every allocation row to match; see
+    ``website.subcomponent_labels``. A post without sources is treated as a
+    rename in place. Components can be added and removed before and after cost
+    data is loaded (86.5); surviving percentages are kept.
     """
 
+    # ``subcomponent_sources`` is deliberately not a form field: the label widget renders that
+    # input itself (the editor script maintains it), and a form field would render a second
+    # input of the same name, which the browser would also submit and Django would prefer.
     subcomponent_labels = SubcomponentLabelField(required=False)
+    # Identity of the sub-component analysis the form was opened on; a post that no longer
+    # matches (components changed, or the analysis was deleted/recreated) is rejected.
+    subcomponent_analysis_id = forms.CharField(required=False, widget=forms.HiddenInput)
+    subcomponent_revision = forms.CharField(required=False, widget=forms.HiddenInput)
 
-    def __init__(self, *args, intervention_instance: InterventionInstance, locked: bool = False, **kwargs):
+    def __init__(self, *args, intervention_instance: InterventionInstance, **kwargs):
         self.intervention_instance = intervention_instance
-        self.locked = locked
         super().__init__(*args, **kwargs)
         self.fields["subcomponent_labels"].initial = self._initial_labels()
-        if locked:
-            self.fields["subcomponent_labels"].widget.attrs["prevent_add_remove"] = True
+        self.fields["subcomponent_labels"].widget.sources = self._widget_sources()
+        existing = self._existing_analysis()
+        if existing is not None:
+            self.fields["subcomponent_analysis_id"].initial = existing.id
+            self.fields["subcomponent_revision"].initial = existing.revision
+
+    def _posted_json(self, name):
+        """A posted JSON value, or None when absent/blank. Raises ValueError when malformed."""
+        raw = self.data.get(name) if self.is_bound else None
+        if raw in (None, ""):
+            return None
+        return json.loads(raw)
+
+    def _positional_sources(self, count: int) -> list[int | None]:
+        """Labels keep the position they are shown at; positions past the saved list are new."""
+        existing_count = len(self._existing_labels())
+        return [idx if idx < existing_count else None for idx in range(count)]
+
+    def _widget_sources(self) -> list[int | None]:
+        """
+        The position list the widget renders next to its labels: the posted mapping when the
+        form re-displays after an error, identity for saved labels, and null for intervention
+        defaults (they are not saved labels, so they have no position).
+        """
+        if self.is_bound:
+            try:
+                labels = self._posted_json("subcomponent_labels") or []
+                sources = self._posted_json("subcomponent_sources")
+            except ValueError:
+                labels, sources = [], None
+            if isinstance(sources, list) and len(sources) == len(labels):
+                return sources
+            return self._positional_sources(len(labels) if isinstance(labels, list) else 0)
+        return self._positional_sources(len(self.fields["subcomponent_labels"].initial or []))
+
+    def _existing_analysis(self) -> SubcomponentCostAnalysis | None:
+        return getattr(self.intervention_instance, "subcomponent_cost_analysis", None)
 
     def _existing_labels(self) -> list[str]:
-        if hasattr(self.intervention_instance, "subcomponent_cost_analysis"):
-            return self.intervention_instance.subcomponent_cost_analysis.subcomponent_labels or []
+        subcomponent_analysis = self._existing_analysis()
+        if subcomponent_analysis is not None:
+            return subcomponent_analysis.subcomponent_labels or []
         return []
 
     def _initial_labels(self) -> list[str]:
-        labels = self._existing_labels()
-        if not labels and not self.locked:
-            labels = self.intervention_instance.intervention.subcomponent_labels or []
-        return labels
+        return self._existing_labels() or self.intervention_instance.intervention.subcomponent_labels or []
 
-    def clean_subcomponent_labels(self) -> list[str]:
-        labels = self.cleaned_data["subcomponent_labels"] or []
-        if self.locked and len(labels) != len(self._existing_labels()):
-            raise ValidationError(
-                _l("Sub-component labels cannot be added or removed after cost data has been loaded.")
+    def clean(self):
+        cleaned_data = super().clean()
+        labels = cleaned_data.get("subcomponent_labels")
+        if labels is None:
+            return cleaned_data
+        labels = labels or []
+        existing = self._existing_analysis()
+        existing_count = len(self._existing_labels())
+
+        if not labels and existing is not None:
+            # Removing every component deletes percentages and skip flags; that needs the
+            # Delete panel's confirmation, not a quietly emptied list.
+            self.add_error(
+                "subcomponent_labels",
+                _l("To remove the sub-component analysis, use Delete on the Define Interventions step."),
             )
-        return labels
+            return cleaned_data
+
+        if "subcomponent_analysis_id" in self.data or "subcomponent_revision" in self.data:
+            if is_stale(
+                existing, self.data.get("subcomponent_analysis_id"), self.data.get("subcomponent_revision")
+            ):
+                self.add_error(None, STALE_MESSAGE)
+                return cleaned_data
+
+        try:
+            sources = self._posted_json("subcomponent_sources")
+            if sources is None:
+                # Rename in place: labels keep the position they are posted at.
+                sources = self._positional_sources(len(labels))
+            if not isinstance(sources, list) or len(sources) != len(labels):
+                raise ValidationError(_l("Invalid sub-component reference."), code="invalid")
+            validate_sources(sources, existing_count)
+        except (ValueError, ValidationError) as error:
+            # The sources input is hidden, so its errors would never be shown; report them
+            # on the form instead.
+            if not isinstance(error, ValidationError):
+                error = ValidationError(_l("Invalid sub-component reference."), code="invalid")
+            self.add_error(None, error)
+            return cleaned_data
+
+        cleaned_data["components"] = [
+            Component(label=label, source=source) for label, source in zip(labels, sources)
+        ]
+        return cleaned_data
 
     def save(self) -> None:
-        labels = self.cleaned_data["subcomponent_labels"] or []
-        if labels:
-            subcomponent_analysis, _ = SubcomponentCostAnalysis.objects.get_or_create(
-                intervention_instance=self.intervention_instance
+        components = self.cleaned_data["components"]
+        if components:
+            update_subcomponent_labels(
+                self._existing_analysis(), components, intervention_instance=self.intervention_instance
             )
-            subcomponent_analysis.subcomponent_labels = labels
-            subcomponent_analysis.save()
-        elif hasattr(self.intervention_instance, "subcomponent_cost_analysis"):
-            self.intervention_instance.subcomponent_cost_analysis.delete()
 
     class Media:
         js = (

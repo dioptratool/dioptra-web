@@ -41,9 +41,7 @@
                                 <strong class="intervention-subcomponent-analysis__title">{% translate 'Sub-Component Analysis' %}</strong>
                                 <span class="intervention-subcomponent-analysis__actions">
                                     | <a href="{{ row.subcomponent_labels_url }}" data-panels-trigger data-panels-reload-on="saved">{% translate 'Edit' %}</a>
-                                    {% if not labels_locked %}
-                                        <a href="{{ row.subcomponent_delete_url }}" data-panels-trigger data-panels-reload-on="deleted">{% translate 'Delete' %}</a>
-                                    {% endif %}
+                                    <a href="{{ row.subcomponent_delete_url }}" data-panels-trigger data-panels-reload-on="deleted">{% translate 'Delete' %}</a>
                                 </span>
                             </div>
                             <ul class="intervention-subcomponent-analysis__labels">
@@ -52,7 +50,7 @@
                                 {% endfor %}
                             </ul>
                         </div>
-                    {% elif not labels_locked %}
+                    {% else %}
                         <p class="intervention-actions">
                             <a href="{{ row.subcomponent_labels_url }}" class="intervention-action" data-panels-trigger data-panels-reload-on="saved">
                                 {% translate 'Add Sub-Component Analysis' %}

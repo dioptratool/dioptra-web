@@ -87,8 +87,13 @@ class AddOtherCostsDetail(AnalysisPermissionRequiredMixin, AnalysisStepMixin, De
                 intervention_links_in_order.append(intervention_instance)
                 allocations_order[intervention_instance.intervention.id] = intervention_instance.order
 
+        # In-kind items whose sub-component split is incomplete (86.6); the list marks them.
+        items_needing_split = getattr(self.step, "items_needing_subcomponent_split", None)
+        needs_split_ids = {item.id for item in items_needing_split()} if items_needing_split else set()
+
         context.update(
             {
+                "needs_split_ids": needs_split_ids,
                 "intervention_links_in_order": intervention_links_in_order,
                 "additional_fields": additional_fields,
                 "allocation_order": allocations_order,

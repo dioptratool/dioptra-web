@@ -1,67 +1,70 @@
 #!/usr/bin/env bash
 #
-# preflight-validate.sh
+# preflight.sh
 #
-# This script loops over all *.backup files in the validation_scripts/backups directory,
-# restores each backup to the database, and then runs the "validate_statuses" command
-# to generate a file with analysis statuses and the final output metrics (where relevant).
+# Restores every *.backup in BACKUP_DIR into its own database (validation_<label>) and
+# snapshots analysis statuses and output metrics with `validate_statuses`, so the
+# snapshots can be compared after switching to the new version. Backups are processed
+# JOBS at a time (default 4). Run it with the repo on the version the backups come from.
 #
+# Per-backup output: statuses/analysis_statuses-<label>-old.csv, with the step log in
+# results/<label>-preflight.log.
 
 set -euo pipefail
+cd "$(dirname "$0")"
+# shellcheck source=lib.sh
+source ./lib.sh
 
-# Set Django settings (adjust as needed for your environment)
-export DJANGO_SETTINGS_MODULE="website.settings.local"
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-website.settings.local}"
 
 BACKUP_DIR="${BACKUP_DIR:-backups}"
 STATUSES_DIR="statuses"
+RESULT_DIR="results"
+mkdir -p "${STATUSES_DIR}" "${RESULT_DIR}"
 
-# Create output directory for status files
-mkdir -p "${STATUSES_DIR}"
+if [ ! -d "${BACKUP_DIR}" ]; then
+  echo "Error: Backup directory '${BACKUP_DIR}' does not exist." >&2
+  exit 1
+fi
 
-# Loop over each .backup file in BACKUP_DIR
-for backup_file in "${BACKUP_DIR}"/*.backup; do
-  # If no .backup files exist, skip
-  if [ ! -e "${backup_file}" ]; then
-    echo "No .backup files found in ${BACKUP_DIR}."
-    break
-  fi
-
-
-  filename="$(basename "${backup_file}")"
-  # Remove the trailing ".backup" (7 chars) to make substring logic easier
-  filename_noext="${filename%.backup}"
-
-  # If the file name (minus .backup) is at least 24 chars longer than the minimal name,
-  # we assume it includes the date/time zone suffix:
-  # e.g. '-2025-01-29_15-23-42-PST' = 24 characters
-  if [[ ${#filename_noext} -ge 24 ]]; then
-    # Strip the last 24 characters (the '-YYYY-MM-DD_hh-mm-ss-TZ' portion)
-    label="${filename_noext:0:$((${#filename_noext}-24))}"
+preflight_one() {
+  local backup_file="$1"
+  local label db_name log
+  label="$(label_for_backup "${backup_file}")"
+  db_name="$(db_name_for_label "${label}")"
+  log="${RESULT_DIR}/${label}-preflight.log"
+  # Not `if ( ... )`: bash ignores `set -e` inside an if-condition, so failures would be masked.
+  (
+    set -euo pipefail
+    export DATABASE_NAME="${db_name}"
+    echo "Backup: ${backup_file}"
+    echo "Database: ${db_name}"
+    restore_backup "${backup_file}" "${db_name}"
+    python ../manage.py migrate
+    python ../manage.py validate_statuses --save "${STATUSES_DIR}/analysis_statuses-${label}-old.csv"
+  ) > "${log}" 2>&1
+  local rc=$?
+  if [ "${rc}" -eq 0 ]; then
+    echo "PASSED" > "${RESULT_DIR}/${label}.status"
   else
-    # If it's too short to contain that date/time suffix, keep the entire name
-    label="${filename_noext}"
+    echo "FAILED" > "${RESULT_DIR}/${label}.status"
+    echo "Preflight FAILED for ${label} (exit ${rc}); see ${log}" >&2
   fi
+}
 
-  echo "------------------------------------------------------"
-  echo "Restoring database for label: ${label}"
-  echo "Backup file: ${backup_file}"
-  echo "------------------------------------------------------"
-
-  # Export BACKUP file path so make can use it
-  export BACKUP="$(realpath "${backup_file}")"
-
-  # Restore the database from this backup
-  make -C .. load-sql
-  make -C .. migrate
-
-  # Run the validate_statuses management command; store the CSV in "statues"
-  # under a file name including the label
-  csv_output="${STATUSES_DIR}/analysis_statuses-${label}-old.csv"
-  echo "Running validate_statuses to save statuses to -> ${csv_output}"
-  python ../manage.py validate_statuses --save "${csv_output}"
-
-  echo "Done processing label: ${label}"
-  echo
+backup_files=()
+for backup_file in "${BACKUP_DIR}"/*.backup; do
+  [ -e "${backup_file}" ] && backup_files+=("${backup_file}")
 done
+if [ "${#backup_files[@]}" -eq 0 ]; then
+  echo "No .backup files found in '${BACKUP_DIR}'." >&2
+  exit 1
+fi
 
-echo "All backups processed."
+echo "Preflight: ${#backup_files[@]} backup(s), ${JOBS} at a time, one database each (validation_<label>)."
+if run_backups_in_parallel preflight_one "${RESULT_DIR}" "${backup_files[@]}"; then
+  echo "All backups snapshot."
+else
+  echo "Preflight FAILED for one or more backups; see the logs noted above in ${RESULT_DIR}/." >&2
+  exit 1
+fi
