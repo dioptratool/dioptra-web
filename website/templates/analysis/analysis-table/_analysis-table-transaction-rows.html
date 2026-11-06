@@ -8,11 +8,12 @@
                         <thead>
                         <tr>
                             <th class="analysis-table__transaction-table-summary">{% blocktranslate %}{{ transactions_count }} Transactions{% endblocktranslate %}</th>
-                            <th>{{ 'Site'|label_override:'tr_site_code' }}</th>
-                            <th>{{ 'Date'|label_override:'tr_date' }}</th>
-                            <th class="analysis-table__amount-cell">{{ 'Amount'|label_override:'tr_amount' }}</th>
-                            {% for column in analysis.transaction_custom_fields %}
-                                <th class="analysis-table__custom-field-cell">{{ column.default_label|label_override:column.label_key }}</th>
+                            {# Labels resolved once per page by the view (transaction_header_labels), not per row. #}
+                            <th>{{ transaction_header_labels.site }}</th>
+                            <th>{{ transaction_header_labels.date }}</th>
+                            <th class="analysis-table__amount-cell">{{ transaction_header_labels.amount }}</th>
+                            {% for label in transaction_header_labels.custom %}
+                                <th class="analysis-table__custom-field-cell">{{ label }}</th>
                             {% endfor %}
                             <th></th>
                         </tr>

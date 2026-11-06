@@ -55,3 +55,11 @@ def import_test_transaction_store(dump):
         env=env,
         check=True,
     )
+
+
+def facet(content, name):
+    """The markup of one 'Add filter' facet, up to the next facet or the end of the filter form."""
+    start = content.index(f'data-filter="{name}"')
+    rest = content[start + len(f'data-filter="{name}"') :]
+    end = min(index for index in (rest.find('data-filter="'), rest.find("</form>")) if index >= 0)
+    return rest[:end]

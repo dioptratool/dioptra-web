@@ -1,6 +1,14 @@
 {% extends "analysis/base.html" %}
 {% load analysis help humanize i18n panels_form_extras website_tags %}
 
+{% block extrastyle %}
+  {{ filter.form.media.css }}
+{% endblock extrastyle %}
+
+{% block extrascript %}
+  {{ filter.form.media.js }}
+{% endblock extrascript %}
+
 {% block analysis_header %}
   <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
     <h1 class="analysis__title">{{ title }}</h1>
@@ -37,7 +45,10 @@
                    class="analysis-table__cost-items{% if cost_type_category.confirmed %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }}
                   {% translate 'Cost Items' %}{% if cost_type_category.confirmed %} {% translate 'Confirmed' %}{% endif %}</div>
                 <div class="analysis-table__category-header-total">
-                  <strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong></div>
+                  {% if not cost_line_items|contains_sensitive_data %}
+                    <strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong>
+                  {% endif %}
+                </div>
                 {% include 'analysis/analysis-table/_analysis-table-header-toggle.html' %}
               </div>
             </div>
@@ -91,7 +102,7 @@
                     {% for cost_line_item in cost_line_items %}
                       <tbody class="analysis-table__tbody">
                       {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
-                        {% with transactions_count=cost_line_item.transactions.count %}
+                        {% with transactions_count=cost_line_item.transactions_count %}
                           <tr>
                             <td class="analysis-table__bulk-update-checkbox">
                               <div class="form__checkbox form__checkbox--simple form__checkbox--no-label">

@@ -1,0 +1,1 @@
+<div class="from-to">{% for widget in widget.subwidgets %}{% if not forloop.first %}<span class="from-to__separator" aria-hidden="true">–</span>{% endif %}{% include widget.template_name %}{% endfor %}</div>

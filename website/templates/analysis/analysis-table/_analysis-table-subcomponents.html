@@ -29,7 +29,7 @@
         {% for cost_line_item in cost_line_items %}
             <tbody class="analysis-table__tbody">
             {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
-                {% with transactions_count=cost_line_item.transactions.count %}
+                {% with transactions_count=cost_line_item.transactions_count %}
                     {% with allocation=cost_line_item.config.allocations_by_intervention_id|dict_get:step.intervention_instance.id %}
                     {% with subcomponent_data=cost_line_item|subcomponent_allocation_for_intervention:step.intervention_instance %}
                     <tr>
@@ -163,9 +163,10 @@
                                                 <th class="analysis-table__transaction-table-summary">
                                                     {% blocktranslate %}{{ transactions_count }}
                                                         Transactions{% endblocktranslate %}</th>
-                                                <th>{{ 'Site'|label_override:'tr_site_code' }}</th>
-                                                <th>{{ 'Date'|label_override:'tr_date' }}</th>
-                                                <th class="analysis-table__amount-cell">{{ 'Amount'|label_override:'tr_amount' }}</th>
+                                                {# Labels resolved once per page by the view (transaction_header_labels), not per row. #}
+                                                <th>{{ transaction_header_labels.site }}</th>
+                                                <th>{{ transaction_header_labels.date }}</th>
+                                                <th class="analysis-table__amount-cell">{{ transaction_header_labels.amount }}</th>
                                                 <th></th>
                                             </tr>
                                             </thead>

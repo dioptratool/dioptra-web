@@ -16,10 +16,11 @@ from ombucore.admin import panel_commands
 from ombucore.admin.buttons import CancelButton, SubmitButton
 from ombucore.admin.views import FilterMixin
 from ombucore.admin.views.base import FormView as PanelsFormView
-from website.filterset import AllocateCostTypeGrantSiteFilterSet
+from website.filterset import AllocateCostTypeGrantFilterSet
 from website.forms.analysis import AllocateInterventionBulkForm
 from website.models import Analysis, CostLineItem, CostType
 from website.models.cost_line_item import CostLineItemConfig, CostLineItemInterventionAllocation
+from website.models.utils import transaction_header_labels
 from website.models.subcomponent import SubcomponentCostAllocation
 from website.models.cost_type import Indirect, ProgramCost, Support
 from website.views.analysis.corrections import correction_urls
@@ -94,6 +95,9 @@ class AllocateSupportingCosts(AnalysisPermissionRequiredMixin, AnalysisStepMixin
         context["cost_line_items_count"] = len(self.special_cost_line_items)
         context["grant"] = self.grant_code
         context["special_cost_line_items"] = self.special_cost_line_items
+        context["transaction_header_labels"] = transaction_header_labels(
+            self.analysis.transaction_custom_fields
+        )
         context["title"] = _("How much did Other Supporting Costs contribute to each intervention?")
 
         # Calculator context values
@@ -207,7 +211,7 @@ class AllocateCostTypeGrant(
     template_name = "analysis/allocate-cost_type-grant.html"
     permission_required = "website.change_analysis"
     model = CostLineItem
-    filterset_class = AllocateCostTypeGrantSiteFilterSet
+    filterset_class = AllocateCostTypeGrantFilterSet
     title = ""
     help_text = _("")
 
@@ -254,8 +258,10 @@ class AllocateCostTypeGrant(
                 grant_code=self.step.grant,
             )
             .select_related("config", "config__cost_type")
+            # The rows only show how many transactions they have; the transactions themselves load
+            # on demand. Prefetching them to count them built ~176k objects on a large analysis.
+            .with_transactions_count()
             .prefetch_related(
-                "transactions",
                 "config",
                 "config__allocations",
                 "config__category",
@@ -273,22 +279,25 @@ class AllocateCostTypeGrant(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        cost_line_items_count = 0
-        for cost_type_category_grant in self.cost_type_category_grants:
-            cost_line_items_count += cost_type_category_grant.get_cost_line_items().count()
+        # A GET renders the rows it counts: len() loads them once for both (the template
+        # iterates this QuerySet). A partial POST builds this context before saving valid
+        # rows, so it counts without caching them and the template loads them after the save.
+        if self.request.method == "POST":
+            cost_line_items_count = self.object_list.count()
+        else:
+            cost_line_items_count = len(self.object_list)
 
         context.update(
             {
                 "cost_line_items_count": cost_line_items_count,
                 "cost_type_category_grants": self.cost_type_category_grants,
+                "transaction_header_labels": transaction_header_labels(
+                    self.analysis.transaction_custom_fields
+                ),
                 "title": _("How much did each cost item contribute to intervention being analyzed?"),
             }
         )
         context.update(correction_urls(self.analysis, "allocate"))
-
-        self.filterset.form.fields["site_code"].choices = (
-            self.object.site_codes_choices_from_cost_line_items()
-        )
 
         context["suggested_allocation_calculations"] = {}
         if self.step.cost_type.type_obj().shared:

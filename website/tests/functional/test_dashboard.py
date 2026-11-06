@@ -11,6 +11,7 @@ from website.tests.factories import (
     InterventionFactory,
     UserFactory,
 )
+from website.tests.utils import facet
 
 User = get_user_model()
 
@@ -68,14 +69,6 @@ class TestDashboard:
 
 def titles(response):
     return [analysis.title for analysis in response.context["object_list"]]
-
-
-def facet(content, name):
-    """The markup of one 'Add filter' facet, up to the next facet or the end of the filter form."""
-    start = content.index(f'data-filter="{name}"')
-    rest = content[start + len(f'data-filter="{name}"') :]
-    end = min(index for index in (rest.find('data-filter="'), rest.find("</form>")) if index >= 0)
-    return rest[:end]
 
 
 def sort_link(content, column, direction=""):

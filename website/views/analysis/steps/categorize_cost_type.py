@@ -12,6 +12,7 @@ from website.models import (
     CostLineItemConfig,
     CostType,
 )
+from website.models.utils import transaction_header_labels
 from website.utils import group_by
 from website.views.analysis.corrections import correction_urls
 from website.views.mixins import (
@@ -60,6 +61,9 @@ class CategorizeCostType(
                 analysis_id=self.object.id,
             )
             .select_related("config")
+            # Do NOT prefetch transactions here, we need to load them on-demand or it's very slow.
+            # Each row's "N transactions" comes from the row query instead.
+            .with_transactions_count()
             .order_by(
                 "grant_code",
                 "budget_line_description",
@@ -67,7 +71,6 @@ class CategorizeCostType(
                 "sector_code",
                 "account_code",
             )
-            # Do NOT prefetch transactions here, we need to load them on-demand or it's very slow.
         )
 
     def get_context_data(self, **kwargs):
@@ -93,6 +96,9 @@ class CategorizeCostType(
                 "unconfirmed_count": unconfirmed_count,
                 "cost_type_choices": self.cost_type_choices,
                 "category_choices": self.category_choices,
+                "transaction_header_labels": transaction_header_labels(
+                    self.analysis.transaction_custom_fields
+                ),
             }
         )
         # Feature 91 edit entry points; ``cost_type`` lets a panel redirect when this table empties.

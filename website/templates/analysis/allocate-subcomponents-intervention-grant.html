@@ -1,6 +1,10 @@
 {% extends "analysis/base.html" %}
 {% load analysis help humanize i18n website_tags %}
 
+{% block extrastyle %}
+  {{ filter.form.media.css }}
+{% endblock extrastyle %}
+
 {% block analysis_header %}
     <div class="analysis__title-wrapper analysis__title-wrapper--expanded">
         <h1 class="analysis__title">{{ title }}</h1>
@@ -41,7 +45,7 @@
                             <h3 class="analysis-table__category-name">{{ cost_type_category_grant.cost_type_category.category.name }}{% help_category cost_type_category_grant.cost_type_category.category.name 'allocate_costs' %}</h3>
                             <div class="analysis-table__category-header-supplement">
                                 <div class="analysis-table__cost-items{% if category_complete %} analysis-table__cost-items--confirmed{% endif %}">{{ cost_line_items|length }} {% translate 'Cost Items' %}{% if category_complete %} {% translate 'Allocated' %}{% endif %}</div>
-                                <div class="analysis-table__category-header-total"><strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong></div>
+                                <div class="analysis-table__category-header-total">{% if not cost_line_items|contains_sensitive_data %}<strong>{{ cost_line_items|sum_cost_line_items|format_currency:analysis.currency_code }}</strong>{% endif %}</div>
                                 {% include 'analysis/analysis-table/_analysis-table-header-toggle.html' %}
                             </div>
                         </div>
@@ -90,6 +94,7 @@
 {% endblock analysis_content %}
 
 {% block extrascript %}
+  {{ filter.form.media.js }}
     <script type="text/javascript">
         $(function () {
             const table = document.querySelector('.analysis-table');

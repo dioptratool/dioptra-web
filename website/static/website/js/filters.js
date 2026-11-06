@@ -8,6 +8,10 @@ function setupFilterListForm($filterList) {
   var $clearSearchPhrase = $form.find('.clear-search-phrase');
   var loadedFormData = $form.serialize();
 
+  // Facets whose values are typed rather than picked (see data-filter-kind in _filters.html): one
+  // result chip per facet, and clearing it empties every input of the facet.
+  var TYPED_KINDS = ['text', 'range', 'date-range'];
+
   // Wire up dropdown items to show filter form elements.
   $form.find('[data-filter-target]').click(function(e) {
     e.preventDefault();
@@ -40,7 +44,7 @@ function setupFilterListForm($filterList) {
     .each(function(i, filterEl) { initFilter(filterEl); });
 
   // Hide the filter dropdown if there are no filters left to add.
-  if (!$dropdownMenuItems.find('li:not(.hidden)').length) {
+  if (!$dropdownMenuItems.find('li.filter__menu-item:not(.hidden)').length) {
     $addFilterDropdown.hide();
   }
 
@@ -104,35 +108,55 @@ function setupFilterListForm($filterList) {
   }
 
   function clearFilter(filterName, filterValue) {
+    // Values are imported data (descriptions, custom field values), so compare attributes rather
+    // than building a selector out of them.
     $filterResults
-      .find('[data-filter-name="' + filterName + '"][data-filter-value="' + filterValue+ '"]')
-      .parents('.filter-result')
+      .find('a.clear-filter')
+      .filter(function() {
+        return $(this).attr('data-filter-name') === filterName
+          && $(this).attr('data-filter-value') === filterValue;
+      })
+      .closest('.filter-result')
       .remove();
 
-    var $filter = $form.find('[data-filter="' + filterName + '"]');
+    var $filter = facetFor(filterName);
+    var kind = $filter.attr('data-filter-kind');
 
+    if (TYPED_KINDS.indexOf(kind) !== -1) {
+      namedInputs($filter).val('');
+    }
     // Select
-    if ($filter.find('select').length > 0) {
+    else if ($filter.find('select').length > 0) {
       $filter.find('select').val('');
     }
-    // Checkboxes, Radios.
-    else if ($filter.find(':input[value="' + filterValue + '"]')) {
-      var $input = $filter.find(':input[value="' + filterValue + '"]');
-      if ($input.is(':checked')) {
-        $input.removeAttr('checked');
-      }
-      else {
-        $input.val('');
-      }
-    }
-    // Text Fields.
+    // Checkboxes, Radios: untick the one carrying this value.
     else {
-      $filter.find(':input').val('');
+      namedInputs($filter)
+        .filter(function() { return this.value === filterValue; })
+        .prop('checked', false);
     }
 
     if (!$filterResults.find('.filter-result').length) {
       $clearAll.hide();
     }
+  }
+
+  function facetFor(filterName) {
+    return $form
+      .find('[data-filter]')
+      .filter(function() { return $(this).attr('data-filter') === filterName; });
+  }
+
+  // The facet's own inputs. A date picker adds unnamed inputs (month, year) inside the facet.
+  function namedInputs($facet) {
+    return $facet.find(':input[name]');
+  }
+
+  function rangeText(from, to) {
+    if (from && to) {
+      return from + ' \u2013 ' + to;
+    }
+    return from ? 'from ' + from : 'to ' + to;
   }
 
   /**
@@ -141,10 +165,29 @@ function setupFilterListForm($filterList) {
    */
   function initFilter(filterEl) {
     var $el = $(filterEl);
-    var $input = $el.find(':input');
+    var name = $el.attr('data-filter');
+    var kind = $el.attr('data-filter-kind');
+    var $inputs = namedInputs($el);
+    var $input = $inputs.first();
     var inputType = $input.prop('type');
 
-    if (inputType === 'select-one') {
+    if (kind === 'text') {
+      var text = ($input.val() || '').trim();
+      if (text) {
+        addResult($el.find('.control-label').text().trim(), text, text, name);
+        hideDropdownMenuItem(name);
+      }
+    }
+    else if (kind === 'range' || kind === 'date-range') {
+      var from = ($inputs.eq(0).val() || '').trim();
+      var to = ($inputs.eq(1).val() || '').trim();
+      if (from || to) {
+        // One chip for the facet; its value is the facet name, so clearing it empties both inputs.
+        addResult($el.find('.control-label').text().trim(), name, rangeText(from, to), name);
+        hideDropdownMenuItem(name);
+      }
+    }
+    else if (inputType === 'select-one') {
       var val = $input.val();
 
       if (val) {
@@ -205,23 +248,25 @@ function setupFilterListForm($filterList) {
   }
 
   function addResult(label, value, displayValue, name) {
-    var html = filterResultHtml(label, value, displayValue, name);
+    var $result = filterResultHtml(label, value, displayValue, name);
     if ($filterResults.find('.filter-result').length > 0) {
-      $filterResults.find('.filter-result').last().after(html);
+      $filterResults.find('.filter-result').last().after($result);
     }
     else {
-      $filterResults.prepend(html);
+      $filterResults.prepend($result);
     }
   }
 
   function filterResultHtml(label, value, displayValue, name) {
-    return [
-      '<div class="filter-result">',
-        '<div class="label">' + label + ':</div>',
-        '<div class="value">' + displayValue + '</div>',
-        '<a href="#" class="clear-filter close" data-filter-value="' + value + '" data-filter-name="' + name + '" title="Remove">×</a>',
-      '</div>',
-    ''].join('');
+    // Built with .text() and .attr(): the values are imported data.
+    var $result = $('<div class="filter-result"></div>');
+    $('<div class="label"></div>').text(label + ':').appendTo($result);
+    $('<div class="value"></div>').text(displayValue).appendTo($result);
+    $('<a href="#" class="clear-filter close" title="Remove">\u00d7</a>')
+      .attr('data-filter-value', value)
+      .attr('data-filter-name', name)
+      .appendTo($result);
+    return $result;
   }
 
   function submitForm() {

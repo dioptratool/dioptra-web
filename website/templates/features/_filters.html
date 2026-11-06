@@ -1,5 +1,5 @@
 {% load i18n panels_extras panels_form_extras %}
-{% with form=filterset.form %}
+{% with form=filterset.form groups=filterset.facet_groups %}
 
 <div class="filter-list">
     <form action="#" method="GET" class="filter-list-form" accept-charset="utf-8">
@@ -25,21 +25,22 @@
                     <a href="#" class="filter__add-filter-btn" data-toggle="dropdown">Add filter</a>
                     <div class="dropdown-menu filter__menu">
                         <ul class="dropdown-menu-items filter__menu-items">
-                            {% for field in form %}
-                                {% if field.name != 'search' and field.name != 'order_by' %}
-                                    <li class="filter__menu-item"><a class="filter__menu-link" href="#" data-filter-target="{{ field.name }}">{{ field.label }}</a></li>
-                                {% endif %}
+                            {% for heading, facets in groups %}
+                                {% if heading %}<li class="filter__menu-heading">{{ heading }}</li>{% endif %}
+                                {% for facet in facets %}
+                                    <li class="filter__menu-item"><a class="filter__menu-link" href="#" data-filter-target="{{ facet.field.name }}">{{ facet.field.label }}</a></li>
+                                {% endfor %}
                             {% endfor %}
                         </ul>
-                        {% for field in form %}
-                            {% if field.name != 'search' and field.name != 'order_by' %}
-                                <div class="hidden filter__facet" data-filter="{{ field.name }}">
-                                    {% include 'bootstrap/field.html' with field=field|add_input_classes hide_help=True %}
-                                    {% if field|filter_field_should_use_button or field|is_multiple_checkbox %}
+                        {% for heading, facets in groups %}
+                            {% for facet in facets %}
+                                <div class="hidden filter__facet" data-filter="{{ facet.field.name }}" data-filter-kind="{{ facet.kind }}">
+                                    {% include 'bootstrap/field.html' with field=facet.field|add_input_classes hide_help=True %}
+                                    {% if facet.field|filter_field_should_use_button or facet.field|is_multiple_checkbox %}
                                         <button type="submit" class="btn btn-primary">Apply</button>
                                     {% endif %}
                                 </div>
-                            {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from bs4 import BeautifulSoup
 from django.conf import settings as django_settings
 from django.urls import reverse
 
@@ -54,6 +55,60 @@ class TestAllocateCostFormSubmissions:
             assert allocations.count() == intervention_count
             for allocation in allocations:
                 assert allocation.allocation == Decimal("2.00")
+
+    def test_partial_save_renders_saved_allocations_and_preserves_them_on_retry(
+        self,
+        analysis_workflow_with_confirmed_categories_cost_line_item,
+        client_with_admin,
+    ):
+        analysis = analysis_workflow_with_confirmed_categories_cost_line_item.analysis
+        valid_item, invalid_item = analysis.cost_line_items.order_by("pk")
+        # Keep both rows in the same category form, as in a real submission.
+        invalid_item.config.category = valid_item.config.category
+        invalid_item.config.save()
+        analysis.ensure_cost_type_category_objects()
+        interventions = list(analysis.interventioninstance_set.all())
+        data = {}
+        for item in (valid_item, invalid_item):
+            for intervention in interventions:
+                item.set_allocation_for_intervention(intervention, Decimal("10.00"))
+                data[f"cost_line_item_allocation_{item.pk}_{intervention.pk}"] = (
+                    "25.00" if item == valid_item else "invalid"
+                )
+
+        url = reverse(
+            "analysis-allocate-cost_type-grant",
+            kwargs={
+                "pk": analysis.pk,
+                "cost_type_pk": valid_item.config.cost_type.pk,
+                "grant": valid_item.grant_code,
+            },
+        )
+        response = client_with_admin.post(url, data=data)
+
+        assert response.status_code == 200
+        assert set(response.context["errors"]) == {invalid_item.pk}
+        assert response.context["cost_line_items_count"] == 2
+        html = BeautifulSoup(response.content, "html.parser")
+        retry_data = {}
+        for intervention in interventions:
+            saved = valid_item.config.allocations.get(intervention_instance=intervention)
+            assert saved.allocation == Decimal("25.00")
+            field_name = f"cost_line_item_allocation_{valid_item.pk}_{intervention.pk}"
+            field = html.find("input", attrs={"name": field_name})
+            assert field is not None
+            assert Decimal(field["value"]) == saved.allocation
+            retry_data[field_name] = field["value"]
+            retry_data[f"cost_line_item_allocation_{invalid_item.pk}_{intervention.pk}"] = "30.00"
+
+        response = client_with_admin.post(url, data=retry_data)
+
+        assert response.status_code == 302
+        assert response.url == url
+        for item, expected in ((valid_item, "25.00"), (invalid_item, "30.00")):
+            for intervention in interventions:
+                saved = item.config.allocations.get(intervention_instance=intervention)
+                assert saved.allocation == Decimal(expected)
 
     def test_all_good_data_with_maximum_interventions(
         self,

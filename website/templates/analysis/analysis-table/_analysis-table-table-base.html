@@ -60,7 +60,7 @@
         {% for cost_line_item in cost_line_items %}
             <tbody class="analysis-table__tbody">
             {% with sensitive_data=account_code_descriptions|dict_get:cost_line_item.account_code|attr:'sensitive_data' %}
-                {% with transactions_count=cost_line_item.transactions.count %}
+                {% with transactions_count=cost_line_item.transactions_count %}
                     <tr>
                         {% if bulkSelect == 'true' %}
                             <td class="analysis-table__bulk-update-checkbox">

@@ -105,6 +105,20 @@ input[type="text"].filters__search-input {
   padding: 0;
 }
 
+.filter__menu-heading {
+  color: $color-smoke;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.05em;
+  margin: 1.6rem 0 0.8rem;
+  padding: 0;
+  text-transform: uppercase;
+  @include font-size(11, 1.4);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
 .filter__menu-item {
   margin-bottom: 1rem;
   padding: 0;
@@ -177,6 +191,28 @@ input[type="text"].filters__search-input {
     input:focus + span {
       @include default-focus();
     }
+  }
+
+  // From / To facets: the two inputs on one line.
+  .from-to {
+    align-items: center;
+    display: flex;
+    gap: 0.8rem;
+
+    input.form-control {
+      min-width: 0;
+      width: 12rem;
+    }
+  }
+
+  .from-to__separator {
+    color: $color-smoke;
+  }
+
+  // Date pickers open inside the facet (flatpickr `static`), below their input.
+  .from-to .flatpickr-wrapper {
+    display: inline-block;
+    position: relative;
   }
 
   .btn {

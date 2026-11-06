@@ -113,8 +113,9 @@ class TestCostItemCustomColumns:
         # visibility is decided analysis-wide, not row by row.
         assert content.count('<td class="analysis-table__custom-field-cell">') == len(cost_line_items)
         # Confirm Categories renders one table per category, so the header repeats per table.
+        # (The filter menu also names "Account Code Description", so count the header cell itself.)
         assert content.count('<th class="analysis-table__custom-field-cell">') == content.count(
-            "Account Code Description"
+            "<th>Account Code Description</th>"
         )
 
 

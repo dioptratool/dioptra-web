@@ -7,6 +7,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.core.validators import get_available_image_extensions
+from django.db.models import CharField, F, Value
+from django.db.models.functions import Cast, Concat, ExtractYear
 
 from ombucore.assets.models import ImageAsset
 from ombucore.build import BuildCommand
@@ -25,6 +27,8 @@ from website.models import Intervention, InterventionGroup
 from website.models import Settings
 from website.models import SubcomponentCostAllocation, SubcomponentCostAnalysis
 from website.models import AnalysisCostType, AnalysisStatus, CostLineItem
+from website.models import FieldLabelOverrides
+from website.models.cost_type import ProgramCost
 from website.analysis_lifecycle import change_analysis_status
 from .seed_data.default import COST_TYPES
 from .seed_data.default.categories import DEFAULT_CATEGORY
@@ -648,6 +652,7 @@ class Command(BuildCommand):
         self.add_client_provided_multiintervention_analysis_more_complete()
         self.add_debug_analysis_with_eight_intervention_subcomponents()
         self.add_debug_analysis_with_subcomponents_complete()
+        self.add_debug_analysis_for_filters()
 
         ###########################
         # Add Other Cost Line Items step
@@ -1425,6 +1430,114 @@ class Command(BuildCommand):
         _check_analysis_status(analysis, "insights")
         AnalysisWorkflow(analysis).calculate_if_possible()
         change_analysis_status(analysis.pk, analysis.owner, AnalysisStatus.COMPLETE)
+
+    def add_debug_analysis_for_filters(self):
+        """
+        "Sample Analysis - Filters Demo": grant GH012 of the sample transaction file, which has the
+        variety the Feature 98 filters need (12 sites, 4 sectors, 19 account codes, 90 transaction
+        dates, hundreds of descriptions), plus populated custom fields, account descriptions for the
+        common codes (one marked sensitive) and the label overrides that name the custom fields. It
+        is complete through Allocate Sub-Component Costs, so every step page with filters is reachable.
+        """
+        analysis = Analysis.objects.create(
+            title="Sample Analysis - Filters Demo",
+            analysis_type=self.analysis_types["Actual spending data"],
+            description=(
+                "3,488 transactions of grant GH012 grouped into 285 cost items across 12 sites and 4 "
+                "sectors, with transaction dates from April 2015 to January 2017, a Project Code "
+                "custom field on cost items and transactions, a Fiscal Year custom field on "
+                "transactions, and account descriptions for the common account codes (Salaries - "
+                "Expat Staff is marked sensitive). Use it to try the filters on Confirm Categories, "
+                "Allocate Intervention Costs and Allocate Sub-Component Costs."
+            ),
+            start_date=datetime.date(2015, 4, 1),
+            end_date=datetime.date(2017, 1, 31),
+            country=self.countries["Liberia"],
+            grants="GH012",
+            owner=User.objects.get(name="Akmal Shah"),
+        )
+        gbv = analysis.add_intervention(
+            self.interventions["GBV Case Management"],
+            parameters={"number_of_people": 2992},
+            metadata=self._metadata(
+                "GBV Case Management",
+                {
+                    "Service delivery setting": "Women's centre",
+                    "Average sessions per client": "4",
+                    "Referral pathway documented": "Yes",
+                },
+            ),
+        )
+        subcomponents = SubcomponentCostAnalysis.objects.create(
+            intervention_instance=gbv,
+            subcomponent_labels=["Case management", "Psychosocial support", "Referrals"],
+        )
+
+        # Descriptions for the grant's most frequent account codes: two codes share one description,
+        # one code is sensitive, and the other eleven codes show as raw codes.
+        for code, description, sensitive in (
+            ("71100", "Salaries - National Staff", False),
+            ("70050", "Benefits - National Staff", False),
+            ("70020", "Benefits - National Staff", False),
+            ("71550", "Casual Labor", False),
+            ("71000", "Salaries - Expat Staff", True),
+            ("70040", "Pooled Fringe Benefits - Expat Staff", False),
+            ("70100", "Consultants - National", False),
+            ("72000", "Local and Domestic Travel", False),
+        ):
+            AccountCodeDescription.objects.update_or_create(
+                account_code=code,
+                defaults={"account_description": description, "sensitive_data": sensitive},
+            )
+
+        self._import_sample_transactions_and_clis_to_analysis(
+            analysis,
+            "transaction_max_3k_sorted.csv",
+            only_grant_codes=["GH012"],
+        )
+
+        # Custom fields: a project code on transactions and cost items, a fiscal year on transactions.
+        project_code = Concat(Value("PRJ-"), F("budget_line_code"))
+        Transaction.objects.filter(analysis=analysis).update(
+            dummy_field_1=project_code,
+            dummy_field_2=Concat(Value("FY"), Cast(ExtractYear("date"), CharField())),
+        )
+        CostLineItem.objects.filter(analysis=analysis).update(dummy_field_1=project_code)
+        overrides = FieldLabelOverrides.get()
+        overrides.ci_dummy_field_1 = "Project Code"
+        overrides.ci_dummy_field_1_overridden = True
+        overrides.tr_dummy_field_1 = "Project Code"
+        overrides.tr_dummy_field_1_overridden = True
+        overrides.tr_dummy_field_2 = "Fiscal Year"
+        overrides.tr_dummy_field_2_overridden = True
+        overrides.save()
+
+        for cost_type_category in analysis.cost_type_categories.all():
+            cost_type_category.confirmed = True
+            cost_type_category.save()
+
+        # Every item goes wholly to the intervention; program items cycle through three splits.
+        splits = [
+            {"0": "50", "1": "30", "2": "20"},
+            {"0": "70", "1": "0", "2": "30"},
+            {"0": "100", "1": "0", "2": "0"},
+        ]
+        cost_line_items = analysis.cost_line_items.select_related("config__cost_type").order_by("id")
+        for index, cost_line_item in enumerate(cost_line_items):
+            CostLineItemInterventionAllocation.objects.create(
+                intervention_instance=gbv,
+                allocation=Decimal("100"),
+                cli_config=cost_line_item.config,
+            )
+            if cost_line_item.config.cost_type.type == ProgramCost.id:
+                SubcomponentCostAllocation.objects.create(
+                    subcomponent_analysis=subcomponents,
+                    cli_config=cost_line_item.config,
+                    allocations=splits[index % 3],
+                )
+
+        _check_analysis_status(analysis, "insights")
+        AnalysisWorkflow(analysis).calculate_if_possible()
 
     @betterdb.transaction()
     def _import_sample_transactions_and_clis_to_analysis(

@@ -141,7 +141,7 @@ class AnalysisStepFiltersetMixin(AnalysisStepMixin, AnalysisObjectMixin, Templat
             )
 
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        # setup_step() has already loaded self.object (= self.analysis) with the workflow prefetches.
         filterset_class = self.get_filterset_class()
         self.filterset = self.get_filterset(filterset_class)
         self.object_list = self.modify_queryset(self.filterset.qs)

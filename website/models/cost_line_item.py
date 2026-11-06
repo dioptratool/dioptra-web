@@ -5,13 +5,14 @@ from enum import IntEnum
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
 from django.db.models import Value
 from django.db.models.functions import Coalesce, Length, NullIf, StrIndex, Substr
 from django.utils.translation import gettext_lazy as _
 
 from website.models.intervention_instance import InterventionInstance
 from website.models.query_utils import require_prefetch
+from website.models.transaction import Transaction
 
 
 class CostLineItemQuerySet(models.QuerySet):
@@ -38,6 +39,23 @@ class CostLineItemQuerySet(models.QuerySet):
         Returns a queryset excluding non-categorized Line Items
         """
         return self.exclude(Q(is_special_lump_sum=True) | Q(config__analysis_cost_type__isnull=False))
+
+    def with_transactions_count(self):
+        """
+        Annotates each row's transaction count in the row query, for pages that show
+        ``transactions_count`` on every row: a per-row COUNT, or a transactions prefetch
+        just to count them, costs seconds on an analysis with 200k transactions.
+        """
+        counts = (
+            Transaction.objects.filter(cost_line_item=OuterRef("pk"))
+            .order_by()
+            .values("cost_line_item")
+            .annotate(count=Count("pk"))
+            .values("count")
+        )
+        return self.annotate(
+            annotated_transactions_count=Coalesce(Subquery(counts, output_field=IntegerField()), 0)
+        )
 
     def order_by(self, *field_names):
         """
@@ -287,6 +305,17 @@ class CostLineItem(models.Model):
             .distinct()
             if p
         ]
+
+    @property
+    def transactions_count(self) -> int:
+        """
+        From ``CostLineItemQuerySet.with_transactions_count()`` when the row was loaded with it,
+        otherwise one COUNT query.
+        """
+        annotated = getattr(self, "annotated_transactions_count", None)
+        if annotated is not None:
+            return annotated
+        return self.transactions.count()
 
     @property
     def allocated_cost_on_model(self) -> Decimal:

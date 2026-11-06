@@ -11,11 +11,12 @@ from ombucore.admin import panel_commands
 from ombucore.admin.buttons import CancelButton, SubmitButton
 from ombucore.admin.views import FilterMixin
 from ombucore.admin.views.base import FormView as PanelsFormView
-from website.filterset import AllocateCostTypeGrantSiteFilterSet
+from website.filterset import AllocateSubcomponentsFilterSet
 from website.forms.analysis import AllocateSubcomponentsBulkForm
 from website.models import Analysis, CostLineItem, CostLineItemConfig, InterventionInstance
 from website.models.cost_type import ProgramCost
 from website.models.subcomponent import SubcomponentCostAllocation
+from website.models.utils import transaction_header_labels
 from website.subcomponent_labels import STALE_MESSAGE, is_stale
 from website.views.mixins import (
     AnalysisPermissionRequiredMixin,
@@ -60,7 +61,7 @@ class AllocateSubcomponentsInterventionGrant(
     template_name = "analysis/allocate-subcomponents-intervention-grant.html"
     permission_required = "website.change_analysis"
     model = CostLineItem
-    filterset_class = AllocateCostTypeGrantSiteFilterSet
+    filterset_class = AllocateSubcomponentsFilterSet
     title = _l("How is each cost item allocated between sub-components?")
     help_text = _l(
         "Set the percentage of each cost item toward its sub-components. If the percentage "
@@ -95,8 +96,9 @@ class AllocateSubcomponentsInterventionGrant(
                 config__allocations__allocation__gt=0,
             )
             .select_related("config", "config__cost_type", "config__category")
+            # Rows show a transaction count only; the transactions load on demand.
+            .with_transactions_count()
             .prefetch_related(
-                "transactions",
                 "config__allocations",
                 "config__allocations__intervention_instance",
                 "config__subcomponent_cost_allocations",
@@ -151,11 +153,8 @@ class AllocateSubcomponentsInterventionGrant(
                 "cost_line_items_count": len(cost_line_items),
                 "category_items": category_items,
                 "categories_complete": categories_complete,
+                "transaction_header_labels": transaction_header_labels(),
             }
-        )
-
-        self.filterset.form.fields["site_code"].choices = (
-            self.object.site_codes_choices_from_cost_line_items()
         )
 
         next_step = self.step.get_next()

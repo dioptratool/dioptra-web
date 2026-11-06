@@ -401,7 +401,7 @@ class Analysis(models.Model):
         return None
 
     def has_transactions(self) -> bool:
-        return self.transactions.count() > 0
+        return self.transactions.exists()
 
     def allows_other_costs(self) -> bool:
         return any([self.other_hq_costs, self.in_kind_contributions, self.client_time])
