@@ -256,6 +256,8 @@
                 {% endwith %}
             {% endwith %}
             </tbody>
+        {% empty %}
+            {% include 'analysis/analysis-table/_no-results.html' %}
         {% endfor %}
     </table>
 </div>

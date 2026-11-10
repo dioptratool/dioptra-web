@@ -186,6 +186,11 @@ class TestAmountFilter:
 
         assert pks(fs) == {amounts["100"].pk}
 
+    def test_reversed_bounds_are_flipped(self, analysis, amounts):
+        fs = build(CategorizeCostTypeFilterSet, analysis, total_cost_min="150", total_cost_max="100")
+
+        assert pks(fs) == {amounts["100"].pk, amounts["150"].pk}
+
     def test_invalid_number_is_ignored(self, analysis, amounts):
         fs = build(CategorizeCostTypeFilterSet, analysis, total_cost_min="abc")
 

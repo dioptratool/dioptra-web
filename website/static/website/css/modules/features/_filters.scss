@@ -138,6 +138,16 @@ input[type="text"].filters__search-input {
     display: block;
   }
 
+  // Keyword facets fill the menu: .form-inline would otherwise size the field to its content.
+  &[data-filter-kind="text"] > .form-group {
+    display: block;
+    width: 100%;
+
+    .form-control {
+      width: 100%;
+    }
+  }
+
   .multiple-checkbox {
     display: flex;
     flex-direction: column;
@@ -203,6 +213,26 @@ input[type="text"].filters__search-input {
       min-width: 0;
       width: 12rem;
     }
+  }
+
+  // Amount facets: the currency symbol sits inside the start of the input.
+  .currency-input {
+    display: inline-block;
+    position: relative;
+
+    input.form-control {
+      padding-left: 2.4rem;
+    }
+  }
+
+  .currency-input__symbol {
+    color: $color-smoke;
+    left: 0.9rem;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    @include font-size(14, 1);
   }
 
   .from-to__separator {
@@ -280,5 +310,12 @@ input[type="text"].filters__search-input {
 }
 
 .clear-all {
-  @include font-size(14, 1.1429);
+  color: #909090;
+  @include font-size(14, 1);
+  text-decoration-line: underline;
+  text-underline-position: from-font;
+
+  &:hover {
+    text-decoration: none;
+  }
 }

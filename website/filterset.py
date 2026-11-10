@@ -17,6 +17,7 @@ from django_filters.fields import RangeField
 from django_filters.widgets import SuffixedMultiWidget
 
 from ombucore.admin.widgets import FlatpickrDateWidget
+from website.currency import currency_symbol
 from website.models import AccountCodeDescription, CostLineItem, FieldLabelOverrides, Transaction
 from website.models.utils import load_field_label_override
 
@@ -137,17 +138,48 @@ class FromToWidget(SuffixedMultiWidget):
         return [None, None]
 
 
+class CurrencyInput(forms.NumberInput):
+    """
+    A number input with the analysis' currency symbol in front of it. The symbol is also left on the
+    input as ``data-currency-symbol`` so filters.js can format the facet's result chip.
+    """
+
+    template_name = "widgets/currency-input.html"
+
+    def __init__(self, attrs=None, currency_symbol=None):
+        self.currency_symbol = currency_symbol
+        super().__init__(attrs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["currency_symbol"] = self.currency_symbol or ""
+        if self.currency_symbol:
+            context["widget"]["attrs"]["data-currency-symbol"] = self.currency_symbol
+        return context
+
+
 class AmountFromToWidget(FromToWidget):
-    def __init__(self, attrs=None):
-        widgets = (
-            forms.NumberInput(attrs={"placeholder": _l("From"), "step": "any"}),
-            forms.NumberInput(attrs={"placeholder": _l("To"), "step": "any"}),
+    def __init__(self, attrs=None, currency_symbol=None):
+        widgets = tuple(
+            CurrencyInput(
+                attrs={"placeholder": placeholder, "step": "0.01"},
+                currency_symbol=currency_symbol,
+            )
+            for placeholder in (_l("From"), _l("To"))
         )
         super().__init__(widgets, attrs)
 
 
 class AmountRangeField(RangeField):
     widget = AmountFromToWidget
+
+    def compress(self, data_list):
+        """A To below the From is taken as the range entered backwards: the bounds are swapped."""
+        if data_list:
+            start, stop = data_list
+            if start is not None and stop is not None and stop < start:
+                data_list = [stop, start]
+        return super().compress(data_list)
 
 
 class FromToFilter(QFilterMixin, django_filters.Filter):
@@ -354,6 +386,9 @@ class CostLineItemStepFilterSet(AnalysisStepFilterSet):
         if not self.include_grant:
             del self.filters["grant_code"]
         self.filters["account_description"].set_choices(analysis)
+        symbol = currency_symbol(analysis)
+        for name in self.AMOUNT_FILTERS:
+            self.filters[name].extra["widget"] = AmountFromToWidget(currency_symbol=symbol)
         overrides = FieldLabelOverrides.get()
         if self.include_custom_fields:
             self._add_custom_field_filters("ci", analysis.cost_item_custom_fields, overrides)

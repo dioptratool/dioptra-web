@@ -11,10 +11,10 @@
                             {# Labels resolved once per page by the view (transaction_header_labels), not per row. #}
                             <th>{{ transaction_header_labels.site }}</th>
                             <th>{{ transaction_header_labels.date }}</th>
-                            <th class="analysis-table__amount-cell">{{ transaction_header_labels.amount }}</th>
                             {% for label in transaction_header_labels.custom %}
                                 <th class="analysis-table__custom-field-cell">{{ label }}</th>
                             {% endfor %}
+                            <th class="analysis-table__amount-cell">{{ transaction_header_labels.amount }}</th>
                             <th></th>
                         </tr>
                         </thead>

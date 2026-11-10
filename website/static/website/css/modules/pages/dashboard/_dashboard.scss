@@ -77,17 +77,6 @@
     transform: scale(1.5);
     margin-left: 1rem;
   }
-
-  .clear-all {
-    color: #909090;
-    @include font-size(14, 1);
-    text-decoration-line: underline;
-    text-underline-position: from-font;
-
-    &:hover {
-      text-decoration: none;
-    }
-  }
 }
 
 .dashboard__table-wrapper {

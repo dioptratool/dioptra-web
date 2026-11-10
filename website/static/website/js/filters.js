@@ -38,6 +38,8 @@ function setupFilterListForm($filterList) {
     submitForm();
   });
 
+  orderNumberRanges();
+
   // Initialize filter results.
   $form
     .find('[data-filter]')
@@ -54,6 +56,7 @@ function setupFilterListForm($filterList) {
   }
 
   $form.on('submit', function() {
+    orderNumberRanges();
     // If the form hasen't changed it won't actually make a request if the
     // action is `#` so only show the filtering wheel if something actually
     // changed.
@@ -152,11 +155,49 @@ function setupFilterListForm($filterList) {
     return $facet.find(':input[name]');
   }
 
+  // "1234.5" -> "$1,234.50", in the en-US style the cost tables use. Anything that isn't a
+  // number is shown as typed.
+  function currencyText(value, symbol) {
+    var number = Number(value);
+    if (value === '' || !isFinite(number)) {
+      return value;
+    }
+    var formatted = Math.abs(number).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    return (number < 0 ? '-' : '') + (symbol || '') + formatted;
+  }
+
+  // A number range entered backwards (To below From) is flipped before it is submitted, so the
+  // inputs, the result chip and the URL all read low to high. The server flips it too.
+  function orderNumberRanges() {
+    $form.find('[data-filter-kind="range"]').each(function() {
+      var $inputs = namedInputs($(this));
+      var $from = $inputs.eq(0);
+      var $to = $inputs.eq(1);
+      var from = ($from.val() || '').trim();
+      var to = ($to.val() || '').trim();
+      if (from !== '' && to !== '' && Number(to) < Number(from)) {
+        $from.val(to);
+        $to.val(from);
+      }
+    });
+  }
+
   function rangeText(from, to) {
     if (from && to) {
       return from + ' \u2013 ' + to;
     }
     return from ? 'from ' + from : 'to ' + to;
+  }
+
+  // Number ranges read as an inclusive comparison.
+  function numberRangeText(from, to) {
+    if (from && to) {
+      return from + ' \u2013 ' + to;
+    }
+    return from ? 'At least ' + from : 'At most ' + to;
   }
 
   /**
@@ -182,8 +223,16 @@ function setupFilterListForm($filterList) {
       var from = ($inputs.eq(0).val() || '').trim();
       var to = ($inputs.eq(1).val() || '').trim();
       if (from || to) {
+        var symbol = $inputs.eq(0).attr('data-currency-symbol');
+        var rangeLabel;
+        if (kind === 'range') {
+          rangeLabel = numberRangeText(from && currencyText(from, symbol), to && currencyText(to, symbol));
+        }
+        else {
+          rangeLabel = rangeText(from, to);
+        }
         // One chip for the facet; its value is the facet name, so clearing it empties both inputs.
-        addResult($el.find('.control-label').text().trim(), name, rangeText(from, to), name);
+        addResult($el.find('.control-label').text().trim(), name, rangeLabel, name);
         hideDropdownMenuItem(name);
       }
     }

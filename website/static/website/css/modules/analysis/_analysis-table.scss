@@ -218,6 +218,7 @@
   &.analysis-table__category--active {
     border: 1px solid $color-lapis;
     border-radius: 4px;
+    margin-bottom: 1em;
   }
 }
 
@@ -429,6 +430,14 @@
       vertical-align: middle;
     }
   }
+}
+
+// Shown in place of the rows when a category has no cost items, e.g. none match the filters.
+.analysis-table__table > tbody > tr > td.analysis-table__no-results-cell {
+  color: $color-smoke;
+  font-style: italic;
+  padding: 2rem 1rem;
+  text-align: center;
 }
 
 .analysis-table__cost-item-cell {

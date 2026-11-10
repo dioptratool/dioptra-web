@@ -1,0 +1,12 @@
+{% load i18n %}
+<tbody class="analysis-table__no-results">
+    <tr>
+        <td colspan="99" class="analysis-table__no-results-cell">
+            {% if filter.applied_filters_count %}
+                {% translate 'No cost items match the current filters.' %}
+            {% else %}
+                {% translate 'No cost items.' %}
+            {% endif %}
+        </td>
+    </tr>
+</tbody>
