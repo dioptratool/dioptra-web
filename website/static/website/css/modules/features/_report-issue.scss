@@ -1,0 +1,73 @@
+@use 'init' as *;
+
+// Floating "Report Issue" launcher (features/_report-issue.html): a round icon button that
+// widens to show its label on hover or focus.
+.report-issue {
+  align-items: center;
+  background-color: $color-lapis;
+  border: none;
+  border-radius: 2.4rem;
+  bottom: 2.4rem;
+  box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.25);
+  color: $color-white;
+  cursor: pointer;
+  display: flex;
+  height: 4.8rem;
+  max-width: 4.8rem;
+  overflow: hidden;
+  padding: 0 1.3rem;
+  position: fixed;
+  right: 2.4rem;
+  transition: max-width 0.25s ease, background-color 0.15s ease;
+  white-space: nowrap;
+  z-index: 1000;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $color-topaz;
+    max-width: 20rem;
+  }
+
+  &:focus-visible {
+    @include default-focus();
+  }
+
+  // The widget is open: it has its own close control.
+  .report-issue-open & {
+    display: none;
+  }
+}
+
+.report-issue__icon {
+  flex: 0 0 auto;
+}
+
+.report-issue__label {
+  font-weight: $font-weight-bold;
+  opacity: 0;
+  padding-left: 0.8rem;
+  padding-right: 0.4rem;
+  transition: opacity 0.2s ease;
+  @include font-size(14, 1);
+
+  .report-issue:hover &,
+  .report-issue:focus-visible & {
+    opacity: 1;
+  }
+}
+
+// The widget's own launcher is replaced by .report-issue: the iframe shows only while it is open.
+#jsd-widget {
+  visibility: hidden;
+
+  .report-issue-open & {
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-issue,
+  .report-issue__label {
+    transition: none;
+  }
+}

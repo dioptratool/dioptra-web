@@ -24,3 +24,4 @@ import './actions-menu.js';
 import './help.js';
 import './table-edit-row.js';
 import './analysis-table.js';
+import './report-issue.js';
