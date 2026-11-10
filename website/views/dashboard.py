@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_filters.views import FilterView
@@ -16,6 +17,12 @@ class DashboardView(LoginRequiredMixin, FilterMixin, FilterView):
     slug_field = "id"
     slug_url_kwarg = "id"
     filterset_class = AnalysisFilterSet
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # The "Report Issue" button (features/_report-issue.html) renders only when this is set.
+        context["jsd_widget_key"] = settings.JSD_WIDGET_KEY
+        return context
 
     def get_paginate_by(self, queryset):
         dioptra_settings = Settings.objects.first()

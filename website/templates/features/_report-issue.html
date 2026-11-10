@@ -1,5 +1,6 @@
 {% load i18n %}
-{# Floating "Report Issue" launcher for the Jira Service Management widget; see js/report-issue.js. #}
+{# Floating "Report Issue" launcher for the Jira Service Management widget (js/report-issue.js); only rendered when settings.JSD_WIDGET_KEY is set. #}
+{% if jsd_widget_key %}
 
 <button type="button" class="report-issue" data-report-issue aria-label="{% translate 'Report Issue' %}">
     <svg class="report-issue__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -9,4 +10,5 @@
     </svg>
     <span class="report-issue__label">{% translate 'Report Issue' %}</span>
 </button>
-<script data-jsd-embedded data-key="34d9a78b-bdfa-4d78-ad92-c73fdfda9d24" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+<script data-jsd-embedded data-key="{{ jsd_widget_key }}" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+{% endif %}

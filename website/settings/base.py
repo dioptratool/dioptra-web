@@ -414,6 +414,9 @@ SESSION_IDLE_TIMEOUT = 3600  # In seconds
 
 ISO_CURRENCY_CODE = "USD"
 
+# Jira Service Management widget behind the dashboard's "Report Issue" button.
+JSD_WIDGET_KEY = os.getenv("JSD_WIDGET_KEY", "34d9a78b-bdfa-4d78-ad92-c73fdfda9d24") or None
+
 COST_LINE_ITEMS_ROW_LIMIT = 5000
 IMPORTED_TRANSACTION_LIMIT = 200_000
 
