@@ -89,7 +89,8 @@ $(() => {
     const on_label_remove = (component) => {
         itemFor(component).remove()
         components.splice(components.indexOf(component), 1)
-        if (components.length < maxlabels) $('#add-label-link').show()
+        // The add field stays open after an add, so only bring the link back when it is closed.
+        if (components.length < maxlabels && $('#add-label-widget').is(':hidden')) $('#add-label-link').show()
         write()
     }
 
