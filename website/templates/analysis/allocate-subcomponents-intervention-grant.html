@@ -99,8 +99,8 @@
         $(function () {
             const table = document.querySelector('.analysis-table');
 
-            // reset form state for firefox on load
-            Array.from(document.forms).forEach((f) => f.reset());
+            // Reset allocation forms for Firefox on load. Resetting filters clears the calendar headers.
+            table?.querySelectorAll('.analysis-table__category form').forEach((form) => form.reset());
 
             $('.analysis__main').on('click', 'a[data-apply-to-all]', function (e) {
                 e.preventDefault();

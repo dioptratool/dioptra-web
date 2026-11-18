@@ -1,3 +1,6 @@
+import re
+from html import unescape
+
 import pytest
 from django.urls import reverse
 
@@ -121,6 +124,48 @@ class TestCostItemCustomColumns:
 
 @pytest.mark.django_db
 class TestTransactionCustomColumns:
+    def test_subcomponents_drill_down_omits_custom_fields(
+        self, analysis_workflow_with_subcomponent_labels, client_with_admin
+    ):
+        analysis = analysis_workflow_with_subcomponent_labels.analysis
+        cost_line_item = analysis.cost_line_items.first()
+        for n in range(1, 6):
+            setattr(cost_line_item, f"dummy_field_{n}", f"CI-CUSTOM-{n}")
+        cost_line_item.save()
+        TransactionFactory(
+            analysis=analysis,
+            cost_line_item=cost_line_item,
+            transaction_description="Subcomponent transaction",
+            site_code="SITE-1",
+            **{f"dummy_field_{n}": f"TX-CUSTOM-{n}" for n in range(1, 6)},
+        )
+
+        response = client_with_admin.get(
+            reverse(
+                "analysis-allocate-subcomponents-intervention-grant",
+                kwargs={
+                    "pk": analysis.pk,
+                    "intervention_instance_pk": analysis.interventioninstance_set.first().pk,
+                    "grant": cost_line_item.grant_code,
+                },
+            )
+        )
+        assert response.status_code == 200
+        page = response.content.decode()
+        assert "analysis-table__custom-field-cell" not in page
+        assert "CI-CUSTOM-" not in page
+
+        # Follow the page's actual expansion URL so its headers and AJAX rows stay in sync.
+        href = unescape(re.search(r'data-transactions-href="([^"]+)"', page).group(1))
+        response = client_with_admin.get(href)
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Subcomponent transaction" in content
+        assert "SITE-1" in content
+        assert "analysis-table__custom-field-cell" not in content
+        assert "TX-CUSTOM-" not in content
+        assert content.count("<td ") == 5
+
     def test_drill_down_renders_populated_transaction_custom_field(
         self, analysis_workflow_with_allocations, client_with_admin
     ):

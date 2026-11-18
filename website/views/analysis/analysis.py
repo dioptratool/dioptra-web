@@ -228,7 +228,12 @@ class CostLineItemTransactions(PermissionRequiredMixin, DetailView):
         context["transaction_edit_url"] = self.request.GET.get("transaction_edit_url")
         # The nested table's headers are rendered by the parent page, so the columns here
         # must match the analysis-wide set rather than this cost line item's own values.
-        context["transaction_custom_fields"] = self.object.analysis.transaction_custom_fields
+        # Allocate Sub-Component omits custom fields from both its headers and rows.
+        context["transaction_custom_fields"] = (
+            []
+            if context["type"] == "allocateSubcomponents"
+            else self.object.analysis.transaction_custom_fields
+        )
         return context
 
 
