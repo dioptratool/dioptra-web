@@ -3,13 +3,23 @@
 .analysis-sidebar {
   background-color: $color-light-black;
   color: $color-white;
-  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding-top: 0.5rem;
-  padding-bottom: 1.5em;
 }
 
-.analysis-sidebar__exit {
-  margin-bottom: 0.5rem;
+// The logo and step list scroll together; the exit link above them stays put.
+.analysis-sidebar__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  // Extend into the caret gutter so the active substep arrow (which pokes out past the
+  // sidebar's right edge) isn't clipped by the scroll container.
+  margin-right: -$analysis-sidebar-caret-width;
+  padding-right: $analysis-sidebar-caret-width;
+  padding-bottom: 1.5em;
+  scrollbar-width: thin;
 }
 
 .analysis-sidebar__logo-link {
@@ -24,6 +34,7 @@
 .analysis-sidebar__logo {
   display: block;
   margin-bottom: 3.8rem;
+  padding-top: 0.5rem;
   text-align: center;
 
   svg {

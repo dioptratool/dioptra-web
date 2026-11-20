@@ -38,6 +38,35 @@
   }
 }
 
+// Sidebar variant: a full-width button in the sidebar's flow, label always shown, and kept in
+// view while the widget is open.
+.report-issue--sidebar {
+  border-radius: 2px;
+  bottom: auto;
+  box-shadow: none;
+  height: auto;
+  justify-content: center;
+  max-width: none;
+  padding: 0.9rem 1rem;
+  position: static;
+  right: auto;
+  width: 100%;
+  z-index: auto;
+
+  &:hover,
+  &:focus-visible {
+    max-width: none;
+  }
+
+  .report-issue-open & {
+    display: flex;
+  }
+
+  .report-issue__label {
+    opacity: 1;
+  }
+}
+
 .report-issue__icon {
   flex: 0 0 auto;
 }
@@ -62,6 +91,13 @@
 
   .report-issue-open & {
     visibility: visible;
+  }
+
+  // Opened from the analysis sidebar: sit against the sidebar's visible edge rather than the
+  // right of the window. embed.js positions the iframe with inline styles, hence !important.
+  .report-issue-open--sidebar & {
+    left: $analysis-sidebar-width - $analysis-sidebar-caret-width + 1.5rem !important;
+    right: auto !important;
   }
 }
 

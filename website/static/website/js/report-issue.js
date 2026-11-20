@@ -8,6 +8,9 @@
  * been closed, so the iframe is hidden again and our button returns.
  */
 var OPEN_CLASS = 'report-issue-open';
+// Added alongside OPEN_CLASS when the sidebar launcher opened the widget, so CSS can move the
+// widget beside the sidebar instead of the bottom-right corner.
+var FROM_SIDEBAR_CLASS = 'report-issue-open--sidebar';
 
 function widgetDocument() {
   var iframe = document.getElementById('jsd-widget');
@@ -41,15 +44,21 @@ function watchForClose(doc) {
   var observer = new MutationObserver(function() {
     if (doc.getElementById('help-button')) {
       observer.disconnect();
-      document.documentElement.classList.remove(OPEN_CLASS);
+      document.documentElement.classList.remove(OPEN_CLASS, FROM_SIDEBAR_CLASS);
     }
   });
   observer.observe(doc.body, { childList: true, subtree: true });
 }
 
-function openWidget() {
+function openWidget(variant) {
+  // A launcher can stay visible while the widget is open (the sidebar one does); without this
+  // guard a second click would wait for #help-button and reopen the widget as soon as it closed.
+  if (document.documentElement.classList.contains(OPEN_CLASS)) {
+    return;
+  }
   var ready = whenLauncherReady(function(launcher) {
     document.documentElement.classList.add(OPEN_CLASS);
+    document.documentElement.classList.toggle(FROM_SIDEBAR_CLASS, variant === 'sidebar');
     launcher.click();
     watchForClose(launcher.ownerDocument);
   });
@@ -59,8 +68,9 @@ function openWidget() {
 }
 
 document.addEventListener('click', function(e) {
-  if (e.target.closest('[data-report-issue]')) {
+  var trigger = e.target.closest('[data-report-issue]');
+  if (trigger) {
     e.preventDefault();
-    openWidget();
+    openWidget(trigger.getAttribute('data-report-issue'));
   }
 });

@@ -25,3 +25,10 @@ def include_login(request):
     return {
         "INCLUDE_USERNAME_AND_PASSWORD_LOGIN_FORM": settings.INCLUDE_USERNAME_AND_PASSWORD_LOGIN_FORM,
     }
+
+
+def jsd_widget(request):
+    # The "Report Issue" button (features/_report-issue.html) renders only when this is set.
+    return {
+        "jsd_widget_key": settings.JSD_WIDGET_KEY,
+    }

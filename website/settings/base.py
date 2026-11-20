@@ -149,6 +149,7 @@ TEMPLATES = [
                 "website.context_processors.account_code_descriptions",
                 "website.context_processors.dioptra_settings",
                 "website.context_processors.include_login",
+                "website.context_processors.jsd_widget",
                 "website.help.context_processors.help_context",
                 "django.template.context_processors.media",
             ],
