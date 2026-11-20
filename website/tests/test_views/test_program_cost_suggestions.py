@@ -319,7 +319,8 @@ class TestProgramCostSuggestions:
                     intervention_instance=intervention,
                     allocation=40,
                 )
-        before = list(case["known"][0].config.allocations.values_list("allocation", flat=True))
+        untouched_allocations = case["known"][0].config.allocations
+        before = dict(untouched_allocations.values_list("intervention_instance_id", "allocation"))
         response = case["save"](
             selected,
             {case["interventions"][0].pk: "25", case["interventions"][1].pk: ""},
@@ -334,7 +335,7 @@ class TestProgramCostSuggestions:
                 case["interventions"][0].pk: Decimal(25),
                 case["interventions"][1].pk: 0,
             }
-        assert list(case["known"][0].config.allocations.values_list("allocation", flat=True)) == before
+        assert dict(untouched_allocations.values_list("intervention_instance_id", "allocation")) == before
 
     def test_invalid_total_preserves_edits_and_saved_allocations(self, program_cost_case):
         case = program_cost_case

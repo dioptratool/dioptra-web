@@ -8,7 +8,8 @@ from website.models.fields import TypedJsonField
 
 class InterventionInstanceManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().order_by("order")
+        # Keep tied display orders stable across edits and different query plans.
+        return super().get_queryset().order_by("order", "pk")
 
 
 class InterventionInstance(models.Model):

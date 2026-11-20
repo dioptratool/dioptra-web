@@ -36,3 +36,18 @@ class TestInterventionOrder:
         intervention_instances = analysis.interventioninstance_set.all()
         assert len(intervention_instances) == 2
         assert intervention_instances[1].order == 1
+
+    @pytest.mark.django_db
+    def test_tied_orders_remain_stable_after_editing_an_intervention(self):
+        analysis = AnalysisFactory()
+        first_tied = analysis.add_intervention(InterventionFactory(), order=1)
+        earlier = analysis.add_intervention(InterventionFactory(), order=0)
+        last_tied = analysis.add_intervention(InterventionFactory(), order=1)
+
+        # Updating a row can change its physical position without changing its display order.
+        first_tied.label = "Updated label"
+        first_tied.save(update_fields=["label"])
+
+        expected = [earlier, first_tied, last_tied]
+        assert list(analysis.interventioninstance_set.all()) == expected
+        assert list(analysis.interventioninstance_set.select_related("intervention")) == expected

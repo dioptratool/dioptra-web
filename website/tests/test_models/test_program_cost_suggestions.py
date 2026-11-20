@@ -27,7 +27,10 @@ def calculator(make_program_cost_item):
 
     def build(rows, n=3):
         analysis = AnalysisFactory(grants="G1,G2")
-        interventions = [InterventionInstanceFactory(analysis=analysis) for _ in range(n)]
+        # Query order differs from creation order: suggestions are keyed by intervention ID.
+        interventions = [
+            InterventionInstanceFactory(analysis=analysis, order=n - index - 1) for index in range(n)
+        ]
         category = CategoryFactory()
         program = CostType.objects.get(type=ProgramCost.id)
 
@@ -115,9 +118,10 @@ def test_scope_and_per_intervention_amounts(calculator):
     case.make_item(900000, [0, 0, 100], cost_type=CostType.objects.get(type=Support.id))
     case.make_item(900000, [0, 0, 100], analysis=AnalysisFactory())
     result = case.suggest()
+    intervention_ids = [i.pk for i in case.interventions]
     assert result["denominator"] == 1100
-    assert result["numerators"] == dict(zip([i.pk for i in case.interventions], [100, 1000, 0]))
-    assert list(result["allocations"].values()) == ["9.09", "90.91", "0.00"]
+    assert result["numerators"] == dict(zip(intervention_ids, [100, 1000, 0]))
+    assert result["allocations"] == dict(zip(intervention_ids, ["9.09", "90.91", "0.00"]))
     case.target.total_cost = Decimal(200000000)
     case.target.save()
     assert case.suggest() == result
@@ -128,10 +132,11 @@ def test_excludes_all_selected_saved_allocations(calculator):
     x = case.make_item(200000, [100, 0, 0])
     y = case.make_item(50000, [0, 100, 0])
     result = case.suggest(x, y)
+    intervention_ids = [i.pk for i in case.interventions]
     assert result["denominator"] == 1100
-    assert list(result["allocations"].values()) == ["9.09", "90.91", "0.00"]
-    assert list(case.suggest(x)["allocations"].values()) == ["0.20", "99.80", "0.00"]
-    assert list(case.suggest(y)["allocations"].values()) == ["99.50", "0.50", "0.00"]
+    assert result["allocations"] == dict(zip(intervention_ids, ["9.09", "90.91", "0.00"]))
+    assert case.suggest(x)["allocations"] == dict(zip(intervention_ids, ["0.20", "99.80", "0.00"]))
+    assert case.suggest(y)["allocations"] == dict(zip(intervention_ids, ["99.50", "0.50", "0.00"]))
 
 
 @pytest.mark.parametrize("invalid", [[70, 50, 0], [-1, 50, 0], [101, 0, 0]])
@@ -139,7 +144,7 @@ def test_excludes_entire_invalid_row(calculator, invalid):
     case = calculator([(100, [100, 0, 0]), (1000000, invalid)])
     result = case.suggest()
     assert result["denominator"] == 100
-    assert list(result["allocations"].values()) == ["100.00", "0.00", "0.00"]
+    assert result["allocations"] == dict(zip([i.pk for i in case.interventions], ["100.00", "0.00", "0.00"]))
 
 
 def test_allocation_to_another_analysis_intervention_is_ignored(calculator):
@@ -151,7 +156,7 @@ def test_allocation_to_another_analysis_intervention_is_ignored(calculator):
     )
     result = case.suggest()
     assert result["denominator"] == 400
-    assert list(result["allocations"].values()) == ["25.00", "75.00", "0.00"]
+    assert result["allocations"] == dict(zip([i.pk for i in case.interventions], ["25.00", "75.00", "0.00"]))
 
 
 @pytest.mark.parametrize(
@@ -216,9 +221,9 @@ def test_rounding_overflow_reduces_positive_allocations_only(calculator, with_ze
         expected = ["16.66"] * 6
         total = Decimal("99.96")
     case = calculator(rows, n=len(expected))
-    allocations = list(case.suggest()["allocations"].values())
-    assert allocations == expected
-    assert sum(map(Decimal, allocations)) == total
+    allocations = case.suggest()["allocations"]
+    assert allocations == dict(zip([i.pk for i in case.interventions], expected))
+    assert sum(map(Decimal, allocations.values())) == total
 
 
 def test_new_intervention_receives_zero(calculator):
