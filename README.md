@@ -1,309 +1,85 @@
-# Dioptra / Web application service
+<div align="center">
 
-Quickstart:
+![Dioptra logo](https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1594003441742-S7F6G85KOD0J9KNFW8AU/Dioptra_Official+Logo_Color.png?format=2500w)
 
-```console
-export DJANGO_SECRET_KEY=a_secret_key
-export DATABASE_PASSWORD=a_password
-docker compose build
-docker compose run web python manage.py build -y
-docker compose up -d
-# go to http://localhost:8000
-# Login as dioptra_default+administrator@dioptratool.org, password 'password'
-```
+### A web-based cost analysis tool that helps program staff at humanitarian and development organizations estimate the cost-efficiency of their interventions.
 
-## Running using Docker
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/dioptratool/dioptra-web?tab=Apache-2.0-1-ov-file)
 
-Define environment variables with the secrets required to run the application locally:
+</div>
 
-```console
-export django_secret_key=a_secret_key
-export DATABASE_PASSWORD=a_password
-```
+---
 
-Start all services:
+## Contents
 
-```console
-docker compose up
-```
+- [Why Dioptra?](#why-dioptra)
+- [Key features](#key-features)
+- [Getting started](#getting-started)
+- [Open source & the Consortium](#open-source--the-consortium)
+- [Contributing](#contributing)
+- [License](#license)
 
-If necessary, build the site content:
+---
 
-```console
-docker compose up
-docker compose run web python manage.py build -y
-```
+## Why Dioptra?
 
-Visit `http://localhost:8000`
+Dioptra enables program staff to rapidly estimate the cost-efficiency of their program interventions using existing financial and monitoring data. There are two key cases where Dioptra provides the greatest value:
 
-Or, start each service individually:
+1. **Sectoral learning**: exploring the typical cost-per-output of common activities and analyzing how cost-per-output is driven by differences in activity design or program context.
+2. **Performance management**: analyzing the cost-efficiency of a program periodically, comparing it to benchmarks for that activity, and assessing whether greater reach might be possible if the program design were adapted.
 
-```console
-docker compose up
-docker compose up db
-docker compose up web
-```
+Both rely on the same underlying method: an ingredients-based approach to costing ([Levin and McEwan](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=HI6m-dsAAAAJ&citation_for_view=HI6m-dsAAAAJ:bEWYMUwI8FkC)), aligned with established sector guidance on cost-efficiency analysis. See the [Cost Analysis Methodology at the IRC](https://www.rescue.org/report/cost-analysis-methodology-irc) for details.
 
-The users created by the build command are defined in
- `website/management/commands/build.py`.
+Instead of relying on analysts to develop an ingredients list "from scratch," Dioptra taps into the reality of how implementing organizations are funded and uses existing accounting information from the awards that funded the interventions being studied. Dioptra pulls in data on all the ingredients funded by a particular award or awards (program costs, support costs, and indirect costs), then asks program staff to narrow down to the ingredients specifically used for the intervention being analyzed.
 
-To run Django `manage.py` commands in the docker containers, use:
+## Key features
 
-```console
-docker compose up
-docker compose run web python manage.py ...
-```
+| Feature | What it does |
+|---|---|
+| 🧩 **Ingredients-based approach** | Costing follows an ingredients-based method grounded in existing award accounting data, rather than a bespoke ingredients list built from scratch for each analysis. |
+| ⚡ **Automatic pull of expense data** | Dioptra automatically uses the organization's available financial transaction data (see [Data connections](https://www.dioptratool.org/how-does-dioptra-work)). This reduces the time needed for a cost analysis from several days to a few hours, minimizing the burden on field staff. |
+| 📏 **Standardized output metrics** | Cost-efficiency metrics that are commonly agreed upon in sectoral forums, covering **40+ interventions**, ensuring comparability of results. See the [full list of standardized metrics](https://www.dioptratool.org/standardized-metrics). |
+| 🗂️ **Common set of cost categories** | Includes support and indirect costs to show the "fully loaded" cost of an intervention, avoiding artificial differences in apparent cost-efficiency caused by how support/indirect costs happen to be funded. Dioptra also calculates a suggested support-cost allocation percentage, based on the Grand Bargain Cash workstream's method. |
+| 📊 **Analysis insights** | Displays results alongside available data points from similar programs, making it easier to see which features likely drive differences in cost-efficiency across designs or contexts. |
 
-Rebuild the Docker images:
+## Getting started
 
-```console
-docker compose up
-docker compose build
-```
+Dioptra can be installed and hosted by your organization directly from this repository.
 
-## Running with a local Python interpreter
+- 🛠️ [Installation and hosting guide](#): setting up your own instance
+- 🔌 [Data connections](https://www.dioptratool.org/how-does-dioptra-work): options for hosting, authentication, and connecting your financial data
+- 📖 [User guide](https://www.dioptratool.org/videos): running an analysis
+- 🌐 [Dioptra website](https://www.dioptratool.org)
 
-The app runs in Docker containers, so a local Python environment is not
-strictly required to run it, but it's need it by the development tools. The
-target Python version of the app documented in `.tool-versions`.
+Prefer a hosted, supported setup? Dioptra is also available through the Consortium. See [Open source & the Consortium](#open-source--the-consortium).
 
-1. Install the application dependencies (Python packages, npm packages, and
-   the compiled front-end assets; requires Node, see `.tool-versions`)
+## Open source & the Consortium
 
-    ```console
-    make install
-    ```
+Dioptra is open source and publicly available under the Apache 2.0 license. Making the code public keeps the methodology transparent and allows any organization to use and self-host the tool.
 
-2. Bring up the supporting services for the application
+Dioptra is also offered as software-as-a-service to members of the Dioptra Consortium, a community of practitioners across humanitarian and development agencies working to strengthen the sector's use of cost evidence. Members receive installation and ongoing support, help shape the tool's development, connect through a community of practice with regular standing meetings, and explore opportunities for joint efforts and initiatives.
 
-    ```console
-    make up
-    ```
+<table align="center">
+  <tr>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1592589287376-XU5J728V7PX4TDAE29MF/ACH+Logo.png?format=100w" alt="Accion Contra El Hambre" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1592589321170-8QDVFER6VX28B40IHLD9/CARE+Logo.gif?format=100w" alt="CARE" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/5f29d980-e208-4ddc-8b3d-6d4a19cb8235/CRS+Logo.jpg?format=100w" alt="Catholic Relief Services" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/6703f996-f097-4e19-ad00-0badcb3fb5b8/DRC+PNG.jpg?format=100w" alt="Danish Refugee Council" height="60"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1594006841952-WQ0933W5DAX5EUCO6RGF/IRC+Logo.png?format=100w" alt="International Rescue Committee" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1592589412066-UD8Q8NVSD9J83561NPCN/Mercy+Corps+Logo.jpg?format=100w" alt="Mercy Corps" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/1592589439542-5Q6GTTUI2LWP1BOFL8S9/Save+the+Children+Logo.png?format=100w" alt="Save the Children" height="60"></td>
+    <td align="center"><img src="https://images.squarespace-cdn.com/content/v1/5d5f1681773a350001f976f8/137f835f-4649-4694-893e-2307ae8b29fd/NRC-logo+%282%29.png?format=100w" alt="Norwegian Refugee Council" height="60"></td>
+  </tr>
+</table>
 
-    By default, we'll use the settings file `website/settings/local.py`,
-    which will run against Docker containers with external services,
-    as configured in `docker/docker compose-local.yml`.
+📩 [Contact the IRC](https://www.dioptratool.org/contact-us) to learn more about joining the Consortium.
 
-    You can use a different file if you have different settings.
-    Use `export DJANGO_SETTINGS_MODULE=website.settings.whatever` if that's the case.
-    Or try out some of the other settings files.
+## Contributing
 
-    Note that some things outside the application (like `make psql`)
-    assume the values configured in `local.py`, so you may need to change some things.
+Contributions are welcome! See [CONTRIBUTING.md](https://github.com/dioptratool/dioptra-web?tab=contributing-ov-file) for guidelines.
 
-3. Initialize the database
+## License
 
-    If you have an existing DB, you can import it:
-
-    ```console
-    BACKUP=/path/to/backup.sql.gz make restore-db
-    BACKUP=/path/to/transactions.sql make restore-transactions-db
-    ```
-
-    After running `make up`, there will be a PostgreSQL database named `dioptra` running in a Docker container. We can initialize it with a `system` superuser and imported sample data.
-
-    ```console
-    make bootstrap-db
-    ```
-
-    You can connect to the DB in either of these ways:
-
-    ```console
-    make dbshell # Uses manage.py dbshell
-    make psql # Opens directly
-    ```
-
-4. Run the site
-
-    ```console
-    make run
-    ```
-
-    Visit http://localhost:8000.  Log in with
-    `dioptra_default+administrator@dioptratool.org` and `password`.
-
-### Validation
-
-You can try connecting to the app ore running a test:
-
-```console
-$ make shell
-
-```
-
-```console
-$ make test
-...
-Ran 13 tests in 0.868s
-OK
-```
-
-## Running the transaction pipeline and datastore
-
-Go that service directory: `../../transaction-data-pipeline/` and follow the
-steps in the README.
-
-## Transaction import templates
-
-The transaction upload step uses one active transaction import template at a
-time. Configure the active template in the admin panel under
-`Settings > Analysis > Transaction Import Template`. The dropdown displays the
-organization name; the stored value is the template ID.
-
-If the setting is not changed, Dioptra uses the canonical upload format:
-`dioptra_default`.
-
-Current templates:
-
-| Admin label              | Template ID                  |
-|--------------------------|------------------------------|
-| Dioptra default          | `dioptra_default`            |
-| Save the Children        | `save_the_children`          |
-| Catholic Relief Services | `catholic_relief_services`   |
-| Accion Contra el Hambre  | `accion_contra_el_hambre`    |
-| Danish Refugee Council   | `danish_refugee_council`     |
-| Mercy Corps              | `mercy_corps`                |
-
-Template IDs are implemented under
-`website/data_loading/transaction_templates/<template_id>/`.
-
-## OAuth Support
-
-By default, Dioptra runs with regular Django authentication.
-We have configurable OAuth providers through django-allauth.
-
-For each integration we want to support,
-we need to create an `allauth` social app
-that contains the OAuth client and secret.
-
-First, create a new OAuth app in your provider service (Okta, OneLogin, etc).
-Record your client ID and secret.
-Then run:
-
-    python ./manage.py initialize_auth --provider=## --client-id=## --secret=##
-
-You can also use the `--reset` flag to delete all existing `allauth` apps.
-
-Then, when you run the app, you need to set the `AUTH_PROVIDERS` **environment
-variable** to a comma-separated list of enabled auth providers. See `manage.py
-initialize_auth -h` for the list of supported providers. Some providers require
-additional configuration. These are the current known provider configurations:
-
-`okta`:
-
-- `OKTA_URL` (i.e. dev-123.okta.com)
-- `OKTA_OAUTH2_PATH` (i.e. /oauth2/v1)
-
-The Okta API Key is issued at `https://...admin.okta.com/admin/access/api/tokens`.
-
-`onelogin`:
-
-- `ONELOGIN_APP` (i.e. dioptra)
-
-The OneLogin API secrets are issued at
-`https://....onelogin.com/api_credentials`. The app API calls require the
-*Manage Users* scope.
-
-
-`microsoft`:
-
-- `MICROSOFT_TENANT_ID` (Tenant ID displayed within your registered application in Microsoft AD)
-
-When running the `initialize_auth` command:  
-`--client-id` corresponds to the Client ID within your registered application in Microsoft AD  
-`--secret` corresponds to a "client secret value" (NOT "client secret ID") added to that application in Microsoft AD
-
-If an `AUTH_PROVIDERS` is set and requires additional config that is missing,
-an error indicating the missing config is raised at load time.
-
-## Front-end assets
-
-Stylesheets and scripts are compiled with Dart Sass and esbuild (Node version
-in `.tool-versions`). Compiled files are **generated, not committed**:
-`make install` installs the npm dependencies and builds them, and the Docker
-images build them in a Node stage before `collectstatic`. Run `make fe-build`
-(or `npm run watch`) after pulling or changing front-end sources.
-
-There are two builds, run together by `npm run build`:
-
-- **ombucore** (`lib/ombucore/frontend`, an npm workspace with its own
-  `package.json` and `build.mjs`): admin panels CSS/JS, the page-wide jQuery
-  and the CKEditor bundle. Runs on its own with `npm run build:ombucore`.
-- **website** (`tools/build-website.mjs`): site stylesheets (including the
-  in-panel styles built on the ombucore panels SCSS), the site script bundle
-  and vendored libraries. Runs on its own with `npm run build:website`.
-
-```
-make fe-install                    # npm ci (root + ombucore workspace)
-make fe-build                      # npm run build
-npm run build:website -- css       # one group: website css | js | vendor
-npm run build:ombucore -- ckeditor # one group: ombucore css | js | vendor | ckeditor
-make fe-watch                      # rebuild both on change
-make fe-lint                       # eslint
-```
-
-| Source | Output | Build |
-| --- | --- | --- |
-| `website/static/website/css/*.scss` | `website/static/website/css/{style,panels-inside,styleguide}.css` | website |
-| `website/static/website/js/main.js` (bundle) | `website/static/website/scripts.js` | website |
-| `chart.js` (npm) | `website/static/website/js/chart.umd.min.js` | website |
-| `lib/ombucore/admin/static/panels/css/*.scss` | `lib/ombucore/admin/static/panels/css/{panels,panels-relation-widget}.css` | ombucore |
-| `lib/ombucore/admin/static/panels/js/_*.js` (concatenated) | `lib/ombucore/admin/static/panels/js/panels{,-inside}.js` | ombucore |
-| `jquery` (npm) via `lib/ombucore/frontend/src/jquery-global.js` | `lib/ombucore/admin/static/panels/js/jquery.js` | ombucore |
-| `lib/ombucore/frontend/src/ckeditor.js` | `lib/ombucore/admin/static/django_ckeditor_5/dist/` | ombucore |
-
-jQuery is loaded once per page, from `panels/js/jquery.js`, by every base
-template (`theme_base.html`, `html-panel.html`, the styleguide and the
-insights print view) before any other script. It is the version pinned in
-`lib/ombucore/frontend/package.json`; site, panels and widget scripts use that
-global rather than bundling their own copy. It also sets `django.jQuery`, and
-`website/static/admin/js/jquery.init.js` overrides Django's copy (included by
-widgets such as taggit-autosuggest) so it no longer calls `noConflict()`.
-
-Stylesheets use the Sass module system (`@use`, no `@import`):
-
-- Website partials load the design tokens and mixins with `@use 'init' as *;`
-  (`website/static/website/css/init/`).
-- Panels lib partials use `@use 'settings' as *;`
-  (`lib/ombucore/admin/static/panels/css/_settings.scss`). The site re-themes
-  panels in `website/static/website/css/_panels-settings.scss`.
-- Base element styles and the shared component classes (grid, forms,
-  buttons, dropdowns, alerts, utilities) live in
-  `lib/ombucore/admin/static/panels/css/foundation/`. They replace Bootstrap 3
-  and keep its class and variable names.
-
-## Running tests
-
-Some initial pytest style tests have been added. They require two databases, the normal Django database and an external transaction_store. There are `make` targets to run tests.
-
-By default, the test database is preserved between runs.
-
-```
-make test
-```
-
-It is also possible to force the test database to be rebuilt.
-
-```
-make test-rebuild-db
-```
-
-## Helpful commands
-
-Connect to psql:
-
-    psql postgres://dioptra:$DATABASE_PASSWORD@127.0.0.1:5432/dioptra
-
-Restore a transactions database dump:
-
-    psql postgres://dioptra:$DATABASE_PASSWORD@127.0.0.1:5433/dioptra_transactions -f <filename>
-
-## Benchmarks
-
-There's a benchmarking script for running some routines that have traditionally been slow.
-There are some options for running from fixtures, or you can run from live data.
-
-```
-$ docker compose run web python manage.py benchmark import
-$ docker compose run web python manage.py benchmark import --debug-sql --analysis=6
-```
+Licensed under the [Apache License 2.0](https://github.com/dioptratool/dioptra-web?tab=Apache-2.0-1-ov-file).
